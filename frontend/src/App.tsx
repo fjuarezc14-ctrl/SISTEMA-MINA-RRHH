@@ -211,7 +211,7 @@ export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('admin');
   const [selectedRole, setSelectedRole] = useState<string>('SUPER_ADMIN');
   const [postulantes, setPostulantes] = useState<Postulante[]>(MOCK_POSTULANTES);
-  const [fotochecks, setFotochecks] = useState<Fotocheck[]>([]);
+  const [fotochecks] = useState<Fotocheck[]>([]);
   const [usuarios, setUsuarios] = useState<UsuarioSistema[]>(INITIAL_USUARIOS);
   const [auditoria, setAuditoria] = useState<AuditoriaVistoBueno[]>(INITIAL_AUDITORIA);
 

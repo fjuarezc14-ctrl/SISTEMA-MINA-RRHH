@@ -6,7 +6,7 @@ import {
   ShieldAlert, 
   GraduationCap, 
   ClipboardCheck, 
-  IdCard,
+  CreditCard,
   HardHat,
   ShieldCheck,
   Crown
@@ -121,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onSelectView }) =
           onClick={() => onSelectView('fotocheck')} 
           className={getButtonClass('fotocheck')}
         >
-          <IdCard className="w-5 h-5" /> Meta: Emisión Fotocheck
+          <CreditCard className="w-5 h-5" /> Meta: Emisión Fotocheck
         </button>
       </nav>
 

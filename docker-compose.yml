@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Base de Datos Relacional PostgreSQL para auditoría y flujo de acreditación
+  # Base de Datos Relacional PostgreSQL
   postgres:
     image: postgres:16-alpine
     container_name: mina_postgres
@@ -11,13 +11,18 @@ services:
       POSTGRES_PASSWORD: valetec_secure_pass
       POSTGRES_DB: mina_onboarding_db
     ports:
-      - "5432:5432"
+      - "5450:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./backend/src/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
     networks:
       - valetec-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U valetec_admin -d mina_onboarding_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Backend API (Node.js + Express + TypeScript)
   backend:
@@ -27,9 +32,10 @@ services:
     container_name: mina_backend
     restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
-      PORT: 4000
+      PORT: 4050
       NODE_ENV: development
       DB_HOST: postgres
       DB_PORT: 5432
@@ -39,28 +45,25 @@ services:
       JWT_SECRET: valetec_super_secret_jwt_key_2026
       UPLOAD_DIR: ./uploads
     ports:
-      - "4000:4000"
+      - "4050:4050"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
       - backend_uploads:/app/uploads
     networks:
       - valetec-network
 
-  # Frontend SPA (React + Vite + Tailwind + Lucide Icons)
+  # Frontend SPA (React + Vite + Tailwind + Nginx)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:4050/api
     container_name: mina_frontend
     restart: unless-stopped
     depends_on:
       - backend
     ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "5150:80"
     networks:
       - valetec-network
 

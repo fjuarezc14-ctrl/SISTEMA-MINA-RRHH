@@ -8,6 +8,7 @@ ON CONFLICT (ruc) DO NOTHING;
 
 -- Usuarios por Rol (Clave por defecto hasheada: Password123!)
 INSERT INTO usuarios (id, empresa_id, nombre, email, password_hash, rol) VALUES
+('b0000000-0000-0000-0000-000000000000', NULL, 'Ing. Yerson (Super Admin)', 'admin@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'SUPER_ADMIN'),
 ('b1111111-1111-1111-1111-111111111111', 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Contratista XYZ', 'contratista@serviciosxyz.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'CONTRATISTA'),
 ('b2222222-2222-2222-2222-222222222222', NULL, 'Lic. Valenzuela (RRHH)', 'rrhh@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'STAFF_RRHH'),
 ('b3333333-3333-3333-3333-333333333333', NULL, 'Dr. Arévalo (Médico Ocupacional)', 'salud@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'MEDICO_OCUPACIONAL'),

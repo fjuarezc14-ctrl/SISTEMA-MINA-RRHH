@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante } from '../types';
-import { ClipboardCheck, FileText, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { ClipboardCheck, FileText, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 
 interface Fase5Props {

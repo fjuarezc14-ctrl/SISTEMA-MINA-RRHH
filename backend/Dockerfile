@@ -13,5 +13,5 @@ RUN npm install --only=production
 COPY --from=builder /app/dist ./dist
 RUN mkdir -p uploads
 
-EXPOSE 4000
+EXPOSE 4050
 CMD ["node", "dist/server.js"]

@@ -11,7 +11,6 @@ import {
   History, 
   Lock, 
   Unlock,
-  Building,
   Activity
 } from 'lucide-react';
 
