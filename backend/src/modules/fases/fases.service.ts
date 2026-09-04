@@ -41,6 +41,8 @@ export class FasesService {
     postulanteId: string;
     fase: string;
     evaluadorId?: string;
+    evaluadorNombre?: string;
+    areaEvaluadora?: string;
     decision: 'APROBAR' | 'OBSERVAR' | 'NO_APTO';
     observaciones?: string;
     nota?: number;
@@ -52,6 +54,8 @@ export class FasesService {
       postulanteId,
       fase,
       evaluadorId,
+      evaluadorNombre,
+      areaEvaluadora,
       decision,
       observaciones,
       nota,
@@ -60,14 +64,17 @@ export class FasesService {
       motivoListaNegra,
     } = params;
 
-    // Obtener datos del postulante
+    // 1. Obtener datos del postulante
     const postRes = await query(`SELECT * FROM postulantes WHERE id = $1`, [postulanteId]);
     if (postRes.rows.length === 0) {
       throw new Error('Postulante no encontrado.');
     }
     const postulante = postRes.rows[0];
 
-    // 1. CASO NO APTO: Inclusión automática en Lista Negra y Bloqueo
+    const nombreEvaluadorFinal = evaluadorNombre || 'Responsable de Área';
+    const areaFinal = areaEvaluadora || 'Staff de Mina';
+
+    // 2. CASO NO APTO: Inclusión automática en Lista Negra y Bloqueo
     if (decision === 'NO_APTO') {
       const motivoFinal = motivoListaNegra || observaciones || 'No Apto por evaluación en ' + fase;
       const tipoFalta = fase === 'FASE_2' ? 'MEDICA_CRITICA' : 'ANTECEDENTES_PENALES';
@@ -89,17 +96,18 @@ export class FasesService {
         [postulanteId]
       );
 
+      // Registrar en auditoría inmutable de vistos buenos
       await query(
-        `INSERT INTO evaluaciones_fase 
-         (postulante_id, fase, evaluador_id, estado_resultado, observaciones, archivo_adjunto_url)
-         VALUES ($1, $2, $3, 'NO_APTO', $4, $5)`,
-        [postulanteId, fase, evaluadorId || null, motivoFinal, archivoUrl || null]
+        `INSERT INTO auditoria_vistos_buenos 
+         (postulante_id, fase, area_evaluadora, evaluador_id, evaluador_nombre, decision, observaciones)
+         VALUES ($1, $2, $3, $4, $5, 'NO_APTO_LISTA_NEGRA', $6)`,
+        [postulanteId, fase, areaFinal, evaluadorId || null, nombreEvaluadorFinal, motivoFinal]
       );
 
       return { estado: 'NO_APTO', mensaje: 'Postulante dictaminado NO APTO e ingresado a Lista Negra.' };
     }
 
-    // 2. CASO OBSERVADO (Subsanable por el contratista)
+    // 3. CASO OBSERVADO (Subsanable por el contratista)
     if (decision === 'OBSERVAR') {
       await query(
         `UPDATE postulantes 
@@ -109,24 +117,16 @@ export class FasesService {
       );
 
       await query(
-        `INSERT INTO evaluaciones_fase 
-         (postulante_id, fase, evaluador_id, estado_resultado, observaciones, nota, fecha_vencimiento, archivo_adjunto_url)
-         VALUES ($1, $2, $3, 'OBSERVADO', $4, $5, $6, $7)`,
-        [
-          postulanteId,
-          fase,
-          evaluadorId || null,
-          observaciones || 'Observado en ' + fase,
-          nota || null,
-          fechaVencimiento || null,
-          archivoUrl || null,
-        ]
+        `INSERT INTO auditoria_vistos_buenos 
+         (postulante_id, fase, area_evaluadora, evaluador_id, evaluador_nombre, decision, observaciones)
+         VALUES ($1, $2, $3, $4, $5, 'OBSERVADO', $6)`,
+        [postulanteId, fase, areaFinal, evaluadorId || null, nombreEvaluadorFinal, observaciones || 'Observado']
       );
 
       return { estado: 'OBSERVADO', mensaje: 'Postulante observado. Se notificó a la contratista para subsanación.' };
     }
 
-    // 3. CASO APROBADO: Pasa a la siguiente fase
+    // 4. CASO APROBADO (Visto Bueno del Área)
     let siguienteFase = 'FINALIZADO';
     let estadoGlobal = 'EN_PROCESO';
 
@@ -145,8 +145,8 @@ export class FasesService {
         break;
       case 'FASE_5':
         siguienteFase = 'FOTOCHECK';
-        estadoGlobal = 'APROBADO_TOTAL';
-        // Generar registro de Fotocheck listo para imprimir
+        estadoGlobal = 'APTO_PARA_TRABAJAR'; // 5 Vistos Buenos completados
+        // Generar credencial de Fotocheck listo para imprimir
         await query(
           `INSERT INTO fotochecks (postulante_id, codigo_credencial, codigo_qr, fecha_emision, fecha_vencimiento)
            VALUES ($1, $2, $3, CURRENT_DATE, CURRENT_DATE + INTERVAL '1 year')
@@ -167,25 +167,27 @@ export class FasesService {
       [siguienteFase, estadoGlobal, postulanteId]
     );
 
+    // Guardar en la auditoría inmutable
     await query(
-      `INSERT INTO evaluaciones_fase 
-       (postulante_id, fase, evaluador_id, estado_resultado, nota, fecha_vencimiento, archivo_adjunto_url, observaciones)
-       VALUES ($1, $2, $3, 'APROBADO', $4, $5, $6, $7)`,
+      `INSERT INTO auditoria_vistos_buenos 
+       (postulante_id, fase, area_evaluadora, evaluador_id, evaluador_nombre, decision, observaciones, metadatos)
+       VALUES ($1, $2, $3, $4, $5, 'VISTO_BUENO', $6, $7)`,
       [
         postulanteId,
         fase,
+        areaFinal,
         evaluadorId || null,
-        nota || null,
-        fechaVencimiento || null,
-        archivoUrl || null,
-        observaciones || 'Aprobado satisfactoriamente.',
+        nombreEvaluadorFinal,
+        observaciones || 'Visto Bueno Otorgado.',
+        JSON.stringify({ nota, fechaVencimiento, archivoUrl }),
       ]
     );
 
     return {
       estado: 'APROBADO',
       siguienteFase,
-      mensaje: `Fase superada con éxito. Avanza a ${siguienteFase}.`,
+      estadoGlobal,
+      mensaje: `Visto Bueno otorgado por ${areaFinal}. Avanza a ${siguienteFase}.`,
     };
   }
 }

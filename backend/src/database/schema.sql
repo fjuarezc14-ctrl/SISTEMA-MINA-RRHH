@@ -15,22 +15,23 @@ CREATE TABLE IF NOT EXISTS empresas_contratistas (
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. USUARIOS Y CONTROL DE ACCESO (RBAC)
+-- 2. USUARIOS Y CONTROL DE ACCESO (RBAC / ÁREAS RESPONSABLES)
 CREATE TABLE IF NOT EXISTS usuarios (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     empresa_id UUID REFERENCES empresas_contratistas(id) ON DELETE SET NULL,
     nombre VARCHAR(150) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    area_responsable VARCHAR(100), -- ej: 'Área Médica - Salud Ocupacional', 'SSOMA - Capacitación'
     rol VARCHAR(50) NOT NULL CHECK (rol IN (
-        'CONTRATISTA',
+        'SUPER_ADMIN',
         'STAFF_RRHH',
         'MEDICO_OCUPACIONAL',
         'SEGURIDAD_PATRIMONIAL',
         'INSTRUCTOR_SSOMA',
         'ADMIN_CONTRATOS',
         'CONTROL_ACCESOS',
-        'SUPER_ADMIN'
+        'CONTRATISTA'
     )),
     activo BOOLEAN DEFAULT TRUE,
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -64,34 +65,50 @@ CREATE TABLE IF NOT EXISTS postulantes (
     grupo_sanguineo VARCHAR(10) DEFAULT 'O+',
     cv_url VARCHAR(500),
     fase_actual VARCHAR(30) DEFAULT 'FASE_1' CHECK (fase_actual IN ('FASE_1', 'FASE_2', 'FASE_3', 'FASE_4', 'FASE_5', 'FOTOCHECK', 'FINALIZADO')),
-    estado_global VARCHAR(30) DEFAULT 'EN_PROCESO' CHECK (estado_global IN ('EN_PROCESO', 'OBSERVADO', 'NO_APTO', 'APROBADO_TOTAL')),
+    estado_global VARCHAR(30) DEFAULT 'EN_PROCESO' CHECK (estado_global IN ('EN_PROCESO', 'OBSERVADO', 'NO_APTO', 'APTO_PARA_TRABAJAR')),
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(tipo_documento, numero_documento)
 );
 
--- 5. HISTORIAL DE EVALUACIONES POR FASE
-CREATE TABLE IF NOT EXISTS evaluaciones_fase (
+-- 5. EXPEDIENTE DIGITAL Y DOCUMENTOS VERSIONADOS
+CREATE TABLE IF NOT EXISTS expediente_documentos (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     postulante_id UUID NOT NULL REFERENCES postulantes(id) ON DELETE CASCADE,
     fase VARCHAR(30) NOT NULL CHECK (fase IN ('FASE_1', 'FASE_2', 'FASE_3', 'FASE_4', 'FASE_5')),
-    evaluador_id UUID REFERENCES usuarios(id),
-    estado_resultado VARCHAR(30) NOT NULL CHECK (estado_resultado IN ('APROBADO', 'OBSERVADO', 'NO_APTO')),
-    nota NUMERIC(4,2), -- Usado en Fase 4 (Capacitación 0-20)
-    fecha_vencimiento DATE, -- Usado en Fase 5 (Vigencia SCTR)
-    archivo_adjunto_url VARCHAR(500), -- Examen.pdf, Poliza.pdf, EMO.pdf
-    observaciones TEXT,
-    subsanado BOOLEAN DEFAULT FALSE,
-    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    tipo_documento VARCHAR(100) NOT NULL, -- 'CV_Y_DNI', 'FICHA_EMO_TOX', 'ANTECEDENTES', 'INDUCCION_SSOMA', 'POLIZA_SCTR'
+    nombre_archivo VARCHAR(255) NOT NULL,
+    archivo_url VARCHAR(500) NOT NULL,
+    version INT DEFAULT 1,
+    estado_documento VARCHAR(30) DEFAULT 'PENDIENTE' CHECK (estado_documento IN ('PENDIENTE', 'VISTO_BUENO_APROBADO', 'OBSERVADO', 'RECHAZADO_CRITICO')),
+    observacion_actual TEXT,
+    subido_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 6. FOTOCHECKS Y CREDENCIALES DE ACCESO
+-- 6. AUDITORÍA INMUTABLE DE VISTOS BUENOS (Trazabilidad Legal WebControl)
+CREATE TABLE IF NOT EXISTS auditoria_vistos_buenos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    postulante_id UUID NOT NULL REFERENCES postulantes(id) ON DELETE CASCADE,
+    fase VARCHAR(30) NOT NULL,
+    area_evaluadora VARCHAR(100) NOT NULL,
+    evaluador_id UUID REFERENCES usuarios(id),
+    evaluador_nombre VARCHAR(150) NOT NULL,
+    decision VARCHAR(30) NOT NULL CHECK (decision IN ('VISTO_BUENO', 'OBSERVADO', 'NO_APTO_LISTA_NEGRA')),
+    documento_evaluado VARCHAR(100),
+    version_documento INT DEFAULT 1,
+    observaciones TEXT,
+    metadatos JSONB, -- Nota examen, vigencia póliza, etc.
+    fecha_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7. FOTOCHECKS Y CREDENCIALES DE ACCESO
 CREATE TABLE IF NOT EXISTS fotochecks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     postulante_id UUID UNIQUE NOT NULL REFERENCES postulantes(id) ON DELETE CASCADE,
     codigo_credencial VARCHAR(50) UNIQUE NOT NULL,
     codigo_qr VARCHAR(255) NOT NULL,
-    zona_autorizada VARCHAR(100) DEFAULT 'Planta y Subsuelo',
+    zona_autorizada VARCHAR(100) DEFAULT 'Planta y Mina Subterránea',
     fecha_emision DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_vencimiento DATE NOT NULL,
     impreso BOOLEAN DEFAULT FALSE,
@@ -100,18 +117,9 @@ CREATE TABLE IF NOT EXISTS fotochecks (
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 7. AUDITORÍA DE CAMBIOS
-CREATE TABLE IF NOT EXISTS auditoria_movimientos (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    postulante_id UUID REFERENCES postulantes(id) ON DELETE SET NULL,
-    usuario_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
-    accion VARCHAR(100) NOT NULL,
-    detalle JSONB,
-    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
 -- ÍNDICES PARA BÚSQUEDAS RÁPIDAS
 CREATE INDEX IF NOT EXISTS idx_postulantes_empresa ON postulantes(empresa_id);
 CREATE INDEX IF NOT EXISTS idx_postulantes_fase ON postulantes(fase_actual);
 CREATE INDEX IF NOT EXISTS idx_postulantes_doc ON postulantes(numero_documento);
-CREATE INDEX IF NOT EXISTS idx_lista_negra_doc ON lista_negra(numero_documento);
+CREATE INDEX IF NOT EXISTS idx_documentos_postulante ON expediente_documentos(postulante_id);
+CREATE INDEX IF NOT EXISTS idx_auditoria_postulante ON auditoria_vistos_buenos(postulante_id);

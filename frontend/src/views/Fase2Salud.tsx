@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante } from '../types';
-import { Stethoscope, Ban, CheckCircle, ShieldAlert } from 'lucide-react';
+import { Stethoscope, Ban, CheckCircle, ShieldAlert, FileText } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 
 interface Fase2Props {
@@ -38,9 +38,14 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, onEvaluar }) => 
   return (
     <div className="space-y-6">
       <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 border-t-4 border-t-rose-500 shadow-xl">
-        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-rose-400">
-          <Stethoscope className="w-5 h-5" /> Filtro 2: Área Médica (Salud Ocupacional)
-        </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-rose-400">
+            <Stethoscope className="w-5 h-5" /> 2. Área Médica: Evaluación EMO y Toxicológica
+          </h3>
+          <span className="text-xs bg-rose-900/30 text-rose-300 border border-rose-500/20 px-3 py-1 rounded-lg font-medium">
+            Área Responsable: Salud Ocupacional / Médico de Mina (CMP)
+          </span>
+        </div>
 
         {candidatosFase2.length === 0 ? (
           <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-slate-750 text-slate-400 text-sm">
@@ -58,12 +63,19 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, onEvaluar }) => 
                     {candidato.apellidos}, {candidato.nombres}
                   </h4>
                   <p className="text-sm text-slate-400 mt-0.5">
-                    Evaluación toxicológica y EMO (Examen Médico Ocupacional).
+                    Evaluación toxicológica y EMO (Ficha 7D para altura geográfica \(&gt; 4,000\) msnm).
                   </p>
-                  <div className="flex gap-3 text-xs text-slate-500 mt-1">
+                  <div className="flex flex-wrap gap-3 text-xs text-slate-500 mt-1 items-center">
                     <span>DNI: {candidato.numero_documento}</span>
                     <span>•</span>
                     <span>Cargo: {candidato.cargo}</span>
+                    <span>•</span>
+                    <button 
+                      onClick={() => alert(`Visualizando EMO de ${candidato.nombres} ${candidato.apellidos}`)}
+                      className="text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <FileText className="w-3 h-3" /> Ver Ficha_EMO.pdf (v1)
+                    </button>
                   </div>
                 </div>
 
@@ -79,7 +91,7 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, onEvaluar }) => 
                     onClick={() => onEvaluar(candidato.id, 'APROBAR')}
                     className="flex-1 md:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-600/20"
                   >
-                    <CheckCircle className="w-4 h-4" /> Apto Médico
+                    <CheckCircle className="w-4 h-4" /> Dar V°B° Médico (Apto EMO)
                   </button>
                 </div>
               </div>
@@ -88,7 +100,6 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, onEvaluar }) => 
         )}
       </div>
 
-      {/* MODAL LISTA NEGRA */}
       <Modal 
         isOpen={bloquearModalOpen} 
         onClose={() => setBloquearModalOpen(false)} 
@@ -110,7 +121,7 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, onEvaluar }) => 
               rows={3} 
               value={motivoRechazo} 
               onChange={(e) => setMotivoRechazo(e.target.value)}
-              placeholder="Ej: Prueba toxicológica positiva para sustancias controladas / Restricción cardiovascular severa para altura 4500 msnm..."
+              placeholder="Ej: Prueba toxicológica positiva para sustancias controladas / Restricción cardiovascular severa..."
               className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-rose-500"
             />
           </div>
@@ -127,7 +138,7 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, onEvaluar }) => 
               disabled={loading || !motivoRechazo.trim()}
               className="bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm"
             >
-              {loading ? 'Procesando...' : 'Confirmar Bloqueo'}
+              {loading ? 'Procesando...' : 'Confirmar Bloqueo en Lista Negra'}
             </button>
           </div>
         </div>

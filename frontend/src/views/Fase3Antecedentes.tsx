@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante } from '../types';
-import { ShieldAlert, Ban, CheckCircle, ShieldCheck } from 'lucide-react';
+import { ShieldAlert, Ban, ShieldCheck, FileText } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 
 interface Fase3Props {
@@ -38,9 +38,14 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({ postulantes, onEvaluar
   return (
     <div className="space-y-6">
       <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 border-t-4 border-t-rose-500 shadow-xl">
-        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-rose-400">
-          <ShieldAlert className="w-5 h-5" /> Filtro 3: Antecedentes Penales/Policiales
-        </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-rose-400">
+            <ShieldAlert className="w-5 h-5" /> 3. Seguridad Patrimonial: Antecedentes Legales
+          </h3>
+          <span className="text-xs bg-rose-900/30 text-rose-300 border border-rose-500/20 px-3 py-1 rounded-lg font-medium">
+            Área Responsable: Seguridad Patrimonial y Legal
+          </span>
+        </div>
 
         {candidatosFase3.length === 0 ? (
           <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-slate-750 text-slate-400 text-sm">
@@ -58,12 +63,19 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({ postulantes, onEvaluar
                     {candidato.apellidos}, {candidato.nombres}
                   </h4>
                   <p className="text-sm text-slate-400 mt-0.5">
-                    Revisión de antecedentes policiales, penales y judiciales en curso.
+                    Validación de Certificado Único Laboral (Antecedentes Policiales, Penales y Judiciales).
                   </p>
-                  <div className="flex gap-3 text-xs text-slate-500 mt-1">
+                  <div className="flex flex-wrap gap-3 text-xs text-slate-500 mt-1 items-center">
                     <span>DNI: {candidato.numero_documento}</span>
                     <span>•</span>
                     <span>Empresa: {candidato.empresa_nombre}</span>
+                    <span>•</span>
+                    <button 
+                      onClick={() => alert(`Visualizando antecedentes de ${candidato.nombres} ${candidato.apellidos}`)}
+                      className="text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <FileText className="w-3 h-3" /> Ver Certificado_CUL.pdf (v1)
+                    </button>
                   </div>
                 </div>
 
@@ -79,7 +91,7 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({ postulantes, onEvaluar
                     onClick={() => onEvaluar(candidato.id, 'APROBAR')}
                     className="flex-1 md:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-600/20"
                   >
-                    <ShieldCheck className="w-4 h-4" /> Sin Antecedentes (Aprobar)
+                    <ShieldCheck className="w-4 h-4" /> Dar V°B° Seguridad (Sin Antecedentes)
                   </button>
                 </div>
               </div>

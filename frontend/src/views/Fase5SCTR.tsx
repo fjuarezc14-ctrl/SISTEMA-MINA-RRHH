@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante } from '../types';
-import { ClipboardCheck, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ClipboardCheck, FileText, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 
 interface Fase5Props {
@@ -19,7 +19,7 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, onEvaluar }) => {
   const [fechasVenc, setFechasVenc] = useState<Record<string, string>>({});
   const [observarModalOpen, setObservarModalOpen] = useState(false);
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
-  const [motivoObs, setMotivoObs] = useState('El SCTR subido está vencido o no cuenta con endoso minero.');
+  const [motivoObs, setMotivoObs] = useState('La póliza SCTR subida está vencida o no cuenta con endoso minero.');
   const [loading, setLoading] = useState(false);
 
   const handleFechaChange = (id: string, val: string) => {
@@ -64,9 +64,14 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, onEvaluar }) => {
   return (
     <div className="space-y-6">
       <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
-        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-blue-400">
-          <ClipboardCheck className="w-5 h-5" /> Filtro 5: Validación SCTR y Seguros de Alto Riesgo
-        </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-blue-400">
+            <ClipboardCheck className="w-5 h-5" /> 5. Validación SCTR y Seguros de Alto Riesgo
+          </h3>
+          <span className="text-xs bg-blue-900/30 text-blue-300 border border-blue-500/20 px-3 py-1 rounded-lg font-medium">
+            Área Responsable: Administración de Contratos y Seguros
+          </span>
+        </div>
 
         {candidatosFase5.length === 0 ? (
           <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-slate-750 text-slate-400 text-sm">
@@ -91,7 +96,7 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, onEvaluar }) => {
                     </p>
 
                     <div className="flex flex-wrap gap-3 items-center pt-1">
-                      <span className="text-xs text-slate-400 font-medium">Vencimiento Póliza:</span>
+                      <span className="text-xs text-slate-400 font-medium">Vigencia Póliza:</span>
                       <input 
                         type="date" 
                         value={fechaVal}
@@ -100,10 +105,10 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, onEvaluar }) => {
                       />
 
                       <button 
-                        onClick={() => alert(`Visualizando póliza de ${candidato.nombres} ${candidato.apellidos}`)}
+                        onClick={() => alert(`Visualizando póliza SCTR de ${candidato.nombres} ${candidato.apellidos}`)}
                         className="text-xs bg-slate-800 hover:bg-slate-750 border border-slate-600 px-3 py-1.5 rounded-lg text-blue-400 flex items-center gap-1.5 transition-colors"
                       >
-                        <FileText className="w-3.5 h-3.5" /> Ver Póliza.pdf
+                        <FileText className="w-3.5 h-3.5" /> Ver Poliza_SCTR.pdf (v1)
                       </button>
                     </div>
                   </div>
@@ -113,14 +118,14 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, onEvaluar }) => {
                       onClick={() => handleOpenObservar(candidato)}
                       className="flex-1 lg:flex-initial bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
                     >
-                      <AlertTriangle className="w-4 h-4" /> Observar (Póliza Inválida)
+                      <AlertTriangle className="w-4 h-4" /> Observar Póliza
                     </button>
 
                     <button 
                       onClick={() => handleAprobar(candidato.id)}
-                      className="flex-1 lg:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+                      className="flex-1 lg:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30"
                     >
-                      <CheckCircle2 className="w-4 h-4" /> Aprobar (Enviar a Fotocheck)
+                      <ShieldCheck className="w-4 h-4" /> Dar V°B° SCTR (Declarar Apto para Trabajar)
                     </button>
                   </div>
                 </div>
@@ -137,7 +142,7 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, onEvaluar }) => {
       >
         <div className="space-y-4">
           <p className="text-xs text-slate-400">
-            Especifique el motivo por el cual la póliza SCTR Salud / Pensión no cumple con las condiciones:
+            Especifique el motivo por el cual la póliza SCTR Salud / Pensión no cumple con las condiciones requeridas:
           </p>
           <textarea 
             rows={3} 

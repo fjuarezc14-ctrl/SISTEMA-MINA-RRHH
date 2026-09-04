@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante } from '../types';
-import { FileSearch, CheckCircle2, AlertTriangle, User } from 'lucide-react';
+import { FileSearch, CheckCircle2, AlertTriangle, User, FileText } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 
 interface Fase1Props {
@@ -38,13 +38,18 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, onEvaluar }) => {
   return (
     <div className="space-y-6">
       <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
-        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-blue-400">
-          <FileSearch className="w-5 h-5" /> Filtro 1: Datos y CV
-        </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-blue-400">
+            <FileSearch className="w-5 h-5" /> 1. Filtro Documentario: Datos y CV
+          </h3>
+          <span className="text-xs bg-blue-900/40 text-blue-300 border border-blue-500/20 px-3 py-1 rounded-lg font-medium">
+            Área Responsable: Reclutamiento y RRHH Mina
+          </span>
+        </div>
 
         {candidatosFase1.length === 0 ? (
           <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-slate-750 text-slate-400 text-sm">
-            No hay postulantes pendientes en Fase 1 por el momento.
+            No hay postulantes pendientes de revisión de CV en este momento.
           </div>
         ) : (
           <div className="space-y-4">
@@ -64,7 +69,16 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, onEvaluar }) => {
                     <p className="text-sm text-slate-400">
                       Cargo: <span className="text-slate-200 font-medium">{candidato.cargo}</span> • DNI: {candidato.numero_documento}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">Empresa: {candidato.empresa_nombre}</p>
+                    <div className="flex gap-2 items-center text-xs text-slate-500 mt-1">
+                      <span>Empresa: {candidato.empresa_nombre}</span>
+                      <span>•</span>
+                      <button 
+                        onClick={() => alert(`Visualizando CV de ${candidato.nombres} ${candidato.apellidos}`)}
+                        className="text-blue-400 hover:underline flex items-center gap-1"
+                      >
+                        <FileText className="w-3 h-3" /> Ver CV.pdf (v1)
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -73,14 +87,14 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, onEvaluar }) => {
                     onClick={() => handleOpenObservar(candidato)}
                     className="flex-1 md:flex-initial bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
                   >
-                    <AlertTriangle className="w-4 h-4" /> Observar (Subsanable)
+                    <AlertTriangle className="w-4 h-4" /> Observar Documento
                   </button>
 
                   <button 
                     onClick={() => onEvaluar(candidato.id, 'APROBAR')}
                     className="flex-1 md:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
                   >
-                    <CheckCircle2 className="w-4 h-4" /> Aprobar a Fase 2
+                    <CheckCircle2 className="w-4 h-4" /> Dar Visto Bueno (Aprobar CV)
                   </button>
                 </div>
               </div>
@@ -92,17 +106,17 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, onEvaluar }) => {
       <Modal 
         isOpen={observarModalOpen} 
         onClose={() => setObservarModalOpen(false)} 
-        title={`Observar Postulante - ${selectedPostulante?.nombres} ${selectedPostulante?.apellidos}`}
+        title={`Observar CV - ${selectedPostulante?.nombres} ${selectedPostulante?.apellidos}`}
       >
         <div className="space-y-4">
           <p className="text-xs text-slate-400">
-            Indique la razón u omisión en los documentos para que la contratista realice la subsanación correspondiente:
+            Detalla la causal de observación para que el contratista suba la versión corregida:
           </p>
           <textarea 
             rows={3} 
             value={motivoObs} 
             onChange={(e) => setMotivoObs(e.target.value)}
-            placeholder="Ej: El CV no acredita los 2 años mínimos requeridos para mina subterránea..."
+            placeholder="Ej: Falta certificado de homologación 3G/4G vigente para soldador..."
             className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500"
           />
           <div className="flex justify-end gap-3 pt-2">
