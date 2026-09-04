@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Base de Datos Relacional PostgreSQL para auditoría y flujo de acreditación
+  postgres:
+    image: postgres:16-alpine
+    container_name: mina_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: valetec_admin
+      POSTGRES_PASSWORD: valetec_secure_pass
+      POSTGRES_DB: mina_onboarding_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./backend/src/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    networks:
+      - valetec-network
+
+  # Backend API (Node.js + Express + TypeScript)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mina_backend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PORT: 4000
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: valetec_admin
+      DB_PASSWORD: valetec_secure_pass
+      DB_NAME: mina_onboarding_db
+      JWT_SECRET: valetec_super_secret_jwt_key_2026
+      UPLOAD_DIR: ./uploads
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - backend_uploads:/app/uploads
+    networks:
+      - valetec-network
+
+  # Frontend SPA (React + Vite + Tailwind + Lucide Icons)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mina_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - valetec-network
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  valetec-network:
+    driver: bridge
