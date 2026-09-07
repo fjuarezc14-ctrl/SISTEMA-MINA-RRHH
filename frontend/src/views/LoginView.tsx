@@ -103,9 +103,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLogin = async (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent, customEmail?: string, customPassword?: string) => {
     if (e) e.preventDefault();
-    if (!email || !password) {
+    const loginEmail = customEmail !== undefined ? customEmail : email;
+    const loginPassword = customPassword !== undefined ? customPassword : password;
+
+    if (!loginEmail || !loginPassword) {
       setErrorMsg('Por favor ingrese correo y contraseña.');
       return;
     }
@@ -114,7 +117,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     setErrorMsg('');
 
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/auth/login', { email: loginEmail, password: loginPassword });
       const { token, user } = res.data;
 
       const usuarioCompleto: UsuarioSistema = {
@@ -122,7 +125,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         nombre: user.nombre,
         email: user.email,
         rol: user.rol as RolUsuario,
-        area_responsable: DEMO_ACCOUNTS.find((a) => a.email === user.email)?.area || 'Área Operativa',
+        area_responsable: DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === user.email.toLowerCase())?.area || 'Área Operativa',
         activo: true,
       };
 
@@ -131,9 +134,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
 
       onLoginSuccess(usuarioCompleto, token);
     } catch (err: any) {
-      // Si el backend no responde o falla, proveer fallback con las cuentas demo
-      const foundDemo = DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === email.toLowerCase());
-      if (foundDemo && (password === 'Password123!' || password.length >= 4)) {
+      // Fallback demo local si el backend no estuviera disponible
+      const foundDemo = DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === loginEmail.toLowerCase());
+      if (foundDemo && (loginPassword === 'Password123!' || loginPassword.length >= 4)) {
         const usuarioMock: UsuarioSistema = {
           id: `u-${Date.now()}`,
           nombre: foundDemo.nombre,
@@ -142,6 +145,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           area_responsable: foundDemo.area,
           activo: true,
         };
+        // Nota: Si el backend está disponible, res.data retornará el JWT real
         const tokenMock = `mock-token-${Date.now()}`;
         localStorage.setItem('vt_token', tokenMock);
         localStorage.setItem('vt_user', JSON.stringify(usuarioMock));
@@ -158,9 +162,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const handleQuickLogin = (demo: DemoAccount) => {
     setEmail(demo.email);
     setPassword('Password123!');
-    setTimeout(() => {
-      handleLogin();
-    }, 50);
+    handleLogin(undefined, demo.email, 'Password123!');
   };
 
   return (

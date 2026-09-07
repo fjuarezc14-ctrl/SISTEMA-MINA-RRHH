@@ -371,6 +371,9 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem('vt_token');
+    if (!currentUser || !token) return;
+
     const fetchFromBackend = async () => {
       try {
         const [postRes, vehRes, notifRes] = await Promise.allSettled([
@@ -393,7 +396,7 @@ export const App: React.FC = () => {
       }
     };
     fetchFromBackend();
-  }, []);
+  }, [currentUser]);
 
   // Crear nuevo acceso / usuario de área (Super Admin)
   const handleCrearUsuario = async (data: {

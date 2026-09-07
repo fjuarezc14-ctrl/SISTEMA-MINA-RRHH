@@ -13,3 +13,16 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Interceptor para manejar tokens expirados o no autorizados (401)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+      // Si el token expiró o es inválido, limpiar sesión
+      localStorage.removeItem('vt_token');
+      localStorage.removeItem('vt_user');
+    }
+    return Promise.reject(error);
+  }
+);
