@@ -170,7 +170,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulante
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
           Ingreso de Código QR / DNI / Placa Vehicular
         </label>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
           <div className="relative flex-1">
             <Search className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" />
             <input
@@ -179,13 +179,13 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulante
               onChange={(e) => setCodigoInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleValidarCodigo(codigoInput)}
               placeholder="Escanee con lector o ingrese DNI (ej. 46998877) o Placa (ej. V8X-921)..."
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors font-mono"
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition-colors font-mono"
             />
           </div>
           <button
             onClick={() => handleValidarCodigo(codigoInput)}
             disabled={loading || !codigoInput.trim()}
-            className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors flex items-center gap-2 shadow-lg"
+            className="w-full sm:w-auto justify-center bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-bold px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-lg"
           >
             {loading ? 'Validando...' : 'Verificar'}
           </button>

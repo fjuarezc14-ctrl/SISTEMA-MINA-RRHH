@@ -166,27 +166,27 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
       </div>
 
       {/* PESTAÑAS DE NAVEGACIÓN SUPER ADMIN */}
-      <div className="flex border-b border-slate-800 gap-2">
+      <div className="flex border-b border-slate-800 gap-2 overflow-x-auto pb-1 scrollbar-none">
         <button
           onClick={() => setActiveTab('usuarios')}
-          className={`px-5 py-3 font-bold text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
+          className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'usuarios'
               ? 'bg-slate-800 text-blue-400 border-t-2 border-blue-500'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
           }`}
         >
-          <UserPlus className="w-4 h-4" /> Gestión de Accesos y Áreas de Evaluación
+          <UserPlus className="w-4 h-4" /> Gestión de Accesos
         </button>
 
         <button
           onClick={() => setActiveTab('auditoria')}
-          className={`px-5 py-3 font-bold text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
+          className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'auditoria'
               ? 'bg-slate-800 text-blue-400 border-t-2 border-blue-500'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
           }`}
         >
-          <History className="w-4 h-4" /> Bitácora Inmutable de Vistos Buenos (Auditoría Legal)
+          <History className="w-4 h-4" /> Auditoría V°B°
         </button>
 
         <button
@@ -194,13 +194,13 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
             setActiveTab('vencimientos');
             fetchVencimientos();
           }}
-          className={`px-5 py-3 font-bold text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
+          className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'vencimientos'
               ? 'bg-slate-800 text-rose-400 border-t-2 border-rose-500'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
           }`}
         >
-          <AlertTriangle className="w-4 h-4 text-rose-400" /> Semáforo de Vencimientos SCTR
+          <AlertTriangle className="w-4 h-4 text-rose-400" /> Semáforo Vencimientos SCTR
         </button>
       </div>
 

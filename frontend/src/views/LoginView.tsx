@@ -209,20 +209,20 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-3 sm:p-6 py-6 sm:py-10 selection:bg-blue-600 selection:text-white">
       {/* Background radial glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950/80 to-slate-950 -z-10" />
 
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center my-auto">
         {/* LADO IZQUIERDO: Formulario de Login */}
-        <div className="lg:col-span-6 bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-              <HardHat className="w-7 h-7" />
+        <div className="lg:col-span-6 bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 shadow-2xl backdrop-blur-xl">
+          <div className="flex items-center gap-3 mb-5 sm:mb-6">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 shrink-0">
+              <HardHat className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-wider text-white flex items-center gap-1.5">
-                VALETEC <span className="text-blue-500 font-bold text-xs uppercase tracking-widest px-2 py-0.5 rounded-md bg-blue-950 border border-blue-800/60">Mina</span>
+              <h1 className="text-lg sm:text-xl font-black tracking-wider text-white flex items-center gap-1.5">
+                VALETEC <span className="text-blue-500 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-2 py-0.5 rounded-md bg-blue-950 border border-blue-800/60">Mina</span>
               </h1>
               <p className="text-xs text-slate-400">Sistema de Acreditación y Onboarding</p>
             </div>

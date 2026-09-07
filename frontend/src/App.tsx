@@ -349,6 +349,7 @@ export const App: React.FC = () => {
   const [auditoria, setAuditoria] = useState<AuditoriaVistoBueno[]>(INITIAL_AUDITORIA);
   const [vehiculos, setVehiculos] = useState<VehiculoMaquinaria[]>(INITIAL_VEHICULOS);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>(INITIAL_NOTIFICACIONES);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLoginSuccess = (usuario: UsuarioSistema, _token: string) => {
     setCurrentUser(usuario);
@@ -671,6 +672,8 @@ export const App: React.FC = () => {
         userName={currentUser.nombre}
         userArea={currentUser.area_responsable}
         onLogout={handleLogout}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-y-auto">
@@ -682,9 +685,10 @@ export const App: React.FC = () => {
           onLogout={handleLogout}
           notificaciones={notificaciones}
           onMarcarLeida={handleMarcarNotificacionLeida}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
 
-        <div className="p-6 max-w-7xl w-full mx-auto pb-16">
+        <div className="p-3.5 sm:p-6 max-w-7xl w-full mx-auto pb-20">
           {currentView === 'admin' && (
             <SuperAdminView 
               usuarios={usuarios}
