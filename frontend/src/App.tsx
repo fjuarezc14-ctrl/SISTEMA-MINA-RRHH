@@ -12,6 +12,7 @@ import { FotocheckView } from './views/FotocheckView';
 import { GaritaScannerView } from './views/GaritaScannerView';
 import { VehiculosView } from './views/VehiculosView';
 import { SlaMetricsView } from './views/SlaMetricsView';
+import { LoginView } from './views/LoginView';
 import { 
   Postulante, 
   Fotocheck, 
@@ -298,15 +299,67 @@ const INITIAL_NOTIFICACIONES: Notificacion[] = [
   },
 ];
 
+const getDefaultViewForRole = (rol: RolUsuario): ViewType => {
+  switch (rol) {
+    case 'SUPER_ADMIN':
+      return 'admin';
+    case 'CONTRATISTA':
+      return 'contratista';
+    case 'STAFF_RRHH':
+      return 'fase1';
+    case 'MEDICO_OCUPACIONAL':
+      return 'fase2';
+    case 'SEGURIDAD_PATRIMONIAL':
+      return 'fase3';
+    case 'INSTRUCTOR_SSOMA':
+      return 'fase4';
+    case 'ADMIN_CONTRATOS':
+      return 'fase5';
+    case 'CONTROL_ACCESOS':
+      return 'garita';
+    default:
+      return 'admin';
+  }
+};
+
 export const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<ViewType>('admin');
-  const [selectedRole, setSelectedRole] = useState<string>('SUPER_ADMIN');
+  const [currentUser, setCurrentUser] = useState<UsuarioSistema | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('vt_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [currentView, setCurrentView] = useState<ViewType>(() => {
+    const savedUser = localStorage.getItem('vt_user');
+    if (savedUser) {
+      try {
+        const u = JSON.parse(savedUser);
+        return getDefaultViewForRole(u.rol);
+      } catch {}
+    }
+    return 'admin';
+  });
+
   const [postulantes, setPostulantes] = useState<Postulante[]>(MOCK_POSTULANTES);
   const [fotochecks] = useState<Fotocheck[]>([]);
   const [usuarios, setUsuarios] = useState<UsuarioSistema[]>(INITIAL_USUARIOS);
   const [auditoria, setAuditoria] = useState<AuditoriaVistoBueno[]>(INITIAL_AUDITORIA);
   const [vehiculos, setVehiculos] = useState<VehiculoMaquinaria[]>(INITIAL_VEHICULOS);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>(INITIAL_NOTIFICACIONES);
+
+  const handleLoginSuccess = (usuario: UsuarioSistema, _token: string) => {
+    setCurrentUser(usuario);
+    setCurrentView(getDefaultViewForRole(usuario.rol));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('vt_token');
+    localStorage.removeItem('vt_user');
+    setCurrentUser(null);
+  };
 
   // Estadísticas calculadas dinámicamente
   const stats: StatsDashboard = {
@@ -581,15 +634,28 @@ export const App: React.FC = () => {
     );
   };
 
+  if (!currentUser) {
+    return <LoginView onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="flex h-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
-      <Sidebar currentView={currentView} onSelectView={setCurrentView} />
+      <Sidebar 
+        currentView={currentView} 
+        onSelectView={setCurrentView} 
+        userRole={currentUser.rol}
+        userName={currentUser.nombre}
+        userArea={currentUser.area_responsable}
+        onLogout={handleLogout}
+      />
 
       <main className="flex-1 flex flex-col h-screen overflow-y-auto">
         <Header 
           currentView={currentView} 
-          selectedRole={selectedRole} 
-          onRoleChange={setSelectedRole} 
+          userName={currentUser.nombre}
+          userRole={currentUser.rol}
+          userArea={currentUser.area_responsable}
+          onLogout={handleLogout}
           notificaciones={notificaciones}
           onMarcarLeida={handleMarcarNotificacionLeida}
         />
@@ -608,7 +674,7 @@ export const App: React.FC = () => {
           {currentView === 'contratista' && (
             <PortalContratista 
               postulantes={postulantes} 
-              userRole={selectedRole as RolUsuario}
+              userRole={currentUser.rol}
               onSubsanar={handleSubsanar} 
             />
           )}
@@ -616,7 +682,7 @@ export const App: React.FC = () => {
           {currentView === 'fase1' && (
             <Fase1CV 
               postulantes={postulantes} 
-              userRole={selectedRole as RolUsuario}
+              userRole={currentUser.rol}
               onEvaluar={handleEvaluarFase} 
             />
           )}
@@ -624,7 +690,7 @@ export const App: React.FC = () => {
           {currentView === 'fase2' && (
             <Fase2Salud 
               postulantes={postulantes} 
-              userRole={selectedRole as RolUsuario}
+              userRole={currentUser.rol}
               onEvaluar={handleEvaluarFase} 
             />
           )}
@@ -632,7 +698,7 @@ export const App: React.FC = () => {
           {currentView === 'fase3' && (
             <Fase3Antecedentes 
               postulantes={postulantes} 
-              userRole={selectedRole as RolUsuario}
+              userRole={currentUser.rol}
               onEvaluar={handleEvaluarFase} 
             />
           )}
@@ -640,7 +706,7 @@ export const App: React.FC = () => {
           {currentView === 'fase4' && (
             <Fase4Capacitacion 
               postulantes={postulantes} 
-              userRole={selectedRole as RolUsuario}
+              userRole={currentUser.rol}
               onEvaluar={handleEvaluarFase} 
             />
           )}
@@ -648,7 +714,7 @@ export const App: React.FC = () => {
           {currentView === 'fase5' && (
             <Fase5SCTR 
               postulantes={postulantes} 
-              userRole={selectedRole as RolUsuario}
+              userRole={currentUser.rol}
               onEvaluar={handleEvaluarFase} 
             />
           )}
@@ -668,7 +734,7 @@ export const App: React.FC = () => {
           {currentView === 'vehiculos' && (
             <VehiculosView 
               vehiculos={vehiculos}
-              userRole={selectedRole as RolUsuario}
+              userRole={currentUser.rol}
               onRegistrarVehiculo={handleRegistrarVehiculo}
               onEvaluarVehiculo={handleEvaluarVehiculo}
             />

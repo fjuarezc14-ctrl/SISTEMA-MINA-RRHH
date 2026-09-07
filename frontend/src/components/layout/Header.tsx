@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { Notificacion, RolUsuario } from '../../types';
+import { Shield, Crown, Bell, CheckCircle, AlertTriangle, Info, ShieldAlert, X, LogOut, UserCheck } from 'lucide-react';
 import { ViewType } from './Sidebar';
-import { Notificacion } from '../../types';
-import { UserCheck, Shield, Crown, Bell, CheckCircle, AlertTriangle, Info, ShieldAlert, X } from 'lucide-react';
 
 interface HeaderProps {
   currentView: ViewType;
-  selectedRole: string;
-  onRoleChange: (role: string) => void;
+  userName: string;
+  userRole: RolUsuario;
+  userArea?: string;
+  onLogout: () => void;
   notificaciones?: Notificacion[];
   onMarcarLeida?: (id: string) => void;
 }
@@ -27,8 +29,10 @@ const titles: Record<ViewType, [string, string]> = {
 
 export const Header: React.FC<HeaderProps> = ({ 
   currentView, 
-  selectedRole, 
-  onRoleChange,
+  userName,
+  userRole,
+  userArea,
+  onLogout,
   notificaciones = [],
   onMarcarLeida,
 }) => {
@@ -61,24 +65,13 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-3 self-end sm:self-auto relative">
-        {/* Selector de Rol */}
-        <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs">
-          <Shield className="w-3.5 h-3.5 text-blue-400" />
-          <span className="text-slate-400">Rol Activo:</span>
-          <select 
-            value={selectedRole}
-            onChange={(e) => onRoleChange(e.target.value)}
-            className="bg-transparent text-blue-400 font-semibold focus:outline-none cursor-pointer"
-          >
-            <option value="SUPER_ADMIN" className="bg-slate-900 text-purple-400 font-bold">Super Admin (Mina)</option>
-            <option value="STAFF_RRHH" className="bg-slate-900 text-white">Staff RRHH (Fase 1)</option>
-            <option value="MEDICO_OCUPACIONAL" className="bg-slate-900 text-white">Médico Ocupacional (Fase 2)</option>
-            <option value="SEGURIDAD_PATRIMONIAL" className="bg-slate-900 text-white">Seguridad Patrimonial (Fase 3)</option>
-            <option value="INSTRUCTOR_SSOMA" className="bg-slate-900 text-white">Instructor SSOMA (Fase 4)</option>
-            <option value="ADMIN_CONTRATOS" className="bg-slate-900 text-white">Admin Contratos/SCTR (Fase 5)</option>
-            <option value="CONTROL_ACCESOS" className="bg-slate-900 text-white">Control Accesos (Garita)</option>
-            <option value="CONTRATISTA" className="bg-slate-900 text-white">Contratista (ECM)</option>
-          </select>
+        {/* Identificación de Usuario y Rol Activo */}
+        <div className="flex items-center gap-2.5 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-1.5 text-xs">
+          <Shield className="w-4 h-4 text-blue-400 shrink-0" />
+          <div className="text-left">
+            <span className="text-white font-bold block leading-tight">{userName}</span>
+            <span className="text-[10px] text-blue-400 block font-mono font-semibold uppercase">{userRole}</span>
+          </div>
         </div>
 
         {/* Campana de Notificaciones */}
