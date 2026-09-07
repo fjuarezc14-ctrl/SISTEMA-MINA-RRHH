@@ -376,20 +376,28 @@ export const App: React.FC = () => {
 
     const fetchFromBackend = async () => {
       try {
-        const [postRes, vehRes, notifRes] = await Promise.allSettled([
+        const promises: Promise<any>[] = [
           api.get('/postulantes'),
           api.get('/vehiculos'),
           api.get('/notificaciones'),
-        ]);
+        ];
+        if (currentUser.rol === 'SUPER_ADMIN') {
+          promises.push(api.get('/admin/usuarios'));
+        }
 
-        if (postRes.status === 'fulfilled' && Array.isArray(postRes.value.data) && postRes.value.data.length > 0) {
+        const [postRes, vehRes, notifRes, usersRes] = await Promise.allSettled(promises);
+
+        if (postRes?.status === 'fulfilled' && Array.isArray(postRes.value.data) && postRes.value.data.length > 0) {
           setPostulantes(postRes.value.data);
         }
-        if (vehRes.status === 'fulfilled' && Array.isArray(vehRes.value.data) && vehRes.value.data.length > 0) {
+        if (vehRes?.status === 'fulfilled' && Array.isArray(vehRes.value.data) && vehRes.value.data.length > 0) {
           setVehiculos(vehRes.value.data);
         }
-        if (notifRes.status === 'fulfilled' && Array.isArray(notifRes.value.data) && notifRes.value.data.length > 0) {
+        if (notifRes?.status === 'fulfilled' && Array.isArray(notifRes.value.data) && notifRes.value.data.length > 0) {
           setNotificaciones(notifRes.value.data);
+        }
+        if (usersRes?.status === 'fulfilled' && Array.isArray(usersRes.value.data) && usersRes.value.data.length > 0) {
+          setUsuarios(usersRes.value.data);
         }
       } catch (e) {
         // Modo offline / preview
@@ -423,15 +431,28 @@ export const App: React.FC = () => {
     }
   };
 
-  // Toggle estado de usuario (Super Admin)
+  // Toggle estado y desbloqueo de usuario (Super Admin)
   const handleToggleEstadoUsuario = async (id: string, activo: boolean) => {
     try {
-      await api.patch(`/admin/usuarios/${id}/estado`, { activo });
+      if (activo) {
+        await api.patch(`/admin/usuarios/${id}/desbloquear`);
+      } else {
+        await api.patch(`/admin/usuarios/${id}/estado`, { activo: false });
+      }
     } catch (e) {
       // Local fallback
     }
     setUsuarios((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, activo } : u))
+      prev.map((u) =>
+        u.id === id
+          ? {
+              ...u,
+              activo,
+              bloqueado_definitivo: activo ? false : u.bloqueado_definitivo,
+              intentos_fallidos: activo ? 0 : u.intentos_fallidos,
+            }
+          : u
+      )
     );
   };
 

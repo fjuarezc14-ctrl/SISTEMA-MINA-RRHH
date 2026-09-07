@@ -51,6 +51,16 @@ export class AdminController {
     }
   }
 
+  static async desbloquearUsuario(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const data = await AdminService.desbloquearUsuario(id);
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async getAuditoria(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await AdminService.getAuditoriaVistosBuenos();

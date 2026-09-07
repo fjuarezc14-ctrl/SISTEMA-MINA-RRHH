@@ -11,6 +11,9 @@ export class AdminService {
          u.rol, 
          u.area_responsable, 
          u.activo, 
+         u.intentos_fallidos,
+         u.bloqueado_hasta,
+         u.bloqueado_definitivo,
          u.creado_en,
          e.razon_social as empresa_nombre
        FROM usuarios u
@@ -57,10 +60,32 @@ export class AdminService {
   static async toggleEstadoUsuario(id: string, activo: boolean) {
     const res = await query(
       `UPDATE usuarios 
-       SET activo = $2 
+       SET activo = $2,
+           intentos_fallidos = CASE WHEN $2 = true THEN 0 ELSE intentos_fallidos END,
+           bloqueado_definitivo = CASE WHEN $2 = true THEN false ELSE bloqueado_definitivo END,
+           bloqueado_hasta = CASE WHEN $2 = true THEN NULL ELSE bloqueado_hasta END
        WHERE id = $1 
-       RETURNING id, nombre, email, activo`,
+       RETURNING id, nombre, email, activo, intentos_fallidos, bloqueado_definitivo`,
       [id, activo]
+    );
+
+    if (res.rows.length === 0) {
+      throw new Error('Usuario no encontrado.');
+    }
+
+    return res.rows[0];
+  }
+
+  static async desbloquearUsuario(id: string) {
+    const res = await query(
+      `UPDATE usuarios 
+       SET activo = TRUE, 
+           intentos_fallidos = 0, 
+           bloqueado_hasta = NULL, 
+           bloqueado_definitivo = FALSE 
+       WHERE id = $1 
+       RETURNING id, nombre, email, activo, intentos_fallidos, bloqueado_definitivo`,
+      [id]
     );
 
     if (res.rows.length === 0) {

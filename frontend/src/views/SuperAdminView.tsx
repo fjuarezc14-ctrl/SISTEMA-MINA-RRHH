@@ -11,7 +11,8 @@ import {
   History, 
   Lock, 
   Unlock,
-  Activity
+  Activity,
+  ShieldAlert
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -333,27 +334,44 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                       </td>
 
                       <td className="p-4 text-center">
-                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
-                          u.activo 
-                            ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' 
-                            : 'bg-rose-950/60 text-rose-400 border border-rose-500/30'
-                        }`}>
-                          {u.activo ? 'ACTIVO' : 'SUSPENDIDO'}
-                        </span>
+                        {u.bloqueado_definitivo || (u.intentos_fallidos !== undefined && u.intentos_fallidos >= 3) ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-950/80 text-rose-300 border border-rose-500/50 animate-pulse">
+                            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                            BLOQUEADO (3 FALLOS)
+                          </span>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
+                            u.activo 
+                              ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' 
+                              : 'bg-rose-950/60 text-rose-400 border border-rose-500/30'
+                          }`}>
+                            {u.activo ? 'ACTIVO' : 'SUSPENDIDO'}
+                          </span>
+                        )}
                       </td>
 
                       <td className="p-4 text-center">
-                        <button
-                          onClick={() => onToggleEstadoUsuario(u.id, !u.activo)}
-                          className={`text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 ${
-                            u.activo 
-                              ? 'bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 border border-rose-500/30' 
-                              : 'bg-emerald-900/40 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-500/30'
-                          }`}
-                        >
-                          {u.activo ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
-                          {u.activo ? 'Suspender' : 'Activar'}
-                        </button>
+                        {u.bloqueado_definitivo || (u.intentos_fallidos !== undefined && u.intentos_fallidos >= 3) ? (
+                          <button
+                            onClick={() => onToggleEstadoUsuario(u.id, true)}
+                            className="text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30"
+                          >
+                            <Unlock className="w-3.5 h-3.5" />
+                            Desbloquear
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onToggleEstadoUsuario(u.id, !u.activo)}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 ${
+                              u.activo 
+                                ? 'bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 border border-rose-500/30' 
+                                : 'bg-emerald-900/40 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-500/30'
+                            }`}
+                          >
+                            {u.activo ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                            {u.activo ? 'Suspender' : 'Activar'}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

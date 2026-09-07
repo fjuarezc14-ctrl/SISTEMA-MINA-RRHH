@@ -34,6 +34,9 @@ CREATE TABLE IF NOT EXISTS usuarios (
         'CONTRATISTA'
     )),
     activo BOOLEAN DEFAULT TRUE,
+    intentos_fallidos INTEGER DEFAULT 0,
+    bloqueado_hasta TIMESTAMP WITH TIME ZONE,
+    bloqueado_definitivo BOOLEAN DEFAULT FALSE,
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

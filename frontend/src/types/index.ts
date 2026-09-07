@@ -168,6 +168,9 @@ export interface UsuarioSistema {
   rol: RolUsuario;
   area_responsable: string;
   activo: boolean;
+  intentos_fallidos?: number;
+  bloqueado_hasta?: string | null;
+  bloqueado_definitivo?: boolean;
   empresa_nombre?: string;
   creado_en?: string;
 }

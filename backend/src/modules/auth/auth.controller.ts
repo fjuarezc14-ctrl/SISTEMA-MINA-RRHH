@@ -13,7 +13,16 @@ export class AuthController {
       const { email, password } = loginSchema.parse(req.body);
       const data = await AuthService.login(email, password);
       res.json(data);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({
+          error: err.message,
+          code: err.code || 'AUTH_ERROR',
+          segundosRestantes: err.segundosRestantes,
+          intentos: err.intentos,
+          intentosRestantes: err.intentosRestantes,
+        });
+      }
       next(err);
     }
   }
