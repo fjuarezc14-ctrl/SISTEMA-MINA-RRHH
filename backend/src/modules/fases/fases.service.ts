@@ -71,6 +71,29 @@ export class FasesService {
     }
     const postulante = postRes.rows[0];
 
+    // BLOQUEO SECUENCIAL ESTRICTO (HARD GATING)
+    // Cada fase no debe saltarse si la anterior aún no está confirmada
+    const ordenFases: Record<string, number> = {
+      FASE_1: 1,
+      FASE_2: 2,
+      FASE_3: 3,
+      FASE_4: 4,
+      FASE_5: 5,
+      FOTOCHECK: 6,
+      FINALIZADO: 7,
+    };
+
+    const faseEvaluandoNum = ordenFases[fase] || 1;
+    const faseActualNum = ordenFases[postulante.fase_actual] || 1;
+
+    if (faseEvaluandoNum > faseActualNum) {
+      const error: any = new Error(
+        `Bloqueo de Seguridad Secuencial: El postulante se encuentra en [${postulante.fase_actual}]. No se puede dictaminar en [${fase}] hasta que la fase previa reciba el Visto Bueno correspondiente.`
+      );
+      error.statusCode = 409;
+      throw error;
+    }
+
     const nombreEvaluadorFinal = evaluadorNombre || 'Responsable de Área';
     const areaFinal = areaEvaluadora || 'Staff de Mina';
 

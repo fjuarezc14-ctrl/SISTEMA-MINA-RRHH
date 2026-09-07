@@ -308,6 +308,31 @@ export const App: React.FC = () => {
       motivo?: string;
     }
   ) => {
+    try {
+      if (detalles?.file) {
+        const formData = new FormData();
+        formData.append('postulanteId', postulanteId);
+        formData.append('decision', decision);
+        if (detalles.observaciones) formData.append('observaciones', detalles.observaciones);
+        if (detalles.nota !== undefined) formData.append('nota', detalles.nota.toString());
+        if (detalles.fechaVencimiento) formData.append('fechaVencimiento', detalles.fechaVencimiento);
+        if (detalles.motivo) formData.append('motivoListaNegra', detalles.motivo);
+        formData.append('archivo', detalles.file);
+        await api.post(`/fases/${fase}/evaluar`, formData);
+      } else {
+        await api.post(`/fases/${fase}/evaluar`, {
+          postulanteId,
+          decision,
+          observaciones: detalles?.observaciones,
+          nota: detalles?.nota,
+          fechaVencimiento: detalles?.fechaVencimiento,
+          motivoListaNegra: detalles?.motivo,
+        });
+      }
+    } catch (err) {
+      console.warn('Backend sync failed, continuing with local state update:', err);
+    }
+
     const postulante = postulantes.find((p) => p.id === postulanteId);
     if (!postulante) return;
 
@@ -420,6 +445,7 @@ export const App: React.FC = () => {
           {currentView === 'contratista' && (
             <PortalContratista 
               postulantes={postulantes} 
+              userRole={selectedRole as RolUsuario}
               onSubsanar={handleSubsanar} 
             />
           )}
@@ -427,45 +453,40 @@ export const App: React.FC = () => {
           {currentView === 'fase1' && (
             <Fase1CV 
               postulantes={postulantes} 
-              onEvaluar={(id, dec, obs) => 
-                handleEvaluarFase(id, 'FASE_1', dec, { observaciones: obs })
-              } 
+              userRole={selectedRole as RolUsuario}
+              onEvaluar={handleEvaluarFase} 
             />
           )}
 
           {currentView === 'fase2' && (
             <Fase2Salud 
               postulantes={postulantes} 
-              onEvaluar={(id, dec, mot) => 
-                handleEvaluarFase(id, 'FASE_2', dec, { motivo: mot })
-              } 
+              userRole={selectedRole as RolUsuario}
+              onEvaluar={handleEvaluarFase} 
             />
           )}
 
           {currentView === 'fase3' && (
             <Fase3Antecedentes 
               postulantes={postulantes} 
-              onEvaluar={(id, dec, mot) => 
-                handleEvaluarFase(id, 'FASE_3', dec, { motivo: mot })
-              } 
+              userRole={selectedRole as RolUsuario}
+              onEvaluar={handleEvaluarFase} 
             />
           )}
 
           {currentView === 'fase4' && (
             <Fase4Capacitacion 
               postulantes={postulantes} 
-              onEvaluar={(id, dec, nota, file, obs) => 
-                handleEvaluarFase(id, 'FASE_4', dec, { nota, file, observaciones: obs })
-              } 
+              userRole={selectedRole as RolUsuario}
+              onEvaluar={handleEvaluarFase} 
             />
           )}
 
           {currentView === 'fase5' && (
             <Fase5SCTR 
               postulantes={postulantes} 
-              onEvaluar={(id, dec, fecha, obs) => 
-                handleEvaluarFase(id, 'FASE_5', dec, { fechaVencimiento: fecha, observaciones: obs })
-              } 
+              userRole={selectedRole as RolUsuario}
+              onEvaluar={handleEvaluarFase} 
             />
           )}
 

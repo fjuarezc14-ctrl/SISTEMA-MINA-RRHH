@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
-import { Postulante } from '../types';
-import { FileSearch, CheckCircle2, AlertTriangle, User, FileText } from 'lucide-react';
+import { Postulante, RolUsuario } from '../types';
+import { FileSearch, CheckCircle2, AlertTriangle, User, Eye } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
+import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
 
 interface Fase1Props {
   postulantes: Postulante[];
-  onEvaluar: (postulanteId: string, decision: 'APROBAR' | 'OBSERVAR', observaciones?: string) => Promise<void>;
+  userRole: RolUsuario;
+  onEvaluar: (
+    postulanteId: string, 
+    fase: string, 
+    decision: 'APROBAR' | 'OBSERVAR' | 'NO_APTO', 
+    detalles?: any
+  ) => Promise<void>;
 }
 
-export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, onEvaluar }) => {
+export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, userRole, onEvaluar }) => {
   const [observarModalOpen, setObservarModalOpen] = useState(false);
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
+  const [splitViewerOpen, setSplitViewerOpen] = useState(false);
+  const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
   const [motivoObs, setMotivoObs] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,11 +31,16 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, onEvaluar }) => {
     setObservarModalOpen(true);
   };
 
+  const handleOpenSplitViewer = (p: Postulante) => {
+    setViewerPostulante(p);
+    setSplitViewerOpen(true);
+  };
+
   const handleConfirmObservar = async () => {
     if (!selectedPostulante || !motivoObs.trim()) return;
     try {
       setLoading(true);
-      await onEvaluar(selectedPostulante.id, 'OBSERVAR', motivoObs);
+      await onEvaluar(selectedPostulante.id, 'FASE_1', 'OBSERVAR', { observaciones: motivoObs });
       setObservarModalOpen(false);
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al observar postulante.');
@@ -71,30 +85,31 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, onEvaluar }) => {
                     </p>
                     <div className="flex gap-2 items-center text-xs text-slate-500 mt-1">
                       <span>Empresa: {candidato.empresa_nombre}</span>
-                      <span>•</span>
-                      <button 
-                        onClick={() => alert(`Visualizando CV de ${candidato.nombres} ${candidato.apellidos}`)}
-                        className="text-blue-400 hover:underline flex items-center gap-1"
-                      >
-                        <FileText className="w-3 h-3" /> Ver CV.pdf (v1)
-                      </button>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-3 w-full md:w-auto">
-                  <button 
-                    onClick={() => handleOpenObservar(candidato)}
-                    className="flex-1 md:flex-initial bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                  {/* BOTÓN VISOR SPLIT-SCREEN */}
+                  <button
+                    onClick={() => handleOpenSplitViewer(candidato)}
+                    className="flex-1 md:flex-initial bg-slate-800 hover:bg-slate-700 text-blue-300 border border-blue-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow"
                   >
-                    <AlertTriangle className="w-4 h-4" /> Observar Documento
+                    <Eye className="w-4 h-4 text-blue-400" /> Inspeccionar en Split-Screen
                   </button>
 
                   <button 
-                    onClick={() => onEvaluar(candidato.id, 'APROBAR')}
-                    className="flex-1 md:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                    onClick={() => handleOpenObservar(candidato)}
+                    className="flex-1 md:flex-initial bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <CheckCircle2 className="w-4 h-4" /> Dar Visto Bueno (Aprobar CV)
+                    <AlertTriangle className="w-4 h-4" /> Observar
+                  </button>
+
+                  <button 
+                    onClick={() => onEvaluar(candidato.id, 'FASE_1', 'APROBAR', { observaciones: 'CV y datos verificados conforme a perfil.' })}
+                    className="flex-1 md:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/20"
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> Dar V°B°
                   </button>
                 </div>
               </div>
@@ -103,6 +118,19 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, onEvaluar }) => {
         )}
       </div>
 
+      {/* MODAL VISOR SPLIT-SCREEN */}
+      {viewerPostulante && (
+        <DocumentSplitViewer
+          isOpen={splitViewerOpen}
+          onClose={() => setSplitViewerOpen(false)}
+          postulante={viewerPostulante}
+          fase="FASE_1"
+          userRole={userRole}
+          onEvaluar={onEvaluar}
+        />
+      )}
+
+      {/* MODAL OBSERVACIÓN RÁPIDA */}
       <Modal 
         isOpen={observarModalOpen} 
         onClose={() => setObservarModalOpen(false)} 

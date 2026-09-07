@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { Postulante } from '../types';
+import { Postulante, RolUsuario } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
-import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
+import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye } from 'lucide-react';
 
 interface PortalContratistaProps {
   postulantes: Postulante[];
+  userRole: RolUsuario;
   onSubsanar: (id: string, file: File, notas?: string) => Promise<void>;
 }
 
-export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulantes, onSubsanar }) => {
+export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulantes, userRole, onSubsanar }) => {
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
   const [subsanarModalOpen, setSubsanarModalOpen] = useState(false);
+  const [splitViewerOpen, setSplitViewerOpen] = useState(false);
+  const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [notas, setNotas] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +28,11 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
     setNotas('');
     setSuccessMsg('');
     setSubsanarModalOpen(true);
+  };
+
+  const handleOpenSplitViewer = (p: Postulante) => {
+    setViewerPostulante(p);
+    setSplitViewerOpen(true);
   };
 
   const handleSubsanarSubmit = async (e: React.FormEvent) => {
@@ -43,7 +53,6 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
     }
   };
 
-  // Helper para determinar el estado de cada visto bueno en el semáforo
   const getFaseStatus = (p: Postulante, faseNum: number) => {
     const ordenFases: Record<string, number> = {
       FASE_1: 1,
@@ -58,12 +67,12 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
     const actual = ordenFases[p.fase_actual] || 1;
 
     if (actual > faseNum || p.estado_global === 'APTO_PARA_TRABAJAR') {
-      return 'APROBADO'; // Verde
+      return 'APROBADO';
     }
     if (actual === faseNum) {
-      return p.estado_global === 'OBSERVADO' ? 'OBSERVADO' : 'EN_PROCESO'; // Ámbar o Rojo
+      return p.estado_global === 'OBSERVADO' ? 'OBSERVADO' : 'EN_PROCESO';
     }
-    return 'PENDIENTE'; // Gris
+    return 'PENDIENTE';
   };
 
   return (
@@ -88,7 +97,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
                 <th className="p-4 font-semibold">Candidato / Cargo</th>
                 <th className="p-4 font-semibold text-center">Semáforo de Vistos Buenos (5 Áreas)</th>
                 <th className="p-4 font-semibold text-center">Condición Oficial</th>
-                <th className="p-4 font-semibold">Observaciones / Subsanación</th>
+                <th className="p-4 font-semibold">Observaciones / Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/50">
@@ -156,27 +165,36 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
                       />
                     </td>
 
-                    {/* ACCIONES Y OBSERVACIONES */}
+                    {/* ACCIONES Y SUBSANACIÓN */}
                     <td className="p-4">
-                      {isObservado ? (
-                        <div className="space-y-1.5">
-                          <p className="text-amber-300 text-xs font-medium italic">
-                            "{postulante.ultima_observacion || 'Documento observado por el evaluador de área.'}"
-                          </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* VISOR DE EXPEDIENTE */}
+                        <button
+                          onClick={() => handleOpenSplitViewer(postulante)}
+                          className="inline-flex items-center gap-1 text-xs text-blue-300 bg-slate-700/80 hover:bg-slate-750 px-2.5 py-1.5 rounded-lg border border-slate-600 font-medium transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-blue-400" /> Ver Expediente
+                        </button>
+
+                        {isObservado && (
                           <button 
                             onClick={() => handleOpenSubsanar(postulante)}
-                            className="inline-flex items-center gap-1.5 text-xs text-white bg-amber-600 hover:bg-amber-500 font-bold px-3 py-1.5 rounded-lg shadow-md transition-colors"
+                            className="inline-flex items-center gap-1 text-xs text-white bg-amber-600 hover:bg-amber-500 font-bold px-3 py-1.5 rounded-lg shadow transition-colors"
                           >
-                            <UploadCloud className="w-3.5 h-3.5" /> Actualizar Documento (v2)
+                            <UploadCloud className="w-3.5 h-3.5" /> Subsanar v2
                           </button>
-                        </div>
-                      ) : isAptoTotal ? (
-                        <span className="text-emerald-400 font-semibold text-xs inline-flex items-center gap-1">
-                          <ShieldCheck className="w-4 h-4" /> 5/5 Aprobados • Fotocheck listo
-                        </span>
-                      ) : (
-                        <p className="text-slate-400 italic text-xs">
-                          En revisión por el área responsable correspondiente...
+                        )}
+
+                        {isAptoTotal && (
+                          <span className="text-emerald-400 font-semibold text-xs inline-flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5" /> Apto para Mina
+                          </span>
+                        )}
+                      </div>
+
+                      {isObservado && (
+                        <p className="text-amber-300 text-[11px] font-medium italic mt-1">
+                          "{postulante.ultima_observacion || 'Documento observado por el evaluador de área.'}"
                         </p>
                       )}
                     </td>
@@ -187,6 +205,18 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
           </table>
         </div>
       </div>
+
+      {/* MODAL VISOR SPLIT-SCREEN */}
+      {viewerPostulante && (
+        <DocumentSplitViewer
+          isOpen={splitViewerOpen}
+          onClose={() => setSplitViewerOpen(false)}
+          postulante={viewerPostulante}
+          fase={viewerPostulante.fase_actual}
+          userRole={userRole}
+          onEvaluar={async () => {}}
+        />
+      )}
 
       {/* MODAL DE SUBSANACIÓN VERSIONADA */}
       <Modal 

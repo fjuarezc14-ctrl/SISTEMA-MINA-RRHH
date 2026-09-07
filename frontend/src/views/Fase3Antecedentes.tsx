@@ -1,20 +1,32 @@
 import React, { useState } from 'react';
-import { Postulante } from '../types';
-import { ShieldAlert, Ban, ShieldCheck, FileText } from 'lucide-react';
+import { Postulante, RolUsuario } from '../types';
+import { ShieldAlert, Ban, ShieldCheck, Eye, Lock, CheckCircle } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
+import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
 
 interface Fase3Props {
   postulantes: Postulante[];
-  onEvaluar: (postulanteId: string, decision: 'APROBAR' | 'NO_APTO', motivo?: string) => Promise<void>;
+  userRole: RolUsuario;
+  onEvaluar: (
+    postulanteId: string, 
+    fase: string, 
+    decision: 'APROBAR' | 'OBSERVAR' | 'NO_APTO', 
+    detalles?: any
+  ) => Promise<void>;
 }
 
-export const Fase3Antecedentes: React.FC<Fase3Props> = ({ postulantes, onEvaluar }) => {
+export const Fase3Antecedentes: React.FC<Fase3Props> = ({ postulantes, userRole, onEvaluar }) => {
   const [bloquearModalOpen, setBloquearModalOpen] = useState(false);
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
+  const [splitViewerOpen, setSplitViewerOpen] = useState(false);
+  const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
   const [motivoRechazo, setMotivoRechazo] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const isAuthorizedRole = userRole === 'SEGURIDAD_PATRIMONIAL' || userRole === 'SUPER_ADMIN';
+
   const candidatosFase3 = postulantes.filter((p) => p.fase_actual === 'FASE_3');
+  const candidatosEsperandoFase2 = postulantes.filter((p) => p.fase_actual === 'FASE_1' || p.fase_actual === 'FASE_2');
 
   const handleOpenBloqueo = (p: Postulante) => {
     setSelectedPostulante(p);
@@ -22,11 +34,16 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({ postulantes, onEvaluar
     setBloquearModalOpen(true);
   };
 
+  const handleOpenSplitViewer = (p: Postulante) => {
+    setViewerPostulante(p);
+    setSplitViewerOpen(true);
+  };
+
   const handleConfirmBloqueo = async () => {
     if (!selectedPostulante || !motivoRechazo.trim()) return;
     try {
       setLoading(true);
-      await onEvaluar(selectedPostulante.id, 'NO_APTO', motivoRechazo);
+      await onEvaluar(selectedPostulante.id, 'FASE_3', 'NO_APTO', { motivo: motivoRechazo });
       setBloquearModalOpen(false);
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al procesar antecedente.');
@@ -39,12 +56,24 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({ postulantes, onEvaluar
     <div className="space-y-6">
       <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 border-t-4 border-t-rose-500 shadow-xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2 text-rose-400">
-            <ShieldAlert className="w-5 h-5" /> 3. Seguridad Patrimonial: Antecedentes Legales
-          </h3>
-          <span className="text-xs bg-rose-900/30 text-rose-300 border border-rose-500/20 px-3 py-1 rounded-lg font-medium">
-            Área Responsable: Seguridad Patrimonial y Legal
-          </span>
+          <div>
+            <h3 className="font-bold text-lg flex items-center gap-2 text-rose-400">
+              <ShieldAlert className="w-5 h-5" /> 3. Seguridad Patrimonial: Antecedentes Legales
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Revisión de antecedentes penales, judiciales y policiales (CUL)
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {!isAuthorizedRole && (
+              <span className="text-[11px] bg-rose-950/80 text-rose-300 border border-rose-500/30 px-3 py-1 rounded-lg font-bold flex items-center gap-1">
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-400" /> Reserva Legal Activa
+              </span>
+            )}
+            <span className="text-xs bg-slate-900 text-slate-300 border border-slate-700 px-3 py-1 rounded-lg font-medium">
+              Seguridad Patrimonial / Legal
+            </span>
+          </div>
         </div>
 
         {candidatosFase3.length === 0 ? (
@@ -70,36 +99,75 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({ postulantes, onEvaluar
                     <span>•</span>
                     <span>Empresa: {candidato.empresa_nombre}</span>
                     <span>•</span>
-                    <button 
-                      onClick={() => alert(`Visualizando antecedentes de ${candidato.nombres} ${candidato.apellidos}`)}
-                      className="text-blue-400 hover:underline flex items-center gap-1"
-                    >
-                      <FileText className="w-3 h-3" /> Ver Certificado_CUL.pdf (v1)
-                    </button>
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5" /> Fase 2 (Médico) Confirmada
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-3 w-full md:w-auto">
+                  <button
+                    onClick={() => handleOpenSplitViewer(candidato)}
+                    className="flex-1 md:flex-initial bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow"
+                  >
+                    <Eye className="w-4 h-4 text-rose-400" /> Inspeccionar CUL (Split-Screen)
+                  </button>
+
                   <button 
                     onClick={() => handleOpenBloqueo(candidato)}
-                    className="flex-1 md:flex-initial bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-rose-600/20"
+                    className="flex-1 md:flex-initial bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-rose-600/20"
                   >
                     <Ban className="w-4 h-4" /> NO APTO (Lista Negra)
                   </button>
 
                   <button 
-                    onClick={() => onEvaluar(candidato.id, 'APROBAR')}
-                    className="flex-1 md:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-600/20"
+                    onClick={() => onEvaluar(candidato.id, 'FASE_3', 'APROBAR', { observaciones: 'Sin antecedentes policiales, judiciales ni penales. Visto Bueno otorgado.' })}
+                    className="flex-1 md:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-blue-600/20"
                   >
-                    <ShieldCheck className="w-4 h-4" /> Dar V°B° Seguridad (Sin Antecedentes)
+                    <ShieldCheck className="w-4 h-4" /> Dar V°B° Seguridad
                   </button>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* CANDIDATOS BLOQUEADOS POR HARD GATING */}
+        {candidatosEsperandoFase2.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-slate-750">
+            <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-slate-500" /> Postulantes Bloqueados (Esperando Confirmación Médica/RRHH)
+            </h5>
+            <div className="space-y-2 opacity-60">
+              {candidatosEsperandoFase2.map((p) => (
+                <div key={p.id} className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-slate-300">{p.apellidos}, {p.nombres}</span>
+                    <span className="text-slate-500 ml-2">({p.cargo})</span>
+                  </div>
+                  <span className="text-amber-400 font-mono text-[11px] flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Requiere Visto Bueno en {p.fase_actual}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* MODAL VISOR SPLIT-SCREEN */}
+      {viewerPostulante && (
+        <DocumentSplitViewer
+          isOpen={splitViewerOpen}
+          onClose={() => setSplitViewerOpen(false)}
+          postulante={viewerPostulante}
+          fase="FASE_3"
+          userRole={userRole}
+          onEvaluar={onEvaluar}
+        />
+      )}
+
+      {/* MODAL LISTA NEGRA */}
       <Modal 
         isOpen={bloquearModalOpen} 
         onClose={() => setBloquearModalOpen(false)} 

@@ -1,24 +1,29 @@
 import React, { useState } from 'react';
-import { Postulante } from '../types';
-import { GraduationCap, Upload, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Postulante, RolUsuario } from '../types';
+import { GraduationCap, Upload, CheckCircle2, AlertTriangle, Eye, Lock, CheckCircle } from 'lucide-react';
+import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
 
 interface Fase4Props {
   postulantes: Postulante[];
+  userRole: RolUsuario;
   onEvaluar: (
     postulanteId: string, 
-    decision: 'APROBAR' | 'OBSERVAR', 
-    nota?: number, 
-    file?: File, 
-    observaciones?: string
+    fase: string,
+    decision: 'APROBAR' | 'OBSERVAR' | 'NO_APTO', 
+    detalles?: any
   ) => Promise<void>;
 }
 
-export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, onEvaluar }) => {
+export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, userRole, onEvaluar }) => {
   const candidatosFase4 = postulantes.filter((p) => p.fase_actual === 'FASE_4');
+  const candidatosBloqueados = postulantes.filter((p) => ['FASE_1', 'FASE_2', 'FASE_3'].includes(p.fase_actual));
 
   const [notas, setNotas] = useState<Record<string, number>>({});
   const [archivos, setArchivos] = useState<Record<string, File>>({});
   const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const [splitViewerOpen, setSplitViewerOpen] = useState(false);
+  const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
 
   const handleNotaChange = (id: string, value: string) => {
     const num = Number(value);
@@ -31,6 +36,11 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, onEvaluar
     }
   };
 
+  const handleOpenSplitViewer = (p: Postulante) => {
+    setViewerPostulante(p);
+    setSplitViewerOpen(true);
+  };
+
   const handleAprobar = async (id: string) => {
     const nota = notas[id] ?? 16;
     if (nota < 14) {
@@ -40,7 +50,11 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, onEvaluar
 
     try {
       setLoadingId(id);
-      await onEvaluar(id, 'APROBAR', nota, archivos[id]);
+      await onEvaluar(id, 'FASE_4', 'APROBAR', {
+        nota,
+        file: archivos[id],
+        observaciones: `Inducción SSOMA aprobada satisfactoriamente con nota ${nota}/20.`,
+      });
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al otorgar Visto Bueno SSOMA.');
     } finally {
@@ -52,13 +66,11 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, onEvaluar
     const nota = notas[id] ?? 10;
     try {
       setLoadingId(id);
-      await onEvaluar(
-        id, 
-        'OBSERVAR', 
-        nota, 
-        archivos[id], 
-        `Reprobó evaluación de inducción con nota: ${nota}/20. Requiere rendir examen de recuperación.`
-      );
+      await onEvaluar(id, 'FASE_4', 'OBSERVAR', {
+        nota,
+        file: archivos[id],
+        observaciones: `Reprobó evaluación de inducción con nota: ${nota}/20. Requiere rendir examen de recuperación.`,
+      });
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al observar postulante.');
     } finally {
@@ -102,6 +114,10 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, onEvaluar
                       Cargo: {candidato.cargo} • Empresa: {candidato.empresa_nombre}
                     </p>
 
+                    <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold pt-0.5">
+                      <CheckCircle className="w-3.5 h-3.5" /> Fases 1, 2 y 3 Confirmadas con Visto Bueno
+                    </div>
+
                     <div className="flex flex-wrap gap-2 items-center pt-1">
                       <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1">
                         <span className="text-xs text-slate-400">Calificación:</span>
@@ -130,20 +146,27 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, onEvaluar
                   </div>
 
                   <div className="flex flex-wrap gap-3 w-full lg:w-auto self-end lg:self-center">
+                    <button
+                      onClick={() => handleOpenSplitViewer(candidato)}
+                      className="flex-1 lg:flex-initial bg-slate-800 hover:bg-slate-700 text-blue-300 border border-blue-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow"
+                    >
+                      <Eye className="w-4 h-4 text-blue-400" /> Inspeccionar en Split-Screen
+                    </button>
+
                     <button 
                       onClick={() => handleObservarReprobo(candidato.id)}
                       disabled={isLoading}
-                      className="flex-1 lg:flex-initial bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 lg:flex-initial bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                     >
-                      <AlertTriangle className="w-4 h-4" /> Observar (Reprobó &lt;14)
+                      <AlertTriangle className="w-3.5 h-3.5" /> Observar (&lt;14)
                     </button>
 
                     <button 
                       onClick={() => handleAprobar(candidato.id)}
                       disabled={isLoading}
-                      className="flex-1 lg:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                      className="flex-1 lg:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/20"
                     >
-                      <CheckCircle2 className="w-4 h-4" /> Dar V°B° SSOMA (Aprobar)
+                      <CheckCircle2 className="w-4 h-4" /> Dar V°B° SSOMA
                     </button>
                   </div>
                 </div>
@@ -151,7 +174,41 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, onEvaluar
             })}
           </div>
         )}
+
+        {/* CANDIDATOS BLOQUEADOS POR HARD GATING */}
+        {candidatosBloqueados.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-slate-750">
+            <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-slate-500" /> Postulantes Bloqueados (Esperando Confirmación Previa)
+            </h5>
+            <div className="space-y-2 opacity-60">
+              {candidatosBloqueados.map((p) => (
+                <div key={p.id} className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-slate-300">{p.apellidos}, {p.nombres}</span>
+                    <span className="text-slate-500 ml-2">({p.cargo})</span>
+                  </div>
+                  <span className="text-amber-400 font-mono text-[11px] flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Requiere V°B° en {p.fase_actual}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* MODAL VISOR SPLIT-SCREEN */}
+      {viewerPostulante && (
+        <DocumentSplitViewer
+          isOpen={splitViewerOpen}
+          onClose={() => setSplitViewerOpen(false)}
+          postulante={viewerPostulante}
+          fase="FASE_4"
+          userRole={userRole}
+          onEvaluar={onEvaluar}
+        />
+      )}
     </div>
   );
 };

@@ -24,6 +24,27 @@ export type EstadoGlobal =
   | 'APTO_PARA_TRABAJAR'
   | 'APROBADO_TOTAL';
 
+export interface DocumentoDigital {
+  id: string;
+  fase: FaseOnboarding;
+  tipo_documento: 'CV_Y_DNI' | 'FICHA_EMO_TOX' | 'ANTECEDENTES_PENALES' | 'INDUCCION_SSOMA' | 'POLIZA_SCTR';
+  titulo: string;
+  nombre_archivo: string;
+  version: number;
+  estado_documento: 'PENDIENTE' | 'VISTO_BUENO_APROBADO' | 'OBSERVADO' | 'RECHAZADO_CRITICO';
+  observacion_actual?: string;
+  subido_en: string;
+  area_evaluadora: string;
+  confidencial?: boolean;
+  mensajePrivacidad?: string;
+  archivo_simulado?: {
+    tipo: string;
+    institucion: string;
+    detalles: Record<string, string>;
+    sello: string;
+  };
+}
+
 export interface Postulante {
   id: string;
   empresa_id: string;
@@ -41,13 +62,7 @@ export interface Postulante {
   estado_global: EstadoGlobal;
   ultima_observacion?: string;
   ultimo_archivo?: string;
-  vistos_buenos?: {
-    rrhh?: boolean;
-    medico?: boolean;
-    seguridad?: boolean;
-    ssoma?: boolean;
-    sctr?: boolean;
-  };
+  documentos?: DocumentoDigital[];
 }
 
 export interface Fotocheck {
