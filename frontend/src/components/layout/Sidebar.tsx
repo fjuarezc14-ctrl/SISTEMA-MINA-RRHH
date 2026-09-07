@@ -9,7 +9,10 @@ import {
   CreditCard,
   HardHat,
   ShieldCheck,
-  Crown
+  Crown,
+  QrCode,
+  Truck,
+  BarChart3
 } from 'lucide-react';
 
 export type ViewType = 
@@ -20,7 +23,10 @@ export type ViewType =
   | 'fase3'
   | 'fase4'
   | 'fase5'
-  | 'fotocheck';
+  | 'fotocheck'
+  | 'garita'
+  | 'vehiculos'
+  | 'metricas';
 
 interface SidebarProps {
   currentView: ViewType;
@@ -122,6 +128,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onSelectView }) =
           className={getButtonClass('fotocheck')}
         >
           <CreditCard className="w-5 h-5" /> Meta: Emisión Fotocheck
+        </button>
+
+        <p className="text-xs font-bold text-emerald-400 mb-2 mt-6 px-4 uppercase tracking-wider flex items-center gap-1.5">
+          <QrCode className="w-3.5 h-3.5 text-emerald-400" /> Operaciones y Campo
+        </p>
+
+        <button 
+          onClick={() => onSelectView('garita')} 
+          className={getButtonClass('garita')}
+        >
+          <QrCode className="w-5 h-5 text-emerald-400" /> Control Garita (QR)
+        </button>
+
+        <button 
+          onClick={() => onSelectView('vehiculos')} 
+          className={getButtonClass('vehiculos')}
+        >
+          <Truck className="w-5 h-5 text-amber-400" /> Pases Vehiculares
+        </button>
+
+        <button 
+          onClick={() => onSelectView('metricas')} 
+          className={getButtonClass('metricas')}
+        >
+          <BarChart3 className="w-5 h-5 text-cyan-400" /> SLAs y Rendimiento
         </button>
       </nav>
 

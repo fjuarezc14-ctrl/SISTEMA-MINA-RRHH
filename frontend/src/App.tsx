@@ -9,7 +9,19 @@ import { Fase3Antecedentes } from './views/Fase3Antecedentes';
 import { Fase4Capacitacion } from './views/Fase4Capacitacion';
 import { Fase5SCTR } from './views/Fase5SCTR';
 import { FotocheckView } from './views/FotocheckView';
-import { Postulante, Fotocheck, UsuarioSistema, AuditoriaVistoBueno, StatsDashboard, RolUsuario } from './types';
+import { GaritaScannerView } from './views/GaritaScannerView';
+import { VehiculosView } from './views/VehiculosView';
+import { SlaMetricsView } from './views/SlaMetricsView';
+import { 
+  Postulante, 
+  Fotocheck, 
+  UsuarioSistema, 
+  AuditoriaVistoBueno, 
+  StatsDashboard, 
+  RolUsuario, 
+  VehiculoMaquinaria, 
+  Notificacion 
+} from './types';
 import { api } from './services/api';
 
 // Usuarios semilla del sistema por área
@@ -204,6 +216,85 @@ const MOCK_POSTULANTES: Postulante[] = [
     grupo_sanguineo: 'O+',
     fase_actual: 'FOTOCHECK',
     estado_global: 'APTO_PARA_TRABAJAR',
+    sctr_vencimiento: '2026-10-05',
+  },
+];
+
+const INITIAL_VEHICULOS: VehiculoMaquinaria[] = [
+  {
+    id: 'e1111111-0000-0000-0000-000000000001',
+    empresa_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    empresa_nombre: 'Servicios Mineros XYZ S.A.C.',
+    placa_codigo: 'V8X-921',
+    tipo_vehiculo: 'CAMIONETA_4X4',
+    marca: 'Toyota',
+    modelo: 'Hilux 4x4 SRV',
+    anio_fabricacion: 2024,
+    color: 'Blanco',
+    soat_vencimiento: '2026-12-31',
+    rev_tecnica_vencimiento: '2026-12-31',
+    poliza_trec_vencimiento: '2026-11-30',
+    estado_acreditacion: 'APTO_TRANSITO_MINA',
+    codigo_pase_qr: 'PASE-VEH-V8X921',
+  },
+  {
+    id: 'e2222222-0000-0000-0000-000000000002',
+    empresa_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    empresa_nombre: 'Servicios Mineros XYZ S.A.C.',
+    placa_codigo: 'W3C-810',
+    tipo_vehiculo: 'VOLQUETE',
+    marca: 'Volvo',
+    modelo: 'FMX 8x4 480HP',
+    anio_fabricacion: 2023,
+    color: 'Amarillo Oruga',
+    soat_vencimiento: '2026-10-15',
+    rev_tecnica_vencimiento: '2026-11-20',
+    poliza_trec_vencimiento: '2026-10-30',
+    estado_acreditacion: 'APTO_TRANSITO_MINA',
+    codigo_pase_qr: 'PASE-VEH-W3C810',
+  },
+  {
+    id: 'e3333333-0000-0000-0000-000000000003',
+    empresa_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    empresa_nombre: 'Servicios Mineros XYZ S.A.C.',
+    placa_codigo: 'T9K-442',
+    tipo_vehiculo: 'CISTERNA_COMBUSTIBLE',
+    marca: 'Mercedes-Benz',
+    modelo: 'Actros 3344',
+    anio_fabricacion: 2022,
+    color: 'Rojo / Blanco',
+    soat_vencimiento: '2026-09-01',
+    rev_tecnica_vencimiento: '2026-08-15',
+    estado_acreditacion: 'OBSERVADO',
+    codigo_pase_qr: 'PASE-VEH-T9K442',
+    observaciones: 'Revisión técnica vencida. Requiere certificado vigente.',
+  },
+];
+
+const INITIAL_NOTIFICACIONES: Notificacion[] = [
+  {
+    id: 'n1',
+    titulo: 'Vencimiento Próximo de SCTR',
+    mensaje: 'El postulante Roberto Díaz tiene póliza SCTR con vigencia menor a 15 días.',
+    tipo: 'VENCIMIENTO_SCTR',
+    leido: false,
+    creado_en: new Date().toISOString(),
+  },
+  {
+    id: 'n2',
+    titulo: 'Postulante Acreditado',
+    mensaje: 'Ana Mendoza Quispe completó 5/5 Vistos Buenos y cuenta con Fotocheck activo.',
+    tipo: 'APROBADO',
+    leido: false,
+    creado_en: new Date(Date.now() - 3600000).toISOString(),
+  },
+  {
+    id: 'n3',
+    titulo: 'Expediente Observado en Fase 5',
+    mensaje: 'Luis García Paredes fue observado por póliza SCTR vencida. Requiere subsanación.',
+    tipo: 'OBSERVACION',
+    leido: true,
+    creado_en: new Date(Date.now() - 7200000).toISOString(),
   },
 ];
 
@@ -214,6 +305,8 @@ export const App: React.FC = () => {
   const [fotochecks] = useState<Fotocheck[]>([]);
   const [usuarios, setUsuarios] = useState<UsuarioSistema[]>(INITIAL_USUARIOS);
   const [auditoria, setAuditoria] = useState<AuditoriaVistoBueno[]>(INITIAL_AUDITORIA);
+  const [vehiculos, setVehiculos] = useState<VehiculoMaquinaria[]>(INITIAL_VEHICULOS);
+  const [notificaciones, setNotificaciones] = useState<Notificacion[]>(INITIAL_NOTIFICACIONES);
 
   // Estadísticas calculadas dinámicamente
   const stats: StatsDashboard = {
@@ -227,9 +320,20 @@ export const App: React.FC = () => {
   useEffect(() => {
     const fetchFromBackend = async () => {
       try {
-        const res = await api.get('/postulantes');
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          setPostulantes(res.data);
+        const [postRes, vehRes, notifRes] = await Promise.allSettled([
+          api.get('/postulantes'),
+          api.get('/vehiculos'),
+          api.get('/notificaciones'),
+        ]);
+
+        if (postRes.status === 'fulfilled' && Array.isArray(postRes.value.data) && postRes.value.data.length > 0) {
+          setPostulantes(postRes.value.data);
+        }
+        if (vehRes.status === 'fulfilled' && Array.isArray(vehRes.value.data) && vehRes.value.data.length > 0) {
+          setVehiculos(vehRes.value.data);
+        }
+        if (notifRes.status === 'fulfilled' && Array.isArray(notifRes.value.data) && notifRes.value.data.length > 0) {
+          setNotificaciones(notifRes.value.data);
         }
       } catch (e) {
         // Modo offline / preview
@@ -420,6 +524,63 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleRegistrarVehiculo = async (data: any) => {
+    try {
+      const res = await api.post('/vehiculos', data);
+      setVehiculos((prev) => [res.data, ...prev]);
+    } catch (e) {
+      const nuevo: VehiculoMaquinaria = {
+        id: `veh-${Date.now()}`,
+        empresa_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+        empresa_nombre: 'Servicios Mineros XYZ S.A.C.',
+        placa_codigo: data.placaCodigo,
+        tipo_vehiculo: data.tipoVehiculo,
+        marca: data.marca,
+        modelo: data.modelo,
+        anio_fabricacion: data.anioFabricacion,
+        color: data.color,
+        soat_vencimiento: data.soatVencimiento,
+        rev_tecnica_vencimiento: data.revTecnicaVencimiento,
+        poliza_trec_vencimiento: data.polizaTrecVencimiento,
+        checklist_seguridad: data.checklistSeguridad,
+        estado_acreditacion: 'EN_REVISION',
+        codigo_pase_qr: `PASE-VEH-${data.placaCodigo.replace(/[^A-Z0-9]/g, '')}`,
+        observaciones: data.observaciones,
+      };
+      setVehiculos((prev) => [nuevo, ...prev]);
+    }
+  };
+
+  const handleEvaluarVehiculo = async (id: string, decision: 'APROBAR' | 'OBSERVAR', obs?: string) => {
+    try {
+      await api.patch(`/vehiculos/${id}/evaluar`, { decision, observaciones: obs });
+    } catch (e) {
+      // Local
+    }
+    setVehiculos((prev) =>
+      prev.map((v) =>
+        v.id === id
+          ? {
+              ...v,
+              estado_acreditacion: decision === 'APROBAR' ? 'APTO_TRANSITO_MINA' : 'OBSERVADO',
+              observaciones: obs || v.observaciones,
+            }
+          : v
+      )
+    );
+  };
+
+  const handleMarcarNotificacionLeida = async (id: string) => {
+    try {
+      await api.patch(`/notificaciones/${id}/leido`);
+    } catch (e) {
+      // Local
+    }
+    setNotificaciones((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, leido: true } : n))
+    );
+  };
+
   return (
     <div className="flex h-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
       <Sidebar currentView={currentView} onSelectView={setCurrentView} />
@@ -429,6 +590,8 @@ export const App: React.FC = () => {
           currentView={currentView} 
           selectedRole={selectedRole} 
           onRoleChange={setSelectedRole} 
+          notificaciones={notificaciones}
+          onMarcarLeida={handleMarcarNotificacionLeida}
         />
 
         <div className="p-6 max-w-7xl w-full mx-auto pb-16">
@@ -496,6 +659,23 @@ export const App: React.FC = () => {
               fotochecks={fotochecks} 
               onImprimir={handleMarcarImpreso} 
             />
+          )}
+
+          {currentView === 'garita' && (
+            <GaritaScannerView postulantes={postulantes} />
+          )}
+
+          {currentView === 'vehiculos' && (
+            <VehiculosView 
+              vehiculos={vehiculos}
+              userRole={selectedRole as RolUsuario}
+              onRegistrarVehiculo={handleRegistrarVehiculo}
+              onEvaluarVehiculo={handleEvaluarVehiculo}
+            />
+          )}
+
+          {currentView === 'metricas' && (
+            <SlaMetricsView />
           )}
         </div>
       </main>

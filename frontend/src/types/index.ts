@@ -62,7 +62,85 @@ export interface Postulante {
   estado_global: EstadoGlobal;
   ultima_observacion?: string;
   ultimo_archivo?: string;
+  sctr_vencimiento?: string;
+  emo_vencimiento?: string;
+  dias_restantes_sctr?: number;
   documentos?: DocumentoDigital[];
+}
+
+export interface VehiculoMaquinaria {
+  id: string;
+  empresa_id: string;
+  empresa_nombre?: string;
+  placa_codigo: string;
+  tipo_vehiculo: 'CAMIONETA_4X4' | 'VOLQUETE' | 'CISTERNA_COMBUSTIBLE' | 'SCOOP_MINERO' | 'RETROEXCAVADORA' | 'MINIBUS_PERSONAL';
+  marca: string;
+  modelo: string;
+  anio_fabricacion?: number;
+  color?: string;
+  soat_vencimiento: string;
+  rev_tecnica_vencimiento: string;
+  poliza_trec_vencimiento?: string;
+  checklist_seguridad?: {
+    jaula_antivuelco?: boolean;
+    pertiga_led?: boolean;
+    circulina?: boolean;
+    extintor_pqs?: boolean;
+    cinturones_3puntos?: boolean;
+    traba_tuercas?: boolean;
+  };
+  estado_acreditacion: 'EN_REVISION' | 'OBSERVADO' | 'APTO_TRANSITO_MINA' | 'SUSPENDIDO';
+  codigo_pase_qr: string;
+  observaciones?: string;
+  aprobado_por?: string;
+  creado_en?: string;
+}
+
+export interface AccesoGarita {
+  id: string;
+  tipo_acceso: 'PEATONAL_TRABAJADOR' | 'VEHICULAR';
+  postulante_id?: string;
+  postulante_nombres?: string;
+  postulante_apellidos?: string;
+  postulante_dni?: string;
+  postulante_cargo?: string;
+  vehiculo_placa?: string;
+  vehiculo_marca?: string;
+  vehiculo_modelo?: string;
+  tipo_vehiculo?: string;
+  resultado: 'AUTORIZADO' | 'DENEGADO';
+  motivo_denegacion?: string;
+  garita: string;
+  guardia_nombre: string;
+  creado_en: string;
+}
+
+export interface Notificacion {
+  id: string;
+  usuario_id?: string;
+  empresa_id?: string;
+  titulo: string;
+  mensaje: string;
+  tipo: 'INFO' | 'OBSERVACION' | 'VENCIMIENTO_SCTR' | 'ALERTA_CRITICA' | 'APROBADO';
+  leido: boolean;
+  creado_en: string;
+}
+
+export interface SlaArea {
+  fase: string;
+  area: string;
+  sla_objetivo_horas: number;
+  tiempo_promedio_horas: number;
+  tasa_aprobacion: number;
+}
+
+export interface RankingContratista {
+  empresa: string;
+  ruc: string;
+  total_postulantes: number;
+  aptos: number;
+  observados: number;
+  bloqueados: number;
 }
 
 export interface Fotocheck {

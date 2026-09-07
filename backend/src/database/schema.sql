@@ -65,7 +65,9 @@ CREATE TABLE IF NOT EXISTS postulantes (
     grupo_sanguineo VARCHAR(10) DEFAULT 'O+',
     cv_url VARCHAR(500),
     fase_actual VARCHAR(30) DEFAULT 'FASE_1' CHECK (fase_actual IN ('FASE_1', 'FASE_2', 'FASE_3', 'FASE_4', 'FASE_5', 'FOTOCHECK', 'FINALIZADO')),
-    estado_global VARCHAR(30) DEFAULT 'EN_PROCESO' CHECK (estado_global IN ('EN_PROCESO', 'OBSERVADO', 'NO_APTO', 'APTO_PARA_TRABAJAR', 'APROBADO_TOTAL')),
+    estado_global VARCHAR(30) DEFAULT 'EN_PROCESO' CHECK (estado_global IN ('EN_PROCESO', 'OBSERVADO', 'NO_APTO', 'APTO_PARA_TRABAJAR', 'APROBADO_TOTAL', 'SUSPENDIDO_POR_VENCIMIENTO')),
+    sctr_vencimiento DATE,
+    emo_vencimiento DATE,
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(tipo_documento, numero_documento)
@@ -132,9 +134,59 @@ CREATE TABLE IF NOT EXISTS fotochecks (
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 9. VEHÍCULOS Y MAQUINARIA PESADA DE CONTRATISTAS
+CREATE TABLE IF NOT EXISTS vehiculos_maquinaria (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    empresa_id UUID NOT NULL REFERENCES empresas_contratistas(id) ON DELETE CASCADE,
+    placa_codigo VARCHAR(30) UNIQUE NOT NULL,
+    tipo_vehiculo VARCHAR(50) NOT NULL CHECK (tipo_vehiculo IN ('CAMIONETA_4X4', 'VOLQUETE', 'CISTERNA_COMBUSTIBLE', 'SCOOP_MINERO', 'RETROEXCAVADORA', 'MINIBUS_PERSONAL')),
+    marca VARCHAR(50) NOT NULL,
+    modelo VARCHAR(50) NOT NULL,
+    anio_fabricacion INT,
+    color VARCHAR(30),
+    soat_vencimiento DATE NOT NULL,
+    rev_tecnica_vencimiento DATE NOT NULL,
+    poliza_trec_vencimiento DATE,
+    checklist_seguridad JSONB,
+    estado_acreditacion VARCHAR(30) DEFAULT 'EN_REVISION' CHECK (estado_acreditacion IN ('EN_REVISION', 'OBSERVADO', 'APTO_TRANSITO_MINA', 'SUSPENDIDO')),
+    codigo_pase_qr VARCHAR(100) UNIQUE,
+    observaciones TEXT,
+    aprobado_por UUID REFERENCES usuarios(id),
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 10. BITÁCORA Y CONTROL DE ACCESOS EN GARITA
+CREATE TABLE IF NOT EXISTS accesos_garita (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tipo_acceso VARCHAR(20) NOT NULL CHECK (tipo_acceso IN ('PEATONAL_TRABAJADOR', 'VEHICULAR')),
+    postulante_id UUID REFERENCES postulantes(id) ON DELETE SET NULL,
+    vehiculo_id UUID REFERENCES vehiculos_maquinaria(id) ON DELETE SET NULL,
+    resultado VARCHAR(20) NOT NULL CHECK (resultado IN ('AUTORIZADO', 'DENEGADO')),
+    motivo_denegacion TEXT,
+    garita VARCHAR(100) DEFAULT 'Garita Principal - Control Mina',
+    guardia_nombre VARCHAR(150),
+    guardia_id UUID REFERENCES usuarios(id),
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 11. CENTRO DE NOTIFICACIONES Y ALERTAS
+CREATE TABLE IF NOT EXISTS notificaciones (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+    empresa_id UUID REFERENCES empresas_contratistas(id) ON DELETE CASCADE,
+    titulo VARCHAR(200) NOT NULL,
+    mensaje TEXT NOT NULL,
+    tipo VARCHAR(30) DEFAULT 'INFO' CHECK (tipo IN ('INFO', 'OBSERVACION', 'VENCIMIENTO_SCTR', 'ALERTA_CRITICA', 'APROBADO')),
+    leido BOOLEAN DEFAULT FALSE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ÍNDICES
 CREATE INDEX IF NOT EXISTS idx_postulantes_empresa ON postulantes(empresa_id);
 CREATE INDEX IF NOT EXISTS idx_postulantes_fase ON postulantes(fase_actual);
 CREATE INDEX IF NOT EXISTS idx_postulantes_doc ON postulantes(numero_documento);
 CREATE INDEX IF NOT EXISTS idx_documentos_postulante ON expediente_documentos(postulante_id);
 CREATE INDEX IF NOT EXISTS idx_auditoria_postulante ON auditoria_vistos_buenos(postulante_id);
+CREATE INDEX IF NOT EXISTS idx_vehiculos_empresa ON vehiculos_maquinaria(empresa_id);
+CREATE INDEX IF NOT EXISTS idx_accesos_fecha ON accesos_garita(creado_en);
+CREATE INDEX IF NOT EXISTS idx_notificaciones_user ON notificaciones(usuario_id);

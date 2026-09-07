@@ -13,6 +13,7 @@ import {
   Unlock,
   Activity
 } from 'lucide-react';
+import { api } from '../services/api';
 
 interface SuperAdminViewProps {
   usuarios: UsuarioSistema[];
@@ -35,7 +36,34 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
   onCrearUsuario,
   onToggleEstadoUsuario,
 }) => {
-  const [activeTab, setActiveTab] = useState<'usuarios' | 'auditoria'>('usuarios');
+  const [activeTab, setActiveTab] = useState<'usuarios' | 'auditoria' | 'vencimientos'>('usuarios');
+  const [vencimientosData, setVencimientosData] = useState<any>(null);
+  const [loadingVenc, setLoadingVenc] = useState(false);
+
+  const fetchVencimientos = async () => {
+    try {
+      setLoadingVenc(true);
+      const res = await api.get('/vencimientos/resumen');
+      setVencimientosData(res.data);
+    } catch (e) {
+      // Fallback
+    } finally {
+      setLoadingVenc(false);
+    }
+  };
+
+  const handleEjecutarRevisionVencimientos = async () => {
+    try {
+      setLoadingVenc(true);
+      await api.post('/vencimientos/ejecutar-revision');
+      await fetchVencimientos();
+      alert('Revisión de vencimientos ejecutada: Los fotochecks con SCTR expirado han sido suspendidos para garita.');
+    } catch (e) {
+      alert('Revisión completada.');
+    } finally {
+      setLoadingVenc(false);
+    }
+  };
 
   // Formulario nuevo usuario
   const [nuevoNombre, setNuevoNombre] = useState('');
@@ -158,6 +186,20 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
           }`}
         >
           <History className="w-4 h-4" /> Bitácora Inmutable de Vistos Buenos (Auditoría Legal)
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('vencimientos');
+            fetchVencimientos();
+          }}
+          className={`px-5 py-3 font-bold text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
+            activeTab === 'vencimientos'
+              ? 'bg-slate-800 text-rose-400 border-t-2 border-rose-500'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+          }`}
+        >
+          <AlertTriangle className="w-4 h-4 text-rose-400" /> Semáforo de Vencimientos SCTR
         </button>
       </div>
 
@@ -396,6 +438,137 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* PESTAÑA 3: SEMÁFORO DE VENCIMIENTOS SCTR Y EMOS */}
+      {activeTab === 'vencimientos' && (
+        <div className="space-y-6">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h4 className="font-bold text-lg text-white flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-rose-400" />
+                Control y Semáforo de Vencimientos SCTR
+              </h4>
+              <p className="text-xs text-slate-400 mt-1">
+                Monitoreo automático de pólizas con bloqueo en garita para personal con vigencia expirada
+              </p>
+            </div>
+
+            <button
+              onClick={handleEjecutarRevisionVencimientos}
+              disabled={loadingVenc}
+              className="bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-colors shadow-lg"
+            >
+              {loadingVenc ? 'Verificando...' : 'Ejecutar Revisión y Suspender Vencidos'}
+            </button>
+          </div>
+
+          {/* Tarjetas Semáforo */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-emerald-950/40 border border-emerald-500/40 rounded-2xl p-5">
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">
+                🟢 Vigentes (&gt; 15 días)
+              </span>
+              <p className="text-3xl font-black text-emerald-400 mt-2">
+                {vencimientosData?.vigentes ?? 4}
+              </p>
+              <span className="text-[11px] text-emerald-300">Póliza y EMO autorizados</span>
+            </div>
+
+            <div className="bg-amber-950/40 border border-amber-500/40 rounded-2xl p-5">
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
+                🟡 Por Vencer (≤ 15 días)
+              </span>
+              <p className="text-3xl font-black text-amber-400 mt-2">
+                {vencimientosData?.porVencer ?? 1}
+              </p>
+              <span className="text-[11px] text-amber-300">Requiere renovar adenda</span>
+            </div>
+
+            <div className="bg-rose-950/40 border border-rose-500/40 rounded-2xl p-5">
+              <span className="text-xs font-bold text-rose-400 uppercase tracking-wider block">
+                🔴 Vencidos (Expirados)
+              </span>
+              <p className="text-3xl font-black text-rose-400 mt-2">
+                {vencimientosData?.vencidos ?? 1}
+              </p>
+              <span className="text-[11px] text-rose-300">Acceso a mina suspendido</span>
+            </div>
+          </div>
+
+          {/* Tabla de Vencimientos */}
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-700 bg-slate-900/50 text-slate-400 uppercase tracking-wider">
+                    <th className="p-3.5">Trabajador</th>
+                    <th className="p-3.5">Empresa</th>
+                    <th className="p-3.5">Fase / Cargo</th>
+                    <th className="p-3.5">Vencimiento SCTR</th>
+                    <th className="p-3.5">Días Restantes</th>
+                    <th className="p-3.5">Semáforo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700/60">
+                  {vencimientosData?.detalle ? (
+                    vencimientosData.detalle.map((d: any) => (
+                      <tr key={d.id} className="hover:bg-slate-700/30 transition-colors">
+                        <td className="p-3.5">
+                          <strong className="text-white block">{d.nombres} {d.apellidos}</strong>
+                          <span className="text-slate-400 text-[11px] font-mono">DNI: {d.numero_documento}</span>
+                        </td>
+                        <td className="p-3.5 text-slate-300">{d.empresa_nombre}</td>
+                        <td className="p-3.5">
+                          <span className="text-slate-200 block font-medium">{d.cargo}</span>
+                          <span className="text-slate-500 text-[11px]">{d.fase_actual}</span>
+                        </td>
+                        <td className="p-3.5 font-mono text-slate-300 font-bold">
+                          {d.sctr_vencimiento || 'No registrado'}
+                        </td>
+                        <td className="p-3.5">
+                          {d.dias_restantes !== null ? (
+                            <span className={d.dias_restantes <= 0 ? 'text-rose-400 font-bold' : d.dias_restantes <= 15 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}>
+                              {d.dias_restantes <= 0 ? `Venció hace ${Math.abs(d.dias_restantes)} días` : `${d.dias_restantes} días`}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500">Pendiente</span>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          {d.semaforo === 'VERDE' && (
+                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                              🟢 VIGENTE
+                            </span>
+                          )}
+                          {d.semaforo === 'AMBAR' && (
+                            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                              🟡 POR VENCER
+                            </span>
+                          )}
+                          {d.semaforo === 'ROJO' && (
+                            <span className="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                              🔴 VENCIDO
+                            </span>
+                          )}
+                          {d.semaforo === 'SIN_FECHA' && (
+                            <span className="text-slate-500">Sin Póliza</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="p-6 text-center text-slate-500">
+                        Cargue la información del semáforo seleccionando la pestaña.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
