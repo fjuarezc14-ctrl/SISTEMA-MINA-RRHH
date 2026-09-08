@@ -11,6 +11,7 @@ router.use(requireRoles('SUPER_ADMIN'));
 router.get('/usuarios', AdminController.getUsuarios);
 router.post('/usuarios', AdminController.crearUsuario);
 router.patch('/usuarios/:id/estado', AdminController.toggleEstadoUsuario);
+router.patch('/usuarios/:id/desbloquear', AdminController.desbloquearUsuario);
 router.get('/auditoria', AdminController.getAuditoria);
 router.get('/stats', AdminController.getDashboardStats);
 

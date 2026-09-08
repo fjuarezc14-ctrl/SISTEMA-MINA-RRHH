@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Notificacion, RolUsuario } from '../../types';
-import { Shield, Crown, Bell, CheckCircle, AlertTriangle, Info, ShieldAlert, X, LogOut, UserCheck } from 'lucide-react';
+import { Shield, Crown, Bell, CheckCircle, AlertTriangle, Info, ShieldAlert, X, LogOut, UserCheck, Menu } from 'lucide-react';
 import { ViewType } from './Sidebar';
 
 interface HeaderProps {
@@ -11,6 +11,7 @@ interface HeaderProps {
   onLogout: () => void;
   notificaciones?: Notificacion[];
   onMarcarLeida?: (id: string) => void;
+  onOpenMobileMenu?: () => void;
 }
 
 const titles: Record<ViewType, [string, string]> = {
@@ -35,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   notificaciones = [],
   onMarcarLeida,
+  onOpenMobileMenu,
 }) => {
   const [title, subtitle] = titles[currentView] || ['Onboarding Minero', 'Panel de gestión'];
   const [showNotifPopover, setShowNotifPopover] = useState(false);
@@ -55,21 +57,32 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-20 backdrop-blur-md bg-slate-900/90">
-      <div>
-        <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-          {currentView === 'admin' && <Crown className="w-5 h-5 text-purple-400" />}
-          {title}
-        </h2>
-        <p className="text-sm text-slate-400 mt-0.5">{subtitle}</p>
+    <header className="bg-slate-900 border-b border-slate-800 px-4 py-3 sm:p-6 flex justify-between items-center gap-3 sticky top-0 z-20 backdrop-blur-md bg-slate-900/90">
+      <div className="flex items-center gap-3 min-w-0">
+        {onOpenMobileMenu && (
+          <button
+            onClick={onOpenMobileMenu}
+            className="md:hidden p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-colors shrink-0"
+            title="Abrir Menú de Navegación"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+        <div className="min-w-0">
+          <h2 className="text-base sm:text-xl font-bold text-white tracking-tight flex items-center gap-2 truncate">
+            {currentView === 'admin' && <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 shrink-0" />}
+            <span className="truncate">{title}</span>
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5 truncate hidden sm:block">{subtitle}</p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3 self-end sm:self-auto relative">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0 relative">
         {/* Identificación de Usuario y Rol Activo */}
-        <div className="flex items-center gap-2.5 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-1.5 text-xs">
+        <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 rounded-xl px-2.5 sm:px-3.5 py-1.5 text-xs">
           <Shield className="w-4 h-4 text-blue-400 shrink-0" />
-          <div className="text-left">
-            <span className="text-white font-bold block leading-tight">{userName}</span>
+          <div className="text-left hidden sm:block">
+            <span className="text-white font-bold block leading-tight truncate max-w-[120px] md:max-w-none">{userName}</span>
             <span className="text-[10px] text-blue-400 block font-mono font-semibold uppercase">{userRole}</span>
           </div>
         </div>

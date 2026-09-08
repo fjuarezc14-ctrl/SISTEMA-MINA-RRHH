@@ -11,7 +11,8 @@ import {
   History, 
   Lock, 
   Unlock,
-  Activity
+  Activity,
+  ShieldAlert
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -165,27 +166,27 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
       </div>
 
       {/* PESTAÑAS DE NAVEGACIÓN SUPER ADMIN */}
-      <div className="flex border-b border-slate-800 gap-2">
+      <div className="flex border-b border-slate-800 gap-2 overflow-x-auto pb-1 scrollbar-none">
         <button
           onClick={() => setActiveTab('usuarios')}
-          className={`px-5 py-3 font-bold text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
+          className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'usuarios'
               ? 'bg-slate-800 text-blue-400 border-t-2 border-blue-500'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
           }`}
         >
-          <UserPlus className="w-4 h-4" /> Gestión de Accesos y Áreas de Evaluación
+          <UserPlus className="w-4 h-4" /> Gestión de Accesos
         </button>
 
         <button
           onClick={() => setActiveTab('auditoria')}
-          className={`px-5 py-3 font-bold text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
+          className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'auditoria'
               ? 'bg-slate-800 text-blue-400 border-t-2 border-blue-500'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
           }`}
         >
-          <History className="w-4 h-4" /> Bitácora Inmutable de Vistos Buenos (Auditoría Legal)
+          <History className="w-4 h-4" /> Auditoría V°B°
         </button>
 
         <button
@@ -193,13 +194,13 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
             setActiveTab('vencimientos');
             fetchVencimientos();
           }}
-          className={`px-5 py-3 font-bold text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
+          className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'vencimientos'
               ? 'bg-slate-800 text-rose-400 border-t-2 border-rose-500'
               : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
           }`}
         >
-          <AlertTriangle className="w-4 h-4 text-rose-400" /> Semáforo de Vencimientos SCTR
+          <AlertTriangle className="w-4 h-4 text-rose-400" /> Semáforo Vencimientos SCTR
         </button>
       </div>
 
@@ -333,27 +334,44 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                       </td>
 
                       <td className="p-4 text-center">
-                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
-                          u.activo 
-                            ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' 
-                            : 'bg-rose-950/60 text-rose-400 border border-rose-500/30'
-                        }`}>
-                          {u.activo ? 'ACTIVO' : 'SUSPENDIDO'}
-                        </span>
+                        {u.bloqueado_definitivo || (u.intentos_fallidos !== undefined && u.intentos_fallidos >= 3) ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-950/80 text-rose-300 border border-rose-500/50 animate-pulse">
+                            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                            BLOQUEADO (3 FALLOS)
+                          </span>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
+                            u.activo 
+                              ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' 
+                              : 'bg-rose-950/60 text-rose-400 border border-rose-500/30'
+                          }`}>
+                            {u.activo ? 'ACTIVO' : 'SUSPENDIDO'}
+                          </span>
+                        )}
                       </td>
 
                       <td className="p-4 text-center">
-                        <button
-                          onClick={() => onToggleEstadoUsuario(u.id, !u.activo)}
-                          className={`text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 ${
-                            u.activo 
-                              ? 'bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 border border-rose-500/30' 
-                              : 'bg-emerald-900/40 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-500/30'
-                          }`}
-                        >
-                          {u.activo ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
-                          {u.activo ? 'Suspender' : 'Activar'}
-                        </button>
+                        {u.bloqueado_definitivo || (u.intentos_fallidos !== undefined && u.intentos_fallidos >= 3) ? (
+                          <button
+                            onClick={() => onToggleEstadoUsuario(u.id, true)}
+                            className="text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30"
+                          >
+                            <Unlock className="w-3.5 h-3.5" />
+                            Desbloquear
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onToggleEstadoUsuario(u.id, !u.activo)}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 ${
+                              u.activo 
+                                ? 'bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 border border-rose-500/30' 
+                                : 'bg-emerald-900/40 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-500/30'
+                            }`}
+                          >
+                            {u.activo ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                            {u.activo ? 'Suspender' : 'Activar'}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

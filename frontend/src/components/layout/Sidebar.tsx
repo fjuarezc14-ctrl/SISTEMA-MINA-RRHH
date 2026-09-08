@@ -29,7 +29,7 @@ export type ViewType =
   | 'metricas';
 
 import { RolUsuario } from '../../types';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, X } from 'lucide-react';
 
 interface SidebarProps {
   currentView: ViewType;
@@ -38,6 +38,8 @@ interface SidebarProps {
   userName: string;
   userArea?: string;
   onLogout: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ 
@@ -46,9 +48,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   userRole,
   userName,
   userArea,
-  onLogout
+  onLogout,
+  isMobileOpen = false,
+  onCloseMobile
 }) => {
   const isSelected = (view: ViewType) => currentView === view;
+
+  const handleSelectView = (view: ViewType) => {
+    onSelectView(view);
+    if (onCloseMobile) onCloseMobile();
+  };
 
   const getButtonClass = (view: ViewType, isSpecial = false) => {
     if (isSelected(view)) {
@@ -96,19 +105,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  return (
-    <aside className="w-72 bg-slate-950 border-r border-slate-800 flex flex-col hidden md:flex h-screen select-none">
-      <div className="p-6 border-b border-slate-800">
-        <h1 className="text-2xl font-black text-white flex items-center gap-2 tracking-wide">
-          <span className="text-blue-500 flex items-center gap-1">
-            <HardHat className="w-7 h-7 text-blue-500" /> VT
-          </span>
-          ONBOARDING
-        </h1>
-        <p className="text-xs text-slate-500 mt-1 font-medium">Gestión de Accesos - Unidad Minera</p>
+  const sidebarContent = (
+    <div className="flex flex-col h-full select-none">
+      <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2 tracking-wide">
+            <span className="text-blue-500 flex items-center gap-1">
+              <HardHat className="w-6 h-6 sm:w-7 sm:h-7 text-blue-500" /> VT
+            </span>
+            ONBOARDING
+          </h1>
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-medium">Gestión de Accesos - Unidad Minera</p>
+        </div>
+        {onCloseMobile && (
+          <button 
+            onClick={onCloseMobile}
+            className="md:hidden p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-3 sm:p-4 space-y-1 overflow-y-auto">
         {/* Mando Central */}
         {canSee('admin') && (
           <>
@@ -116,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Crown className="w-3.5 h-3.5 text-purple-400" /> Mando Central
             </p>
             <button 
-              onClick={() => onSelectView('admin')} 
+              onClick={() => handleSelectView('admin')} 
               className={getButtonClass('admin', true)}
             >
               <ShieldCheck className="w-5 h-5 text-purple-400" /> Panel Super Admin
@@ -131,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               Portal Externo
             </p>
             <button 
-              onClick={() => onSelectView('contratista')} 
+              onClick={() => handleSelectView('contratista')} 
               className={getButtonClass('contratista')}
             >
               <Building2 className="w-5 h-5" /> Portal Contratista
@@ -139,16 +158,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </>
         )}
 
-        {/* Flujo de Vistos Buenos por Área */}
+        {/* Embudo de Acreditación (Vistos Buenos Secuenciales) */}
         {(canSee('fase1') || canSee('fase2') || canSee('fase3') || canSee('fase4') || canSee('fase5') || canSee('fotocheck')) && (
-          <>
-            <p className="text-xs font-bold text-slate-500 mb-2 mt-4 px-4 uppercase tracking-wider">
-              {userRole === 'SUPER_ADMIN' ? 'Flujo de Vistos Buenos (Mina)' : 'Módulo Asignado a tu Área'}
+          <div className="pt-3">
+            <p className="text-xs font-bold text-slate-500 mb-2 px-4 uppercase tracking-wider">
+              Embudo de 5 V°B°
             </p>
             
             {canSee('fase1') && (
               <button 
-                onClick={() => onSelectView('fase1')} 
+                onClick={() => handleSelectView('fase1')} 
                 className={getButtonClass('fase1')}
               >
                 <FileSearch className="w-5 h-5" /> 1. V°B° RRHH (CV y Datos)
@@ -157,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {canSee('fase2') && (
               <button 
-                onClick={() => onSelectView('fase2')} 
+                onClick={() => handleSelectView('fase2')} 
                 className={getButtonClass('fase2')}
               >
                 <Stethoscope className="w-5 h-5" /> 2. V°B° Médico (Salud/EMO)
@@ -166,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {canSee('fase3') && (
               <button 
-                onClick={() => onSelectView('fase3')} 
+                onClick={() => handleSelectView('fase3')} 
                 className={getButtonClass('fase3')}
               >
                 <ShieldAlert className="w-5 h-5" /> 3. V°B° Seguridad (Legal)
@@ -175,7 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {canSee('fase4') && (
               <button 
-                onClick={() => onSelectView('fase4')} 
+                onClick={() => handleSelectView('fase4')} 
                 className={getButtonClass('fase4')}
               >
                 <GraduationCap className="w-5 h-5" /> 4. V°B° SSOMA (Inducción)
@@ -184,7 +203,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {canSee('fase5') && (
               <button 
-                onClick={() => onSelectView('fase5')} 
+                onClick={() => handleSelectView('fase5')} 
                 className={getButtonClass('fase5')}
               >
                 <ClipboardCheck className="w-5 h-5" /> 5. V°B° SCTR (Seguros)
@@ -193,25 +212,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {canSee('fotocheck') && (
               <button 
-                onClick={() => onSelectView('fotocheck')} 
+                onClick={() => handleSelectView('fotocheck')} 
                 className={getButtonClass('fotocheck')}
               >
                 <CreditCard className="w-5 h-5" /> Meta: Emisión Fotocheck
               </button>
             )}
-          </>
+          </div>
         )}
 
-        {/* Operaciones de Campo */}
+        {/* Operaciones de Garita y Campo */}
         {(canSee('garita') || canSee('vehiculos') || canSee('metricas')) && (
-          <>
-            <p className="text-xs font-bold text-emerald-400 mb-2 mt-4 px-4 uppercase tracking-wider flex items-center gap-1.5">
-              <QrCode className="w-3.5 h-3.5 text-emerald-400" /> Operaciones y Campo
+          <div className="pt-3">
+            <p className="text-xs font-bold text-slate-500 mb-2 px-4 uppercase tracking-wider">
+              Operaciones de Mina
             </p>
 
             {canSee('garita') && (
               <button 
-                onClick={() => onSelectView('garita')} 
+                onClick={() => handleSelectView('garita')} 
                 className={getButtonClass('garita')}
               >
                 <QrCode className="w-5 h-5 text-emerald-400" /> Control Garita (QR)
@@ -220,7 +239,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {canSee('vehiculos') && (
               <button 
-                onClick={() => onSelectView('vehiculos')} 
+                onClick={() => handleSelectView('vehiculos')} 
                 className={getButtonClass('vehiculos')}
               >
                 <Truck className="w-5 h-5 text-amber-400" /> Pases Vehiculares
@@ -229,13 +248,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {canSee('metricas') && (
               <button 
-                onClick={() => onSelectView('metricas')} 
+                onClick={() => handleSelectView('metricas')} 
                 className={getButtonClass('metricas')}
               >
                 <BarChart3 className="w-5 h-5 text-cyan-400" /> SLAs y Rendimiento
               </button>
             )}
-          </>
+          </div>
         )}
       </nav>
 
@@ -261,7 +280,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
           Cerrar Sesión
         </button>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Drawer Móvil con Backdrop */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-200">
+          <div 
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm"
+            onClick={onCloseMobile}
+          />
+          <aside className="relative w-72 max-w-[85vw] bg-slate-950 border-r border-slate-800 flex flex-col h-full z-10 shadow-2xl animate-in slide-in-from-left duration-200">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+
+      {/* Sidebar Persistente de Escritorio */}
+      <aside className="w-72 bg-slate-950 border-r border-slate-800 flex flex-col hidden md:flex h-screen select-none shrink-0">
+        {sidebarContent}
+      </aside>
+    </>
   );
 };
-

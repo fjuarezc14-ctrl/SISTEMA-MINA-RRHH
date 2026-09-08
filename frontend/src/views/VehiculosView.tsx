@@ -194,9 +194,80 @@ export const VehiculosView: React.FC<VehiculosViewProps> = ({
         </span>
       </div>
 
-      {/* Tabla de Vehículos */}
+      {/* Lista de Vehículos: Cards en Móvil y Tabla en Escritorio */}
       <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
+        {/* Vista Móvil (Cards) */}
+        <div className="block md:hidden divide-y divide-slate-700/60">
+          {vehiculosFiltrados.length === 0 ? (
+            <div className="p-6 text-center text-slate-500 text-xs">
+              No se encontraron vehículos registrados con los filtros seleccionados.
+            </div>
+          ) : (
+            vehiculosFiltrados.map((v) => (
+              <div key={v.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="font-mono font-black text-sm text-white bg-slate-900 border border-slate-700 px-2.5 py-1 rounded-md inline-block">
+                      {v.placa_codigo}
+                    </span>
+                    <h4 className="font-bold text-xs text-slate-200 mt-1.5">{v.tipo_vehiculo}</h4>
+                    <p className="text-[11px] text-slate-400">{v.marca} {v.modelo} {v.anio_fabricacion ? `(${v.anio_fabricacion})` : ''}</p>
+                  </div>
+                  <div>
+                    {v.estado_acreditacion === 'APTO_TRANSITO_MINA' && (
+                      <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold text-[10px]">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" /> APTO
+                      </span>
+                    )}
+                    {v.estado_acreditacion === 'EN_REVISION' && (
+                      <span className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold text-[10px]">
+                        <Clock className="w-3 h-3 text-blue-400" /> EN REVISIÓN
+                      </span>
+                    )}
+                    {v.estado_acreditacion === 'OBSERVADO' && (
+                      <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold text-[10px]">
+                        <AlertTriangle className="w-3 h-3 text-amber-400" /> OBSERVADO
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-900/60 p-2.5 rounded-xl border border-slate-750">
+                  <div>
+                    <span className="text-slate-500 block">Empresa:</span>
+                    <strong className="text-slate-300 truncate block">{v.empresa_nombre || 'Servicios XYZ'}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">SOAT Vence:</span>
+                    <strong className="text-slate-300">{new Date(v.soat_vencimiento).toLocaleDateString('es-PE')}</strong>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  {v.estado_acreditacion === 'APTO_TRANSITO_MINA' && (
+                    <button
+                      onClick={() => handleOpenPase(v)}
+                      className="flex-1 bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-600/40 text-emerald-300 px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <QrCode className="w-4 h-4" /> Ver Pase QR
+                    </button>
+                  )}
+                  {isInspector && (
+                    <button
+                      onClick={() => handleOpenEvaluar(v)}
+                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <FileCheck2 className="w-4 h-4 text-blue-400" /> Evaluar
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Vista Escritorio (Tabla Completa) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-slate-700 bg-slate-900/50 text-slate-400 uppercase tracking-wider">
