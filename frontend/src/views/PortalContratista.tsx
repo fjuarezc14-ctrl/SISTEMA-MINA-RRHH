@@ -3,7 +3,8 @@ import { Postulante, RolUsuario } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
-import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info } from 'lucide-react';
+import { api } from '../services/api';
 
 interface PortalContratistaProps {
   postulantes: Postulante[];
@@ -22,6 +23,22 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
+  const [nuevoModalOpen, setNuevoModalOpen] = useState(false);
+  const [nuevoForm, setNuevoForm] = useState({
+    tipo_documento: 'DNI',
+    numero_documento: '',
+    nombres: '',
+    apellidos: '',
+    cargo: '',
+    telefono: '',
+    email: '',
+    tipo_pase: 'PERMANENTE' as 'PERMANENTE' | 'VISITA_TECNICA' | 'PROVEEDOR_LOGISTICO',
+    vigencia_inicio: '',
+    vigencia_fin: '',
+  });
+  const [nuevoError, setNuevoError] = useState('');
+  const [nuevoLoading, setNuevoLoading] = useState(false);
+
   const handleOpenSubsanar = (p: Postulante) => {
     setSelectedPostulante(p);
     setSelectedFile(null);
@@ -33,6 +50,21 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
   const handleOpenSplitViewer = (p: Postulante) => {
     setViewerPostulante(p);
     setSplitViewerOpen(true);
+  };
+
+  const handleCrearSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNuevoError('');
+    setNuevoLoading(true);
+    try {
+      await api.post('/postulantes', nuevoForm);
+      setNuevoModalOpen(false);
+      window.location.reload();
+    } catch (err: any) {
+      setNuevoError(err.response?.data?.error || 'Error al registrar pase o postulante.');
+    } finally {
+      setNuevoLoading(false);
+    }
   };
 
   const handleSubsanarSubmit = async (e: React.FormEvent) => {
@@ -82,12 +114,24 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
           <div>
             <h3 className="font-bold text-lg text-white">Mis Postulantes (Servicios Mineros XYZ S.A.C.)</h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Semáforo de cumplimiento: 5 Vistos Buenos requeridos para estar <span className="text-emerald-400 font-bold">APTO PARA TRABAJAR</span>
+              Semáforo de cumplimiento: Vistos Buenos requeridos para estar <span className="text-emerald-400 font-bold">APTO PARA TRABAJAR</span>
             </p>
           </div>
-          <span className="text-xs font-semibold px-3 py-1 bg-slate-700/60 text-slate-300 rounded-lg">
-            {postulantes.length} Trabajadores Registrados
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold px-3 py-1 bg-slate-700/60 text-slate-300 rounded-lg">
+              {postulantes.length} Registrados
+            </span>
+            <button
+              onClick={() => {
+                setNuevoError('');
+                setNuevoModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition-colors"
+            >
+              <UserPlus className="w-4 h-4" />
+              Nuevo Personal / Pase
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -100,7 +144,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
                 <th className="p-4 font-semibold">Observaciones / Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/50">
+            <tbody className="divide-y divide-slate-700/60">
               {postulantes.map((postulante) => {
                 const isObservado = postulante.estado_global === 'OBSERVADO';
                 const isAptoTotal = postulante.estado_global === 'APTO_PARA_TRABAJAR' || postulante.fase_actual === 'FOTOCHECK';
@@ -109,10 +153,23 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
                   <tr key={postulante.id} className="hover:bg-slate-750/50 transition-colors">
                     {/* CANDIDATO */}
                     <td className="p-4">
-                      <div className="font-semibold text-white">
-                        {postulante.apellidos}, {postulante.nombres}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-white">
+                          {postulante.apellidos}, {postulante.nombres}
+                        </span>
+                        {postulante.tipo_pase && (
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border ${
+                            postulante.tipo_pase === 'VISITA_TECNICA'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                              : postulante.tipo_pase === 'PROVEEDOR_LOGISTICO'
+                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                              : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                          }`}>
+                            {postulante.tipo_pase.replace('_', ' ')}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-400 mt-0.5">
                         {postulante.cargo} • Doc: <span className="font-mono text-slate-300">{postulante.numero_documento}</span>
                       </div>
                     </td>
@@ -288,6 +345,182 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
               className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl text-sm transition-colors flex items-center gap-2"
             >
               {loading ? 'Subiendo...' : 'Enviar Documento Actualizado'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal para Registrar Nuevo Personal o Pase */}
+      <Modal 
+        isOpen={nuevoModalOpen} 
+        onClose={() => setNuevoModalOpen(false)}
+        title="Registrar Nuevo Personal / Solicitud de Pase Minero"
+      >
+        <form onSubmit={handleCrearSubmit} className="space-y-4">
+          {nuevoError && (
+            <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 text-rose-300 text-xs font-medium">
+              {nuevoError}
+            </div>
+          )}
+
+          {/* Selector de Tipo de Pase */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+              Tipo de Pase / Categoría de Acceso Minero:
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'PERMANENTE' })}
+                className={`p-3 rounded-xl border text-left transition-all ${
+                  nuevoForm.tipo_pase === 'PERMANENTE'
+                    ? 'bg-blue-600/20 border-blue-500 text-white shadow-md'
+                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                }`}
+              >
+                <div className="font-bold text-xs">Permanente</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Roster 14x7 / Planta / Mina (5/5 V°B°)</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'VISITA_TECNICA' })}
+                className={`p-3 rounded-xl border text-left transition-all ${
+                  nuevoForm.tipo_pase === 'VISITA_TECNICA'
+                    ? 'bg-amber-600/20 border-amber-500 text-white shadow-md'
+                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                }`}
+              >
+                <div className="font-bold text-xs text-amber-300">Visita Técnica</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">1 a 7 días • Con Acompañante</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'PROVEEDOR_LOGISTICO' })}
+                className={`p-3 rounded-xl border text-left transition-all ${
+                  nuevoForm.tipo_pase === 'PROVEEDOR_LOGISTICO'
+                    ? 'bg-purple-600/20 border-purple-500 text-white shadow-md'
+                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                }`}
+              >
+                <div className="font-bold text-xs text-purple-300">Proveedor Logístico</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Solo Almacén / Patio Superficie</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Fechas de vigencia para pases temporales */}
+          {nuevoForm.tipo_pase !== 'PERMANENTE' && (
+            <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] text-slate-400 mb-1">Fecha de Ingreso / Inicio:</label>
+                <input
+                  type="date"
+                  value={nuevoForm.vigencia_inicio}
+                  onChange={(e) => setNuevoForm({ ...nuevoForm, vigencia_inicio: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-slate-400 mb-1">Fecha de Salida / Término:</label>
+                <input
+                  type="date"
+                  value={nuevoForm.vigencia_fin}
+                  onChange={(e) => setNuevoForm({ ...nuevoForm, vigencia_fin: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Número de DNI / Documento:</label>
+              <input
+                type="text"
+                required
+                value={nuevoForm.numero_documento}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, numero_documento: e.target.value })}
+                placeholder="Ej. 45891234"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Cargo / Puesto Minero:</label>
+              <input
+                type="text"
+                required
+                value={nuevoForm.cargo}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, cargo: e.target.value })}
+                placeholder="Ej. Técnico Electricista / Conductor"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Nombres:</label>
+              <input
+                type="text"
+                required
+                value={nuevoForm.nombres}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, nombres: e.target.value })}
+                placeholder="Ej. Carlos Eduardo"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Apellidos:</label>
+              <input
+                type="text"
+                required
+                value={nuevoForm.apellidos}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, apellidos: e.target.value })}
+                placeholder="Ej. Quispe Morales"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Teléfono Móvil (Opcional):</label>
+              <input
+                type="text"
+                value={nuevoForm.telefono}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, telefono: e.target.value })}
+                placeholder="+51 987654321"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Email (Opcional):</label>
+              <input
+                type="email"
+                value={nuevoForm.email}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, email: e.target.value })}
+                placeholder="trabajador@empresa.com"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
+            <button
+              type="button"
+              onClick={() => setNuevoModalOpen(false)}
+              className="px-4 py-2 text-xs text-slate-400 hover:text-white rounded-lg"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={nuevoLoading}
+              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl text-xs transition-colors flex items-center gap-2 shadow-lg"
+            >
+              {nuevoLoading ? 'Creando...' : 'Registrar y Crear Expediente'}
             </button>
           </div>
         </form>

@@ -17,6 +17,7 @@ const crearUsuarioSchema = z.object({
     'CONTRATISTA',
   ]),
   area_responsable: z.string().min(3),
+  colegiatura: z.string().optional(),
   empresa_id: z.string().uuid().optional(),
 });
 

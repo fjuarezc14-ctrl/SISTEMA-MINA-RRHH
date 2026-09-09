@@ -12,6 +12,11 @@ export class PostulantesService {
         p.cargo,
         p.fase_actual,
         p.estado_global,
+        p.tipo_pase,
+        p.vigencia_inicio,
+        p.vigencia_fin,
+        p.sctr_vencimiento,
+        p.emo_vencimiento,
         p.cv_url,
         e.razon_social as empresa_nombre,
         (
@@ -81,6 +86,9 @@ export class PostulantesService {
     telefono?: string;
     email?: string;
     grupo_sanguineo?: string;
+    tipo_pase?: string;
+    vigencia_inicio?: string;
+    vigencia_fin?: string;
   }, cvUrl?: string) {
     // 1. Verificar si está en LISTA NEGRA
     const checkListaNegra = await query(
@@ -96,8 +104,8 @@ export class PostulantesService {
 
     const res = await query(
       `INSERT INTO postulantes 
-       (empresa_id, tipo_documento, numero_documento, nombres, apellidos, cargo, telefono, email, grupo_sanguineo, cv_url, fase_actual, estado_global)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'FASE_1', 'EN_PROCESO')
+       (empresa_id, tipo_documento, numero_documento, nombres, apellidos, cargo, telefono, email, grupo_sanguineo, tipo_pase, vigencia_inicio, vigencia_fin, cv_url, fase_actual, estado_global)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'FASE_1', 'EN_PROCESO')
        RETURNING *`,
       [
         empresaId,
@@ -109,6 +117,9 @@ export class PostulantesService {
         data.telefono || null,
         data.email || null,
         data.grupo_sanguineo || 'O+',
+        data.tipo_pase || 'PERMANENTE',
+        data.vigencia_inicio || null,
+        data.vigencia_fin || null,
         cvUrl || null,
       ]
     );

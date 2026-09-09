@@ -102,6 +102,8 @@ export class AuthService {
         nombre: user.nombre,
         rol: user.rol,
         empresa_id: user.empresa_id,
+        colegiatura: user.colegiatura,
+        area_responsable: user.area_responsable,
       },
       env.JWT_SECRET,
       { expiresIn: '8h' }
@@ -115,13 +117,15 @@ export class AuthService {
         email: user.email,
         rol: user.rol,
         empresa_id: user.empresa_id,
+        colegiatura: user.colegiatura,
+        area_responsable: user.area_responsable,
       },
     };
   }
 
   static async getProfile(userId: string) {
     const res = await query(
-      `SELECT u.id, u.nombre, u.email, u.rol, u.empresa_id, e.razon_social as empresa_nombre
+      `SELECT u.id, u.nombre, u.email, u.rol, u.empresa_id, u.colegiatura, u.area_responsable, e.razon_social as empresa_nombre
        FROM usuarios u
        LEFT JOIN empresas_contratistas e ON u.empresa_id = e.id
        WHERE u.id = $1`,

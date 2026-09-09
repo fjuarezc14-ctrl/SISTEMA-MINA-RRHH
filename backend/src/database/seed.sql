@@ -7,16 +7,16 @@ VALUES ('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', '20554433221', 'Servicios Minero
 ON CONFLICT (ruc) DO NOTHING;
 
 -- Usuarios por Rol (Clave por defecto hasheada: Password123!)
-INSERT INTO usuarios (id, empresa_id, nombre, email, password_hash, rol) VALUES
-('b0000000-0000-0000-0000-000000000000', NULL, 'Ing. Yerson (Super Admin)', 'admin@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'SUPER_ADMIN'),
-('b1111111-1111-1111-1111-111111111111', 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Contratista XYZ', 'contratista@serviciosxyz.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'CONTRATISTA'),
-('b2222222-2222-2222-2222-222222222222', NULL, 'Lic. Valenzuela (RRHH)', 'rrhh@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'STAFF_RRHH'),
-('b3333333-3333-3333-3333-333333333333', NULL, 'Dr. Arévalo (Médico Ocupacional)', 'salud@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'MEDICO_OCUPACIONAL'),
-('b4444444-4444-4444-4444-444444444444', NULL, 'Cmdte. Rivas (Seguridad Patrimonial)', 'seguridad@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'SEGURIDAD_PATRIMONIAL'),
-('b5555555-5555-5555-5555-555555555555', NULL, 'Ing. Torres (SSOMA Inducción)', 'capacitacion@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'INSTRUCTOR_SSOMA'),
-('b6666666-6666-6666-6666-666666666666', NULL, 'Dra. Silva (SCTR / Contratos)', 'seguros@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'ADMIN_CONTRATOS'),
-('b7777777-7777-7777-7777-777777777777', NULL, 'Oficial Huamán (Garita / Fotocheck)', 'accesos@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'CONTROL_ACCESOS')
-ON CONFLICT (email) DO NOTHING;
+INSERT INTO usuarios (id, empresa_id, nombre, email, password_hash, rol, colegiatura) VALUES
+('b0000000-0000-0000-0000-000000000000', NULL, 'Ing. Yerson (Super Admin)', 'admin@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'SUPER_ADMIN', 'CIP 215480 - Ing. Minas'),
+('b1111111-1111-1111-1111-111111111111', 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Contratista XYZ', 'contratista@serviciosxyz.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'CONTRATISTA', 'RUC 20554433221 - Rep. Legal'),
+('b2222222-2222-2222-2222-222222222222', NULL, 'Lic. Valenzuela (RRHH)', 'rrhh@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'STAFF_RRHH', 'Lic. Reg. 1248-CDR'),
+('b3333333-3333-3333-3333-333333333333', NULL, 'Dr. Arévalo (Médico Ocupacional)', 'salud@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'MEDICO_OCUPACIONAL', 'CMP 48921 / RNE 24510'),
+('b4444444-4444-4444-4444-444444444444', NULL, 'Cmdte. Rivas (Seguridad Patrimonial)', 'seguridad@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'SEGURIDAD_PATRIMONIAL', 'Reg. SUCAMEC 78412'),
+('b5555555-5555-5555-5555-555555555555', NULL, 'Ing. Torres (SSOMA Inducción)', 'capacitacion@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'INSTRUCTOR_SSOMA', 'CIP 198452 - Higiene y Seg.'),
+('b6666666-6666-6666-6666-666666666666', NULL, 'Dra. Silva (SCTR / Contratos)', 'seguros@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'ADMIN_CONTRATOS', 'Reg. SBS 41209'),
+('b7777777-7777-7777-7777-777777777777', NULL, 'Oficial Huamán (Garita / Fotocheck)', 'accesos@valetec.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhiM58K6W2h8YnO2c09FmE79lU9o1V5.', 'CONTROL_ACCESOS', 'Oficial Garita Reg. MIN-882')
+ON CONFLICT (email) DO UPDATE SET colegiatura = EXCLUDED.colegiatura;
 
 -- Candidatos de la maqueta
 -- 1. Díaz, Roberto (Fase 1: Datos y CV - Soldador)

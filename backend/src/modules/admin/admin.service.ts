@@ -10,6 +10,7 @@ export class AdminService {
          u.email, 
          u.rol, 
          u.area_responsable, 
+         u.colegiatura,
          u.activo, 
          u.intentos_fallidos,
          u.bloqueado_hasta,
@@ -29,6 +30,7 @@ export class AdminService {
     passwordPlain: string;
     rol: string;
     area_responsable: string;
+    colegiatura?: string;
     empresa_id?: string;
   }) {
     const checkEmail = await query('SELECT id FROM usuarios WHERE email = $1', [data.email]);
@@ -41,15 +43,16 @@ export class AdminService {
 
     const res = await query(
       `INSERT INTO usuarios 
-       (nombre, email, password_hash, rol, area_responsable, empresa_id)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, nombre, email, rol, area_responsable, activo, creado_en`,
+       (nombre, email, password_hash, rol, area_responsable, colegiatura, empresa_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, nombre, email, rol, area_responsable, colegiatura, activo, creado_en`,
       [
         data.nombre,
         data.email,
         password_hash,
         data.rol,
         data.area_responsable,
+        data.colegiatura || null,
         data.empresa_id || null,
       ]
     );

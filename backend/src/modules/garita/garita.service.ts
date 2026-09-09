@@ -97,10 +97,18 @@ export class GaritaService {
       }
 
       // ACCESO AUTORIZADO
+      const tipoPase = p.tipo_pase || 'PERMANENTE';
+      let zona = p.zona_autorizada || 'Planta y Mina Subterránea';
+      if (tipoPase === 'PROVEEDOR_LOGISTICO') {
+        zona = 'Solo Almacén Central y Patio de Superficie';
+      } else if (tipoPase === 'VISITA_TECNICA') {
+        zona = 'Superficie y Mina con Acompañamiento';
+      }
+
       return {
         tipo: 'TRABAJADOR' as const,
         autorizado: true,
-        motivo: 'ACCESO AUTORIZADO - 5/5 Vistos Buenos y SCTR Vigente',
+        motivo: `ACCESO AUTORIZADO - Pase [${tipoPase}] Vigente y SCTR Activo`,
         trabajador: {
           id: p.id,
           nombreCompleto: `${p.nombres} ${p.apellidos}`,
@@ -108,8 +116,9 @@ export class GaritaService {
           empresa: p.empresa_nombre,
           cargo: p.cargo,
           grupoSanguineo: p.grupo_sanguineo,
+          tipoPase,
           codigoCredencial: p.codigo_credencial || 'VT-2026-AUT',
-          zonaAutorizada: p.zona_autorizada || 'Planta y Mina Subterránea',
+          zonaAutorizada: zona,
           sctrVencimiento: p.sctr_vencimiento ? new Date(p.sctr_vencimiento).toLocaleDateString('es-PE') : 'Vigente',
           estado: 'APTO_PARA_TRABAJAR',
         },
@@ -217,17 +226,129 @@ export class GaritaService {
     garita?: string;
     guardiaNombre?: string;
     guardiaId?: string;
+    alcotestResultado?: string;
+    sincronizadoOffline?: boolean;
+    creadoEn?: string;
   }) {
-    const { tipoAcceso, postulanteId, vehiculoId, resultado, motivoDenegacion, garita, guardiaNombre, guardiaId } = params;
+    const { 
+      tipoAcceso, 
+      postulanteId, 
+      vehiculoId, 
+      resultado, 
+      motivoDenegacion, 
+      garita, 
+      guardiaNombre, 
+      guardiaId,
+      alcotestResultado,
+      sincronizadoOffline,
+      creadoEn 
+    } = params;
 
     const res = await query(
-      `INSERT INTO accesos_garita (tipo_acceso, postulante_id, vehiculo_id, resultado, motivo_denegacion, garita, guardia_nombre, guardia_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO accesos_garita 
+       (tipo_acceso, postulante_id, vehiculo_id, resultado, motivo_denegacion, garita, guardia_nombre, guardia_id, alcotest_resultado, sincronizado_offline, creado_en)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, CURRENT_TIMESTAMP))
        RETURNING *`,
-      [tipoAcceso, postulanteId || null, vehiculoId || null, resultado, motivoDenegacion || null, garita || 'Garita Principal - Control Mina', guardiaNombre || 'Guardia de Turno', guardiaId || null]
+      [
+        tipoAcceso, 
+        postulanteId || null, 
+        vehiculoId || null, 
+        resultado, 
+        motivoDenegacion || null, 
+        garita || 'Garita Principal - Control Mina', 
+        guardiaNombre || 'Guardia de Turno', 
+        guardiaId || null,
+        alcotestResultado || '0.00 g/L (Apto)',
+        sincronizadoOffline || false,
+        creadoEn || null
+      ]
     );
 
     return res.rows[0];
+  }
+
+  static async getPadronOffline() {
+    // 1. Trabajadores autorizados
+    const trabajadores = await query(
+      `SELECT 
+         p.id,
+         p.tipo_documento,
+         p.numero_documento,
+         p.nombres,
+         p.apellidos,
+         p.cargo,
+         p.tipo_pase,
+         p.grupo_sanguineo,
+         p.sctr_vencimiento,
+         p.estado_global,
+         e.razon_social as empresa_nombre,
+         f.codigo_credencial,
+         f.codigo_qr,
+         f.zona_autorizada,
+         f.fecha_vencimiento as fotocheck_vencimiento
+       FROM postulantes p
+       JOIN empresas_contratistas e ON p.empresa_id = e.id
+       LEFT JOIN fotochecks f ON f.postulante_id = p.id
+       WHERE p.estado_global IN ('APTO_PARA_TRABAJAR', 'APROBADO_TOTAL')`
+    );
+
+    // 2. Vehículos aptos
+    const vehiculos = await query(
+      `SELECT 
+         v.id,
+         v.placa_codigo,
+         v.tipo_vehiculo,
+         v.marca,
+         v.modelo,
+         v.color,
+         v.codigo_pase_qr,
+         v.soat_vencimiento,
+         v.rev_tecnica_vencimiento,
+         v.estado_acreditacion,
+         e.razon_social as empresa_nombre
+       FROM vehiculos_maquinaria v
+       JOIN empresas_contratistas e ON v.empresa_id = e.id
+       WHERE v.estado_acreditacion = 'APTO_TRANSITO_MINA'`
+    );
+
+    // 3. Lista Negra
+    const listaNegra = await query(
+      `SELECT numero_documento, tipo_falta, motivo FROM lista_negra`
+    );
+
+    return {
+      fechaGeneracion: new Date().toISOString(),
+      unidadMinera: 'Unidad de Operaciones Mina Central - VALETEC',
+      totalTrabajadores: trabajadores.rows.length,
+      totalVehiculos: vehiculos.rows.length,
+      trabajadores: trabajadores.rows,
+      vehiculos: vehiculos.rows,
+      listaNegra: listaNegra.rows,
+    };
+  }
+
+  static async sincronizarOffline(lote: any[], guardiaId?: string, guardiaNombre?: string) {
+    const insertados = [];
+    for (const item of lote) {
+      const res = await this.registrarIngreso({
+        tipoAcceso: item.tipoAcceso || 'PEATONAL_TRABAJADOR',
+        postulanteId: item.postulanteId,
+        vehiculoId: item.vehiculoId,
+        resultado: item.resultado || 'AUTORIZADO',
+        motivoDenegacion: item.motivoDenegacion,
+        garita: item.garita,
+        guardiaNombre: guardiaNombre || item.guardiaNombre || 'Oficial Garita (Offline)',
+        guardiaId: guardiaId || item.guardiaId,
+        alcotestResultado: item.alcotestResultado || '0.00 g/L (Apto)',
+        sincronizadoOffline: true,
+        creadoEn: item.timestamp || item.creadoEn,
+      });
+      insertados.push(res);
+    }
+    return {
+      totalSincronizados: insertados.length,
+      mensaje: `Sincronización offline exitosa: ${insertados.length} accesos registrados en la bitácora central de mina.`
+    };
   }
 
   static async getHistorial(limit = 50) {
@@ -239,11 +360,14 @@ export class GaritaService {
          a.motivo_denegacion,
          a.garita,
          a.guardia_nombre,
+         a.alcotest_resultado,
+         a.sincronizado_offline,
          a.creado_en,
          p.nombres as postulante_nombres,
          p.apellidos as postulante_apellidos,
          p.numero_documento as postulante_dni,
          p.cargo as postulante_cargo,
+         p.tipo_pase as postulante_tipo_pase,
          v.placa_codigo as vehiculo_placa,
          v.tipo_vehiculo,
          v.marca as vehiculo_marca,

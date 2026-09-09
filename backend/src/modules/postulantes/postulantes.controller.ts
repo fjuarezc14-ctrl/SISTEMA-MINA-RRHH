@@ -11,6 +11,9 @@ const createPostulanteSchema = z.object({
   telefono: z.string().optional(),
   email: z.string().email().optional(),
   grupo_sanguineo: z.string().optional(),
+  tipo_pase: z.enum(['PERMANENTE', 'VISITA_TECNICA', 'PROVEEDOR_LOGISTICO']).default('PERMANENTE'),
+  vigencia_inicio: z.string().optional(),
+  vigencia_fin: z.string().optional(),
 });
 
 export class PostulantesController {

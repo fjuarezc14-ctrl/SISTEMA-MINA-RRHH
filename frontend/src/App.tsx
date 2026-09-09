@@ -414,6 +414,7 @@ export const App: React.FC = () => {
     passwordPlain: string;
     rol: RolUsuario;
     area_responsable: string;
+    colegiatura?: string;
   }) => {
     try {
       const res = await api.post('/admin/usuarios', data);
@@ -426,6 +427,7 @@ export const App: React.FC = () => {
         email: data.email,
         rol: data.rol,
         area_responsable: data.area_responsable,
+        colegiatura: data.colegiatura,
         activo: true,
       };
       setUsuarios((prev) => [nuevo, ...prev]);

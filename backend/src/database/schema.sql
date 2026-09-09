@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
         'CONTRATISTA'
     )),
     activo BOOLEAN DEFAULT TRUE,
+    colegiatura VARCHAR(100),
     intentos_fallidos INTEGER DEFAULT 0,
     bloqueado_hasta TIMESTAMP WITH TIME ZONE,
     bloqueado_definitivo BOOLEAN DEFAULT FALSE,
@@ -69,6 +70,9 @@ CREATE TABLE IF NOT EXISTS postulantes (
     cv_url VARCHAR(500),
     fase_actual VARCHAR(30) DEFAULT 'FASE_1' CHECK (fase_actual IN ('FASE_1', 'FASE_2', 'FASE_3', 'FASE_4', 'FASE_5', 'FOTOCHECK', 'FINALIZADO')),
     estado_global VARCHAR(30) DEFAULT 'EN_PROCESO' CHECK (estado_global IN ('EN_PROCESO', 'OBSERVADO', 'NO_APTO', 'APTO_PARA_TRABAJAR', 'APROBADO_TOTAL', 'SUSPENDIDO_POR_VENCIMIENTO')),
+    tipo_pase VARCHAR(30) DEFAULT 'PERMANENTE' CHECK (tipo_pase IN ('PERMANENTE', 'VISITA_TECNICA', 'PROVEEDOR_LOGISTICO')),
+    vigencia_inicio DATE,
+    vigencia_fin DATE,
     sctr_vencimiento DATE,
     emo_vencimiento DATE,
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -114,6 +118,7 @@ CREATE TABLE IF NOT EXISTS auditoria_vistos_buenos (
     area_evaluadora VARCHAR(100) NOT NULL,
     evaluador_id UUID REFERENCES usuarios(id),
     evaluador_nombre VARCHAR(150) NOT NULL,
+    evaluador_colegiatura VARCHAR(100),
     decision VARCHAR(30) NOT NULL CHECK (decision IN ('VISTO_BUENO', 'OBSERVADO', 'NO_APTO_LISTA_NEGRA')),
     documento_evaluado VARCHAR(100),
     version_documento INT DEFAULT 1,
@@ -169,6 +174,8 @@ CREATE TABLE IF NOT EXISTS accesos_garita (
     garita VARCHAR(100) DEFAULT 'Garita Principal - Control Mina',
     guardia_nombre VARCHAR(150),
     guardia_id UUID REFERENCES usuarios(id),
+    alcotest_resultado VARCHAR(50) DEFAULT '0.00 g/L (Apto)',
+    sincronizado_offline BOOLEAN DEFAULT FALSE,
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

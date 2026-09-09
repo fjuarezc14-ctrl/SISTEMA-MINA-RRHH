@@ -8,6 +8,8 @@ export interface AuthenticatedUser {
   nombre: string;
   rol: string;
   empresa_id?: string | null;
+  colegiatura?: string | null;
+  area_responsable?: string | null;
 }
 
 declare global {

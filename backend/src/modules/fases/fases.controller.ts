@@ -27,12 +27,18 @@ export class FasesController {
       const { fase } = req.params;
       const parsed = evaluarSchema.parse(req.body);
       const evaluadorId = req.user?.id;
+      const evaluadorNombre = req.user?.nombre;
+      const evaluadorColegiatura = req.user?.colegiatura;
+      const areaEvaluadora = req.user?.area_responsable || req.user?.rol;
       const archivoUrl = req.file ? `/uploads/${req.file.filename}` : req.body.archivo_url;
 
       const result = await FasesService.evaluarFase({
         postulanteId: parsed.postulanteId,
         fase: fase.toUpperCase(),
         evaluadorId,
+        evaluadorNombre,
+        evaluadorColegiatura: req.user?.colegiatura || undefined,
+        areaEvaluadora,
         decision: parsed.decision,
         observaciones: parsed.observaciones,
         nota: parsed.nota,

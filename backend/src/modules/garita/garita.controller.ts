@@ -13,6 +13,7 @@ const registrarSchema = z.object({
   resultado: z.enum(['AUTORIZADO', 'DENEGADO']),
   motivoDenegacion: z.string().optional(),
   garita: z.string().optional(),
+  alcotestResultado: z.string().optional(),
 });
 
 export class GaritaController {
@@ -39,6 +40,27 @@ export class GaritaController {
       });
 
       res.status(201).json(log);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async getPadronOffline(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await GaritaService.getPadronOffline();
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async sincronizarOffline(req: Request, res: Response, next: NextFunction) {
+    try {
+      const lote = Array.isArray(req.body.lote) ? req.body.lote : [];
+      const guardiaNombre = req.user?.nombre || 'Oficial de Garita';
+      const guardiaId = req.user?.id;
+      const result = await GaritaService.sincronizarOffline(lote, guardiaId, guardiaNombre);
+      res.json(result);
     } catch (err) {
       next(err);
     }

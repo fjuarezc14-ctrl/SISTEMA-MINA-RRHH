@@ -90,11 +90,24 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
                 className="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-600 transition-colors"
               >
                 <div>
-                  <h4 className="font-bold text-white text-base">
-                    {candidato.apellidos}, {candidato.nombres}
-                  </h4>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h4 className="font-bold text-white text-base">
+                      {candidato.apellidos}, {candidato.nombres}
+                    </h4>
+                    {candidato.tipo_pase && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border ${
+                        candidato.tipo_pase === 'VISITA_TECNICA'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                          : candidato.tipo_pase === 'PROVEEDOR_LOGISTICO'
+                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                          : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                      }`}>
+                        {candidato.tipo_pase.replace('_', ' ')}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-slate-400 mt-0.5">
-                    Evaluación toxicológica y EMO (Ficha 7D para gran altitud \(&gt; 4,000\) msnm).
+                    Evaluación toxicológica y EMO (Ficha 7D para gran altitud &gt; 4,000 msnm).
                   </p>
                   <div className="flex flex-wrap gap-3 text-xs text-slate-500 mt-1 items-center">
                     <span>DNI: {candidato.numero_documento}</span>

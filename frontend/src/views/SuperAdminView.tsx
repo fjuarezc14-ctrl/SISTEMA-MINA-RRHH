@@ -26,6 +26,7 @@ interface SuperAdminViewProps {
     passwordPlain: string;
     rol: RolUsuario;
     area_responsable: string;
+    colegiatura?: string;
   }) => Promise<void>;
   onToggleEstadoUsuario: (id: string, activo: boolean) => Promise<void>;
 }
@@ -72,10 +73,11 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
   const [nuevoPassword, setNuevoPassword] = useState('Valetec2026!');
   const [nuevoRol, setNuevoRol] = useState<RolUsuario>('MEDICO_OCUPACIONAL');
   const [nuevaArea, setNuevaArea] = useState('Salud Ocupacional / Policlínico Mina');
+  const [nuevaColegiatura, setNuevaColegiatura] = useState('CMP 48921 / RNE 24510 - Salud Ocupacional');
   const [loadingCreate, setLoadingCreate] = useState(false);
   const [createSuccess, setCreateSuccess] = useState(false);
 
-  // Mapeo automático de área por rol
+  // Mapeo automático de área y colegiatura por rol
   const handleRolChange = (rol: RolUsuario) => {
     setNuevoRol(rol);
     const areaMap: Record<RolUsuario, string> = {
@@ -89,6 +91,17 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
       CONTRATISTA: 'Empresa Contratista Minera (ECM)',
     };
     setNuevaArea(areaMap[rol] || 'Staff Operativo');
+
+    const colegiaturaMap: Partial<Record<RolUsuario, string>> = {
+      MEDICO_OCUPACIONAL: 'CMP 51240 / RNE 28940 - Medicina Ocupacional',
+      INSTRUCTOR_SSOMA: 'CIP 204192 - Ing. Higiene y Seguridad',
+      SUPER_ADMIN: 'CIP 215480 - Ing. Minas',
+      STAFF_RRHH: 'Lic. Reg. CDR-1892',
+      SEGURIDAD_PATRIMONIAL: 'Reg. SUCAMEC 78412',
+      ADMIN_CONTRATOS: 'Reg. SBS 41209',
+      CONTROL_ACCESOS: 'Oficial Garita Reg. MIN-882',
+    };
+    setNuevaColegiatura(colegiaturaMap[rol] || '');
   };
 
   const handleCrearUsuarioSubmit = async (e: React.FormEvent) => {
@@ -103,6 +116,7 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
         passwordPlain: nuevoPassword,
         rol: nuevoRol,
         area_responsable: nuevaArea,
+        colegiatura: nuevaColegiatura,
       });
       setCreateSuccess(true);
       setNuevoNombre('');
@@ -271,6 +285,19 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
               </div>
 
               <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Colegiatura / Registro Legal (CMP / CIP / Reg. Oficial)
+                </label>
+                <input
+                  type="text"
+                  value={nuevaColegiatura}
+                  onChange={(e) => setNuevaColegiatura(e.target.value)}
+                  placeholder="Ej. CMP 48921 / CIP 198452"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-amber-300 focus:outline-none font-mono"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">Contraseña Provisoria</label>
                 <input
                   type="text"
@@ -325,6 +352,11 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                       <td className="p-4">
                         <div className="font-bold text-white">{u.nombre}</div>
                         <div className="text-xs text-slate-400">{u.email}</div>
+                        {u.colegiatura && (
+                          <div className="text-[11px] text-amber-300 font-mono font-medium mt-0.5">
+                            ⚖️ {u.colegiatura}
+                          </div>
+                        )}
                       </td>
 
                       <td className="p-4">
@@ -428,7 +460,12 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
 
                     <td className="p-4">
                       <div className="text-sm font-semibold text-blue-400">{log.area_evaluadora}</div>
-                      <div className="text-xs text-slate-400">{log.evaluador_nombre}</div>
+                      <div className="text-xs text-slate-200 font-medium">{log.evaluador_nombre}</div>
+                      {log.evaluador_colegiatura && (
+                        <div className="text-[11px] text-amber-300 font-mono mt-0.5">
+                          ⚖️ {log.evaluador_colegiatura}
+                        </div>
+                      )}
                     </td>
 
                     <td className="p-4 text-center">

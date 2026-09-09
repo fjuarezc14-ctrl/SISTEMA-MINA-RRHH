@@ -60,6 +60,9 @@ export interface Postulante {
   cv_url?: string;
   fase_actual: FaseOnboarding;
   estado_global: EstadoGlobal;
+  tipo_pase?: 'PERMANENTE' | 'VISITA_TECNICA' | 'PROVEEDOR_LOGISTICO';
+  vigencia_inicio?: string;
+  vigencia_fin?: string;
   ultima_observacion?: string;
   ultimo_archivo?: string;
   sctr_vencimiento?: string;
@@ -112,6 +115,9 @@ export interface AccesoGarita {
   motivo_denegacion?: string;
   garita: string;
   guardia_nombre: string;
+  alcotest_resultado?: string;
+  sincronizado_offline?: boolean;
+  postulante_tipo_pase?: string;
   creado_en: string;
 }
 
@@ -167,6 +173,7 @@ export interface UsuarioSistema {
   email: string;
   rol: RolUsuario;
   area_responsable: string;
+  colegiatura?: string;
   activo: boolean;
   intentos_fallidos?: number;
   bloqueado_hasta?: string | null;
@@ -186,6 +193,7 @@ export interface AuditoriaVistoBueno {
   fase: string;
   area_evaluadora: string;
   evaluador_nombre: string;
+  evaluador_colegiatura?: string;
   decision: 'VISTO_BUENO' | 'OBSERVADO' | 'NO_APTO_LISTA_NEGRA';
   observaciones?: string;
   fecha_registro: string;
