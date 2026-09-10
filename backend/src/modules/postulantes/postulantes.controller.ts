@@ -31,6 +31,15 @@ export class PostulantesController {
     try {
       const { id } = req.params;
       const data = await PostulantesService.getById(id);
+      if (!data) {
+        return res.status(404).json({ error: 'Postulante no encontrado.' });
+      }
+
+      // Verificación IDOR: Contratistas solo pueden ver postulantes de su propia empresa
+      if (req.user?.rol === 'CONTRATISTA' && data.empresa_id !== req.user.empresa_id) {
+        return res.status(403).json({ error: 'Acceso denegado: El postulante no pertenece a su empresa contratista.' });
+      }
+
       res.json(data);
     } catch (err) {
       next(err);
@@ -39,7 +48,8 @@ export class PostulantesController {
 
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const empresaId = req.user?.empresa_id || req.body.empresa_id;
+      // Forzar la empresa del usuario si es CONTRATISTA para evitar inyección de empresas ajenas
+      const empresaId = req.user?.rol === 'CONTRATISTA' ? req.user.empresa_id : (req.user?.empresa_id || req.body.empresa_id);
       if (!empresaId) {
         return res.status(400).json({ error: 'Se requiere ID de la empresa contratista.' });
       }
@@ -57,6 +67,15 @@ export class PostulantesController {
   static async subsanar(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
+
+      // Verificación IDOR previa a subsanación
+      if (req.user?.rol === 'CONTRATISTA') {
+        const postulante = await PostulantesService.getById(id);
+        if (!postulante || postulante.empresa_id !== req.user.empresa_id) {
+          return res.status(403).json({ error: 'Acceso denegado: No tiene permisos para subsanar este postulante.' });
+        }
+      }
+
       const fileUrl = req.file ? `/uploads/${req.file.filename}` : req.body.archivo_url;
       const notas = req.body.notas;
 

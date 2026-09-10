@@ -179,6 +179,7 @@ export interface UsuarioSistema {
   intentos_fallidos?: number;
   bloqueado_hasta?: string | null;
   bloqueado_definitivo?: boolean;
+  empresa_id?: string | null;
   empresa_nombre?: string;
   creado_en?: string;
 }

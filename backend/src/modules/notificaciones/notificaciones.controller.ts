@@ -16,7 +16,9 @@ export class NotificacionesController {
   static async marcarLeida(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const updated = await NotificacionesService.marcarLeida(id);
+      const usuarioId = req.user?.id || null;
+      const isSuperAdmin = req.user?.rol === 'SUPER_ADMIN';
+      const updated = await NotificacionesService.marcarLeida(id, usuarioId, isSuperAdmin);
       res.json(updated);
     } catch (err) {
       next(err);
@@ -26,7 +28,9 @@ export class NotificacionesController {
   static async borrarNotificacion(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const deleted = await NotificacionesService.borrarNotificacion(id);
+      const usuarioId = req.user?.id || null;
+      const isSuperAdmin = req.user?.rol === 'SUPER_ADMIN';
+      const deleted = await NotificacionesService.borrarNotificacion(id, usuarioId, isSuperAdmin);
       res.json({ message: 'Notificación eliminada', deleted });
     } catch (err) {
       next(err);
@@ -37,7 +41,8 @@ export class NotificacionesController {
     try {
       const usuarioId = req.user?.id || undefined;
       const empresaId = req.user?.empresa_id || undefined;
-      const result = await NotificacionesService.limpiarLeidas(usuarioId, empresaId);
+      const isSuperAdmin = req.user?.rol === 'SUPER_ADMIN';
+      const result = await NotificacionesService.limpiarLeidas(usuarioId, empresaId, isSuperAdmin);
       res.json({ message: 'Notificaciones leídas eliminadas', result });
     } catch (err) {
       next(err);

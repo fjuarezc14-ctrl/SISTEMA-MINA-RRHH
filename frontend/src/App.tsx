@@ -377,9 +377,16 @@ export const App: React.FC = () => {
 
     const fetchFromBackend = async () => {
       try {
+        const postulantesUrl = currentUser.rol === 'CONTRATISTA' && currentUser.empresa_id 
+          ? `/postulantes?empresa_id=${currentUser.empresa_id}` 
+          : '/postulantes';
+        const vehiculosUrl = currentUser.rol === 'CONTRATISTA' && currentUser.empresa_id 
+          ? `/vehiculos?empresa_id=${currentUser.empresa_id}` 
+          : '/vehiculos';
+
         const promises: Promise<any>[] = [
-          api.get('/postulantes'),
-          api.get('/vehiculos'),
+          api.get(postulantesUrl),
+          api.get(vehiculosUrl),
           api.get('/notificaciones'),
         ];
         if (currentUser.rol === 'SUPER_ADMIN') {

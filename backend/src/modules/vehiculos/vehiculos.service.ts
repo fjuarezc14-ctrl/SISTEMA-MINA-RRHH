@@ -1,4 +1,5 @@
 import { query } from '../../config/db';
+import crypto from 'crypto';
 
 export interface VehiculoInput {
   empresaId: string;
@@ -23,21 +24,30 @@ export interface VehiculoInput {
 }
 
 export class VehiculosService {
-  static async getVehiculos() {
-    const res = await query(
-      `SELECT 
+  static async getVehiculos(empresaId?: string | null) {
+    let sql = `
+      SELECT 
          v.*,
          e.razon_social as empresa_nombre
        FROM vehiculos_maquinaria v
        JOIN empresas_contratistas e ON v.empresa_id = e.id
-       ORDER BY v.creado_en DESC`
-    );
+    `;
+    const params: any[] = [];
+
+    if (empresaId) {
+      sql += ` WHERE v.empresa_id = $1`;
+      params.push(empresaId);
+    }
+
+    sql += ` ORDER BY v.creado_en DESC`;
+    const res = await query(sql, params);
     return res.rows;
   }
 
   static async registrarVehiculo(data: VehiculoInput) {
     const placaClean = data.placaCodigo.trim().toUpperCase();
-    const paseQr = `PASE-VEH-${placaClean.replace(/[^A-Z0-9]/g, '')}`;
+    const nonce = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const paseQr = `PASE-VEH-${placaClean.replace(/[^A-Z0-9]/g, '')}-${nonce}`;
 
     const res = await query(
       `INSERT INTO vehiculos_maquinaria (

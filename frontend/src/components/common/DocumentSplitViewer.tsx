@@ -397,7 +397,13 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                             Nota de Examen SSOMA: {String(vb.metadatos.nota).padStart(2, '0')}/20
                           </p>
                         )}
-                        <p className="text-slate-400 italic">"{vb.observaciones || 'Conforme'}"</p>
+                        <p className="text-slate-400 italic">
+                          {((vb.fase === 'FASE_2' || vb.area_evaluadora?.includes('Médic') || vb.area_evaluadora?.includes('Salud')) && isConfidentialMedical)
+                            ? '[Observación clínica reservada por Secreto Médico Ocupacional - Ley N° 29733]'
+                            : ((vb.fase === 'FASE_3' || vb.area_evaluadora?.includes('Patrimonial') || vb.area_evaluadora?.includes('Legal')) && isConfidentialLegal)
+                            ? '[Observación reservada por Seguridad Patrimonial]'
+                            : `"${vb.observaciones || 'Conforme'}"`}
+                        </p>
                         <span className="text-[10px] text-slate-500 block pt-1 border-t border-slate-700/40">
                           {new Date(vb.creado_en).toLocaleString('es-PE')}
                         </span>
@@ -668,7 +674,9 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       <AlertTriangle className="w-4 h-4" /> Observación del Evaluador de Mina
                     </h5>
                     <p className="text-xs text-amber-100 italic bg-amber-950/50 p-3 rounded-lg border border-amber-500/20">
-                      "{postulante.ultima_observacion || 'Sin observaciones pendientes emitidas para este expediente.'}"
+                      {hasAccessRestricted 
+                        ? '[Detalle de observación reservado por Secreto Médico o Seguridad Patrimonial. Comuníquese directamente con el área evaluadora.]'
+                        : `"${postulante.ultima_observacion || 'Sin observaciones pendientes emitidas para este expediente.'}"`}
                     </p>
                   </div>
 

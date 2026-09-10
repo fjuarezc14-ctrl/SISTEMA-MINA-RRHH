@@ -32,7 +32,8 @@ const evaluarVehiculoSchema = z.object({
 export class VehiculosController {
   static async getVehiculos(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await VehiculosService.getVehiculos();
+      const empresaId = req.user?.rol === 'CONTRATISTA' ? req.user.empresa_id : (req.query.empresa_id as string || null);
+      const data = await VehiculosService.getVehiculos(empresaId);
       res.json(data);
     } catch (err) {
       next(err);
@@ -42,6 +43,12 @@ export class VehiculosController {
   static async registrar(req: Request, res: Response, next: NextFunction) {
     try {
       const parsed = registrarVehiculoSchema.parse(req.body);
+
+      // Si es contratista, forzar la empresa del token para evitar registrar vehículos para contratas ajenas
+      if (req.user?.rol === 'CONTRATISTA' && req.user.empresa_id) {
+        parsed.empresaId = req.user.empresa_id;
+      }
+
       const vehiculo = await VehiculosService.registrarVehiculo(parsed as any);
       res.status(201).json(vehiculo);
     } catch (err) {

@@ -147,6 +147,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         nombre: user.nombre,
         email: user.email,
         rol: user.rol as RolUsuario,
+        empresa_id: user.empresa_id || null,
         area_responsable: DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === user.email.toLowerCase())?.area || 'Área Operativa',
         activo: true,
       };
