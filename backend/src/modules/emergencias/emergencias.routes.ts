@@ -1,16 +1,31 @@
 import { Router } from 'express';
 import { EmergenciasController } from './emergencias.controller';
-import { authenticateJWT, authorizeRoles } from '../../middlewares/auth.middleware';
+import { authenticateJWT, requireRoles } from '../../middlewares/auth.middleware';
 
 const router = Router();
 
 // Autorizar bajada anticipada (Médico de guardia, RRHH o Admin)
-router.post('/autorizar', authenticateJWT, authorizeRoles('SUPER_ADMIN', 'MEDICO_OCUPACIONAL', 'RRHH_RELACIONES_LABORALES'), EmergenciasController.autorizarBajada);
+router.post(
+  '/autorizar',
+  authenticateJWT,
+  requireRoles('SUPER_ADMIN', 'MEDICO_OCUPACIONAL', 'STAFF_RRHH'),
+  EmergenciasController.autorizarBajada
+);
 
-// Listar emergencias pendientes para Garita
-router.get('/activas', authenticateJWT, EmergenciasController.getEmergenciasActivas);
+// Listar emergencias pendientes para Garita y supervisores
+router.get(
+  '/activas',
+  authenticateJWT,
+  requireRoles('SUPER_ADMIN', 'CONTROL_ACCESOS', 'MEDICO_OCUPACIONAL', 'STAFF_RRHH'),
+  EmergenciasController.getEmergenciasActivas
+);
 
-// Ejecutar salida en Garita
-router.post('/ejecutar-garita', authenticateJWT, authorizeRoles('SUPER_ADMIN', 'GARITA_SEGURIDAD'), EmergenciasController.ejecutarSalidaGarita);
+// Ejecutar salida en Garita (Guardia de control o Super Admin)
+router.post(
+  '/ejecutar-garita',
+  authenticateJWT,
+  requireRoles('SUPER_ADMIN', 'CONTROL_ACCESOS'),
+  EmergenciasController.ejecutarSalidaGarita
+);
 
 export default router;
