@@ -244,6 +244,22 @@ export class GaritaService {
       creadoEn 
     } = params;
 
+    let finalResultado = resultado;
+    let finalMotivo = motivoDenegacion;
+
+    // Validación estricta de seguridad minera: Tolerancia CERO al alcohol (D.S. 024-2016-EM Art. 40)
+    if (alcotestResultado) {
+      const alcotestUpper = alcotestResultado.toUpperCase();
+      const esPositivo = alcotestUpper.includes('POSITIVO') || 
+                         alcotestUpper.includes('EBRIEDAD') || 
+                         (!alcotestUpper.includes('0.00') && !alcotestUpper.includes('NEGATIVO') && !alcotestUpper.includes('APTO'));
+      
+      if (esPositivo) {
+        finalResultado = 'DENEGADO';
+        finalMotivo = `ALCOTEST POSITIVO: [${alcotestResultado}]. Acceso denegado automáticamente por normativa de seguridad minera (D.S. 024-2016-EM Art. 40).`;
+      }
+    }
+
     const res = await query(
       `INSERT INTO accesos_garita 
        (tipo_acceso, postulante_id, vehiculo_id, resultado, motivo_denegacion, garita, guardia_nombre, guardia_id, alcotest_resultado, sincronizado_offline, creado_en)
@@ -253,8 +269,8 @@ export class GaritaService {
         tipoAcceso, 
         postulanteId || null, 
         vehiculoId || null, 
-        resultado, 
-        motivoDenegacion || null, 
+        finalResultado, 
+        finalMotivo || null, 
         garita || 'Garita Principal - Control Mina', 
         guardiaNombre || 'Guardia de Turno', 
         guardiaId || null,

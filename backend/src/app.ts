@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import apiRouter from './routes';
@@ -7,6 +8,9 @@ import { errorHandler } from './middlewares/error.middleware';
 import { env } from './config/env';
 
 export const app = express();
+
+// Cabeceras de seguridad HTTP (HSTS, CSP, X-Frame-Options, X-Content-Type-Options)
+app.use(helmet());
 
 // Rate limiting para login (anti brute-force)
 const loginLimiter = rateLimit({
@@ -17,16 +21,19 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Middlewares globales
-app.use(cors());
+// CORS restringido al frontend institucional
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5150',
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limit en login
 app.use('/api/auth/login', loginLimiter);
 
-// Servir estáticos para visualización de CVs, exámenes, pólizas subidas
-app.use('/uploads', express.static(env.UPLOAD_DIR));
+// Los documentos se sirven con control de roles a través de /api/documentos/:id/stream (NO de forma estática)
 
 // Endpoint de salud
 app.get('/health', (req, res) => {
