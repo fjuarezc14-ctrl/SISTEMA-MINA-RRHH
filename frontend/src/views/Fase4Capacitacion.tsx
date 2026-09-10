@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante, RolUsuario } from '../types';
-import { GraduationCap, Upload, CheckCircle2, AlertTriangle, Eye, Lock, CheckCircle } from 'lucide-react';
+import { GraduationCap, Upload, CheckCircle2, AlertTriangle, Eye, Lock, CheckCircle, FileText, X } from 'lucide-react';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
 
 interface Fase4Props {
@@ -18,21 +18,33 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, userRole,
   const candidatosFase4 = postulantes.filter((p) => p.fase_actual === 'FASE_4');
   const candidatosBloqueados = postulantes.filter((p) => ['FASE_1', 'FASE_2', 'FASE_3'].includes(p.fase_actual));
 
-  const [notas, setNotas] = useState<Record<string, number>>({});
+  const [notas, setNotas] = useState<Record<string, string>>({});
   const [archivos, setArchivos] = useState<Record<string, File>>({});
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
+  const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
   const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
 
   const handleNotaChange = (id: string, value: string) => {
-    const num = Number(value);
-    setNotas((prev) => ({ ...prev, [id]: num }));
+    // Restringir rango de 00 a 20 con dos dígitos
+    const cleanNum = parseInt(value, 10);
+    if (isNaN(cleanNum)) {
+      setNotas((prev) => ({ ...prev, [id]: '' }));
+      return;
+    }
+    const clamped = Math.min(20, Math.max(0, cleanNum));
+    const formatted = String(clamped).padStart(2, '0');
+    setNotas((prev) => ({ ...prev, [id]: formatted }));
   };
 
   const handleFileChange = (id: string, file: File | null) => {
     if (file) {
       setArchivos((prev) => ({ ...prev, [id]: file }));
+      // Generar URL temporal en memoria para previsualización (Punto 7)
+      const url = URL.createObjectURL(file);
+      setPreviewUrls((prev) => ({ ...prev, [id]: url }));
     }
   };
 
@@ -42,7 +54,12 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, userRole,
   };
 
   const handleAprobar = async (id: string) => {
-    const nota = notas[id] ?? 16;
+    const notaStr = notas[id] ?? '16';
+    const nota = parseInt(notaStr, 10) || 16;
+    if (nota < 14) {
+      alert('Para otorgar el Visto Bueno SSOMA, la nota mínima aprobatoria según D.S. 024-2016-EM es 14/20.');
+      return;
+    }
     if (nota < 14) {
       alert('Para otorgar el Visto Bueno SSOMA, la nota mínima aprobatoria según D.S. 024-2016-EM es 14/20.');
       return;
@@ -142,6 +159,16 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, userRole,
                           onChange={(e) => handleFileChange(candidato.id, e.target.files?.[0] || null)}
                         />
                       </label>
+
+                      {previewUrls[candidato.id] && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewModalUrl(previewUrls[candidato.id])}
+                          className="text-xs bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 transition-colors"
+                        >
+                          <FileText className="w-3.5 h-3.5" /> Previsualizar Acta
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -208,6 +235,42 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, userRole,
           userRole={userRole}
           onEvaluar={onEvaluar}
         />
+      )}
+
+      {/* MODAL PREVISUALIZAR ACTA PDF (Punto 7) */}
+      {previewModalUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col">
+            <div className="flex justify-between items-center px-5 py-3 border-b border-slate-800 bg-slate-950">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-400" />
+                <h4 className="font-bold text-sm text-white">Previsualización de Acta de Examen SSOMA</h4>
+              </div>
+              <button
+                onClick={() => setPreviewModalUrl(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-3 bg-slate-950 flex-1">
+              <iframe 
+                src={previewModalUrl} 
+                className="w-full h-[70vh] rounded-xl border border-slate-800 bg-white" 
+                title="Previsualización Acta PDF"
+              />
+            </div>
+            <div className="p-3 bg-slate-900 border-t border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setPreviewModalUrl(null)}
+                className="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2 rounded-xl"
+              >
+                Cerrar Previsualización
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

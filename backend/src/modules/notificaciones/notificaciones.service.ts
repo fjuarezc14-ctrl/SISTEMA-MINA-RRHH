@@ -30,6 +30,28 @@ export class NotificacionesService {
     return res.rows[0];
   }
 
+  static async borrarNotificacion(id: string) {
+    const res = await query(
+      `DELETE FROM notificaciones WHERE id = $1 RETURNING *`,
+      [id]
+    );
+    return res.rows[0];
+  }
+
+  static async limpiarLeidas(usuarioId?: string | null, empresaId?: string | null) {
+    let sql = `DELETE FROM notificaciones WHERE leido = TRUE`;
+    const params: any[] = [];
+    if (usuarioId && empresaId) {
+      params.push(usuarioId, empresaId);
+      sql += ` AND (usuario_id = $1 OR empresa_id = $2 OR (usuario_id IS NULL AND empresa_id IS NULL))`;
+    } else if (usuarioId) {
+      params.push(usuarioId);
+      sql += ` AND (usuario_id = $1 OR usuario_id IS NULL)`;
+    }
+    const res = await query(sql, params);
+    return { eliminadas: res.rowCount };
+  }
+
   static async crearNotificacion(params: {
     usuarioId?: string;
     empresaId?: string;

@@ -11,6 +11,8 @@ import garitaRoutes from './modules/garita/garita.routes';
 import vehiculosRoutes from './modules/vehiculos/vehiculos.routes';
 import notificacionesRoutes from './modules/notificaciones/notificaciones.routes';
 import metricasRoutes from './modules/metricas/metricas.routes';
+import emergenciasRoutes from './modules/emergencias/emergencias.routes';
+import segurosRoutes from './modules/seguros/seguros.routes';
 
 const apiRouter = Router();
 
@@ -26,5 +28,7 @@ apiRouter.use('/garita', garitaRoutes);
 apiRouter.use('/vehiculos', vehiculosRoutes);
 apiRouter.use('/notificaciones', notificacionesRoutes);
 apiRouter.use('/metricas', metricasRoutes);
+apiRouter.use('/emergencias', emergenciasRoutes);
+apiRouter.use('/seguros', segurosRoutes);
 
 export default apiRouter;

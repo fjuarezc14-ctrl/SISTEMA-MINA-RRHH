@@ -31,6 +31,7 @@ export class VencimientosService {
          p.cargo,
          p.fase_actual,
          p.estado_global,
+         p.sctr_inicio,
          p.sctr_vencimiento,
          e.razon_social as empresa_nombre,
          CASE 
@@ -44,10 +45,11 @@ export class VencimientosService {
 
     let vigentes = 0;
     let porVencer = 0;
+    let criticos = 0;
     let vencidos = 0;
 
     const detalle = res.rows.map((row) => {
-      let semaforo: 'VERDE' | 'AMBAR' | 'ROJO' | 'SIN_FECHA' = 'SIN_FECHA';
+      let semaforo: 'VERDE' | 'AMBAR' | 'NARANJA' | 'ROJO' | 'SIN_FECHA' = 'SIN_FECHA';
       const dias = row.dias_restantes !== null ? Number(row.dias_restantes) : null;
 
       if (dias === null) {
@@ -56,6 +58,10 @@ export class VencimientosService {
         semaforo = 'ROJO';
         vencidos++;
       } else if (dias <= 15) {
+        semaforo = 'NARANJA';
+        criticos++;
+        porVencer++;
+      } else if (dias <= 30) {
         semaforo = 'AMBAR';
         porVencer++;
       } else {
@@ -72,6 +78,7 @@ export class VencimientosService {
         cargo: row.cargo,
         fase_actual: row.fase_actual,
         estado_global: row.estado_global,
+        sctr_inicio: row.sctr_inicio ? new Date(row.sctr_inicio).toISOString().split('T')[0] : null,
         sctr_vencimiento: row.sctr_vencimiento ? new Date(row.sctr_vencimiento).toISOString().split('T')[0] : null,
         dias_restantes: dias,
         semaforo,
@@ -82,7 +89,10 @@ export class VencimientosService {
       total: res.rows.length,
       vigentes,
       porVencer,
+      criticos,
       vencidos,
+      detalle,
+    };
       detalle,
     };
   }

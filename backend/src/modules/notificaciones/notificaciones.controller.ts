@@ -22,4 +22,25 @@ export class NotificacionesController {
       next(err);
     }
   }
+
+  static async borrarNotificacion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const deleted = await NotificacionesService.borrarNotificacion(id);
+      res.json({ message: 'Notificación eliminada', deleted });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async limpiarLeidas(req: Request, res: Response, next: NextFunction) {
+    try {
+      const usuarioId = req.user?.id || undefined;
+      const empresaId = req.user?.empresa_id || undefined;
+      const result = await NotificacionesService.limpiarLeidas(usuarioId, empresaId);
+      res.json({ message: 'Notificaciones leídas eliminadas', result });
+    } catch (err) {
+      next(err);
+    }
+  }
 }

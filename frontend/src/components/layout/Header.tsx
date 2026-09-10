@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Notificacion, RolUsuario } from '../../types';
-import { Shield, Crown, Bell, CheckCircle, AlertTriangle, Info, ShieldAlert, X, LogOut, UserCheck, Menu } from 'lucide-react';
+import { Shield, Crown, Bell, CheckCircle, AlertTriangle, Info, ShieldAlert, X, LogOut, UserCheck, Menu, Trash2 } from 'lucide-react';
 import { ViewType } from './Sidebar';
 
 interface HeaderProps {
@@ -11,6 +11,8 @@ interface HeaderProps {
   onLogout: () => void;
   notificaciones?: Notificacion[];
   onMarcarLeida?: (id: string) => void;
+  onEliminarNotificacion?: (id: string) => void;
+  onLimpiarLeidas?: () => void;
   onOpenMobileMenu?: () => void;
 }
 
@@ -36,12 +38,15 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   notificaciones = [],
   onMarcarLeida,
+  onEliminarNotificacion,
+  onLimpiarLeidas,
   onOpenMobileMenu,
 }) => {
   const [title, subtitle] = titles[currentView] || ['Onboarding Minero', 'Panel de gestión'];
   const [showNotifPopover, setShowNotifPopover] = useState(false);
 
   const noLeidas = notificaciones.filter((n) => !n.leido);
+  const leidas = notificaciones.filter((n) => n.leido);
 
   const getNotifIcon = (tipo: string) => {
     switch (tipo) {
@@ -107,9 +112,12 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex justify-between items-center pb-3 border-b border-slate-800">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-blue-400" />
-                  <h4 className="font-bold text-sm text-white">Alertas de Acreditación</h4>
+                  <h4 className="font-bold text-sm text-white">Alertas</h4>
                 </div>
                 <div className="flex items-center gap-2">
+                  {leidas.length > 0 && onLimpiarLeidas && (
+                    <button onClick={onLimpiarLeidas} className="text-[10px] text-slate-400 hover:text-rose-400 transition-colors">Limpiar leídas</button>
+                  )}
                   <span className="text-[11px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">
                     {noLeidas.length} pendientes
                   </span>
@@ -138,7 +146,12 @@ export const Header: React.FC<HeaderProps> = ({
                       <div className="flex items-start gap-2.5">
                         {getNotifIcon(notif.tipo)}
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-slate-100">{notif.titulo}</p>
+                          <div className="flex justify-between items-start">
+                            <p className="font-bold text-slate-100">{notif.titulo}</p>
+                            {onEliminarNotificacion && (
+                              <button onClick={() => onEliminarNotificacion(notif.id)} className="text-slate-500 hover:text-rose-400"><Trash2 className="w-3.5 h-3.5"/></button>
+                            )}
+                          </div>
                           <p className="text-slate-400 mt-1 line-clamp-2 leading-relaxed">{notif.mensaje}</p>
                           <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-700/50">
                             <span className="text-[10px] text-slate-500">

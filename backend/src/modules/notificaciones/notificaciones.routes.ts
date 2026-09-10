@@ -6,5 +6,7 @@ const router = Router();
 
 router.get('/', authenticateJWT, NotificacionesController.getNotificaciones);
 router.patch('/:id/leido', authenticateJWT, NotificacionesController.marcarLeida);
+router.delete('/limpiar', authenticateJWT, NotificacionesController.limpiarLeidas);
+router.delete('/:id', authenticateJWT, NotificacionesController.borrarNotificacion);
 
 export default router;

@@ -65,6 +65,7 @@ export interface Postulante {
   vigencia_fin?: string;
   ultima_observacion?: string;
   ultimo_archivo?: string;
+  sctr_inicio?: string;
   sctr_vencimiento?: string;
   emo_vencimiento?: string;
   dias_restantes_sctr?: number;

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Postulante, RolUsuario, FaseOnboarding } from '../../types';
+import { api } from '../../services/api';
 import { 
   X, 
   FileText, 
@@ -15,7 +16,10 @@ import {
   User, 
   History,
   Building2,
-  Calendar
+  Calendar,
+  Clock,
+  Award,
+  FileCheck
 } from 'lucide-react';
 
 interface DocumentSplitViewerProps {
@@ -31,7 +35,10 @@ interface DocumentSplitViewerProps {
     detalles?: {
       observaciones?: string;
       nota?: number;
+      fechaInicio?: string;
       fechaVencimiento?: string;
+      clinicaOrigen?: string;
+      numeroPoliza?: string;
       motivo?: string;
     }
   ) => Promise<void>;
@@ -49,8 +56,46 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [observaciones, setObservaciones] = useState<string>('');
   const [notaExamen, setNotaExamen] = useState<number>(16);
+  const [fechaInicioSCTR, setFechaInicioSCTR] = useState<string>('');
   const [fechaVencSCTR, setFechaVencSCTR] = useState<string>('2026-10-30');
+  const [clinicaOrigen, setClinicaOrigen] = useState<string>('Clínica Limatambo Cajamarca');
+  const [numeroPoliza, setNumeroPoliza] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'DOCUMENTO' | 'HISTORIAL_VB' | 'HISTORIAL_SEGUROS'>('DOCUMENTO');
+  const [historialVB, setHistorialVB] = useState<any[]>([]);
+  const [historialSeguros, setHistorialSeguros] = useState<any[]>([]);
+  const [descargoContratista, setDescargoContratista] = useState<string>('');
+
+  // Reset de estado cada vez que cambia el postulante (Punto 1)
+  useEffect(() => {
+    if (postulante) {
+      setObservaciones('');
+      setDescargoContratista('');
+      setFechaInicioSCTR(postulante.sctr_inicio || new Date().toISOString().split('T')[0]);
+      setFechaVencSCTR(postulante.sctr_vencimiento || '2026-10-30');
+    }
+  }, [postulante?.id]);
+
+  // Cargar historial de V°B° y seguros
+  useEffect(() => {
+    if (isOpen && postulante?.id) {
+      // Cargar historial de auditoría
+      api.get(`/postulantes/${postulante.id}/expediente`)
+        .then((res) => {
+          if (res.data?.historialVistosBuenos) {
+            setHistorialVB(res.data.historialVistosBuenos);
+          }
+        })
+        .catch(() => {});
+
+      // Cargar historial de seguros
+      api.get(`/seguros/historial/${postulante.id}`)
+        .then((res) => {
+          setHistorialSeguros(res.data || []);
+        })
+        .catch(() => {});
+    }
+  }, [isOpen, postulante?.id]);
 
   if (!isOpen) return null;
 
@@ -139,7 +184,10 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
       await onEvaluar(postulante.id, fase, 'APROBAR', {
         observaciones: observaciones || 'Documento validado conforme a normativa minera. Visto Bueno otorgado.',
         nota: fase === 'FASE_4' ? notaExamen : undefined,
+        fechaInicio: fase === 'FASE_5' ? fechaInicioSCTR : undefined,
         fechaVencimiento: fase === 'FASE_5' ? fechaVencSCTR : undefined,
+        clinicaOrigen: fase === 'FASE_5' ? clinicaOrigen : undefined,
+        numeroPoliza: fase === 'FASE_5' ? numeroPoliza : undefined,
       });
       onClose();
     } catch (e: any) {
@@ -215,7 +263,41 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* SELECTOR DE PESTAÑAS (DOCUMENTO / HISTORIAL V°B° / SEGUROS) */}
+            <div className="flex items-center bg-slate-900 border border-slate-750 p-1 rounded-xl text-xs">
+              <button
+                onClick={() => setActiveTab('DOCUMENTO')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'DOCUMENTO'
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" /> Expediente
+              </button>
+              <button
+                onClick={() => setActiveTab('HISTORIAL_VB')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'HISTORIAL_VB'
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Award className="w-3.5 h-3.5" /> Historial V°B° ({historialVB.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('HISTORIAL_SEGUROS')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'HISTORIAL_SEGUROS'
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <FileCheck className="w-3.5 h-3.5" /> Pólizas Anteriores ({historialSeguros.length})
+              </button>
+            </div>
+
             {/* SELECTOR DE VERSIONES DEL DOCUMENTO */}
             <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-750 p-1 rounded-xl text-xs">
               <span className="text-slate-400 px-2 flex items-center gap-1">
@@ -283,8 +365,74 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
               </button>
             </div>
 
-            {/* CASO 1: ACCESO RESTRINGIDO POR CONFIDENCIALIDAD / PRIVACIDAD */}
-            {hasAccessRestricted ? (
+            {/* RENDERIZADO SEGÚN PESTAÑA SELECCIONADA */}
+            {activeTab === 'HISTORIAL_VB' ? (
+              <div className="w-full max-w-2xl bg-slate-900 border border-slate-750 rounded-2xl p-6 space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+                  <Award className="w-5 h-5 text-blue-400" />
+                  <h4 className="font-bold text-white text-sm">Historial y Trazabilidad de Vistos Buenos</h4>
+                </div>
+                {historialVB.length === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-8">No hay registros de visto bueno previos aún para este candidato.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {historialVB.map((vb, idx) => (
+                      <div key={idx} className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3.5 text-xs space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-blue-300">Paso {idx + 1}: {vb.area_evaluadora || vb.fase}</span>
+                          <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
+                            vb.decision === 'VISTO_BUENO' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                          }`}>
+                            {vb.decision}
+                          </span>
+                        </div>
+                        <p className="text-slate-300">
+                          Evaluador: <strong className="text-white">{vb.evaluador_nombre || 'Especialista'}</strong>
+                          {vb.evaluador_colegiatura && (
+                            <span className="text-blue-400 font-mono ml-1 font-semibold">({vb.evaluador_colegiatura})</span>
+                          )}
+                        </p>
+                        {vb.metadatos?.nota !== undefined && (
+                          <p className="text-emerald-400 font-semibold">
+                            Nota de Examen SSOMA: {String(vb.metadatos.nota).padStart(2, '0')}/20
+                          </p>
+                        )}
+                        <p className="text-slate-400 italic">"{vb.observaciones || 'Conforme'}"</p>
+                        <span className="text-[10px] text-slate-500 block pt-1 border-t border-slate-700/40">
+                          {new Date(vb.creado_en).toLocaleString('es-PE')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : activeTab === 'HISTORIAL_SEGUROS' ? (
+              <div className="w-full max-w-2xl bg-slate-900 border border-slate-750 rounded-2xl p-6 space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+                  <FileCheck className="w-5 h-5 text-emerald-400" />
+                  <h4 className="font-bold text-white text-sm">Histórico de Pólizas y Exámenes de Clínicas Autorizadas</h4>
+                </div>
+                {historialSeguros.length === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-8">No hay pólizas previas registradas en el histórico.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {historialSeguros.map((item, idx) => (
+                      <div key={idx} className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3.5 text-xs space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-emerald-300">{item.tipo_seguro}</span>
+                          <span className="text-slate-400 font-mono">{item.numero_poliza || 'S/N'}</span>
+                        </div>
+                        <p className="text-white font-medium">Clínica: {item.clinica_origen}</p>
+                        <div className="flex gap-4 text-slate-400 text-[11px]">
+                          <span>Inicio: {item.fecha_inicio ? new Date(item.fecha_inicio).toLocaleDateString('es-PE') : 'N/A'}</span>
+                          <span>Vencimiento: {item.fecha_vencimiento ? new Date(item.fecha_vencimiento).toLocaleDateString('es-PE') : 'N/A'}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : hasAccessRestricted ? (
               <div className="my-auto max-w-md w-full bg-slate-900 border-2 border-rose-500/40 rounded-2xl p-8 text-center shadow-2xl">
                 <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4 text-rose-400">
                   <ShieldAlert className="w-8 h-8" />
@@ -348,8 +496,8 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       <span className="font-mono text-slate-900 font-bold">{postulante.tipo_documento}: {postulante.numero_documento}</span>
                     </div>
                     <div className="flex justify-between font-medium">
-                      <span className="text-slate-500">Puesto Postulado:</span>
-                      <span className="text-blue-700 font-bold">{postulante.cargo}</span>
+                      <span className="text-slate-500">Cargo Postulado:</span>
+                      <span className="text-slate-900 font-bold">{postulante.cargo}</span>
                     </div>
                     <div className="flex justify-between font-medium">
                       <span className="text-slate-500">Grupo Sanguíneo:</span>
@@ -378,7 +526,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                         </span>
                       </div>
                       <p className="text-emerald-900 leading-relaxed">
-                        • Evaluación médica para trabajo en altura geográfica \(&gt; 4,000\) msnm: <strong>APTO</strong>.<br/>
+                        • Evaluación médica para trabajo en altura geográfica (&gt; 4,000) msnm: <strong>APTO</strong>.<br/>
                         • Examen Toxicológico (Drogas y Alcohol): <strong>NEGATIVO</strong>.<br/>
                         • Espirometría y Radiografía de Tórax OIT: Normal.
                       </p>
@@ -406,16 +554,77 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                     </div>
                   )}
 
-                  {fase === 'FASE_5' && (
-                    <div className="p-4 border-2 border-emerald-500/50 bg-emerald-50/50 rounded-lg space-y-2">
-                      <h5 className="font-bold text-emerald-900 text-sm">Constancia de Cobertura SCTR Salud y Pensión</h5>
-                      <p className="text-emerald-950 leading-relaxed">
-                        • Aseguradora: Rímac Seguros y Reaseguros.<br/>
-                        • Póliza N°: SCTR-MINA-2026-9812.<br/>
-                        • Cobertura: Personal amparado para labores de alto riesgo en interior mina y superficie.
-                      </p>
-                    </div>
-                  )}
+                  {fase === 'FASE_5' && (() => {
+                    const fInicio = postulante.sctr_inicio ? new Date(postulante.sctr_inicio) : new Date();
+                    const fFin = postulante.sctr_vencimiento ? new Date(postulante.sctr_vencimiento) : new Date(Date.now() + 180 * 86400000);
+                    const hoy = new Date();
+                    
+                    const totalDias = Math.max(1, Math.ceil((fFin.getTime() - fInicio.getTime()) / (1000 * 60 * 60 * 24)));
+                    const consumidoDias = Math.max(0, Math.ceil((hoy.getTime() - fInicio.getTime()) / (1000 * 60 * 60 * 24)));
+                    const diasRestantes = Math.ceil((fFin.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+                    const porcentajeConsumido = Math.min(100, Math.max(0, Math.round((consumidoDias / totalDias) * 100)));
+
+                    let estadoSemaforo = 'Recién Indicado';
+                    let badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                    let barColor = 'bg-emerald-500';
+
+                    if (diasRestantes <= 0) {
+                      estadoSemaforo = 'Póliza Expirada (Alerta Roja)';
+                      badgeColor = 'bg-rose-100 text-rose-800 border-rose-300';
+                      barColor = 'bg-rose-600';
+                    } else if (diasRestantes <= 30 || porcentajeConsumido > 70) {
+                      estadoSemaforo = 'Alerta Roja (Crítico < 30 días)';
+                      badgeColor = 'bg-rose-100 text-rose-800 border-rose-300';
+                      barColor = 'bg-rose-500';
+                    } else if (porcentajeConsumido >= 34) {
+                      estadoSemaforo = 'Medio Tiempo (En Operación)';
+                      badgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
+                      barColor = 'bg-amber-500';
+                    }
+
+                    return (
+                      <div className="p-4 border-2 border-slate-300 bg-slate-50 rounded-xl space-y-3">
+                        <div className="flex justify-between items-center">
+                          <h5 className="font-bold text-slate-900 text-sm">Control de Cobertura SCTR Salud y Pensión</h5>
+                          <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full border ${badgeColor}`}>
+                            {estadoSemaforo}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">INICIO DE PÓLIZA:</span>
+                            <span className="font-bold">{postulante.sctr_inicio || '2026-01-01'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">VENCIMIENTO:</span>
+                            <span className="font-bold text-slate-900">{postulante.sctr_vencimiento || '2026-07-01'}</span>
+                          </div>
+                        </div>
+
+                        {/* BARRA DE PROGRESO DE VIGENCIA */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[11px] font-semibold text-slate-600">
+                            <span>Vigencia: {totalDias} días totales</span>
+                            <span className={diasRestantes <= 30 ? 'text-rose-600 font-bold' : 'text-slate-800'}>
+                              {diasRestantes <= 0 ? 'Vencido' : `Restan ${diasRestantes} días`} ({porcentajeConsumido}% consumido)
+                            </span>
+                          </div>
+                          <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden flex">
+                            <div 
+                              className={`h-full ${barColor} transition-all duration-300`} 
+                              style={{ width: `${porcentajeConsumido}%` }} 
+                            />
+                          </div>
+                          <div className="flex justify-between text-[9px] text-slate-400 font-mono pt-0.5">
+                            <span>🟢 Recién Indicado (&lt;33%)</span>
+                            <span>🟡 Medio Tiempo (34-70%)</span>
+                            <span>🔴 Alerta Roja (&gt;70% o &lt;30d)</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* PIE CON SELLO DIGITAL DE INTEGRIDAD */}
@@ -431,7 +640,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
             )}
           </div>
 
-          {/* PANEL DERECHO: FORMULARIO DE DICTAMEN Y VISTO BUENO (40%) */}
+          {/* PANEL DERECHO: FORMULARIO DE DICTAMEN O PANEL DE CONTRATISTA (40%) */}
           <div className="flex-1 lg:flex-[1] bg-slate-900 p-6 overflow-y-auto flex flex-col justify-between">
             <div className="space-y-5">
               
@@ -451,107 +660,190 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                 </div>
               </div>
 
-              {/* CANDADO DE HARD GATING / PRERREQUISITO */}
-              {isBloqueadoSecuencial ? (
-                <div className="p-4 bg-amber-950/40 border border-amber-500/40 rounded-xl flex items-start gap-3">
-                  <Lock className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="text-xs font-bold text-amber-300 uppercase">Fase Bloqueada por Secuencia</h5>
-                    <p className="text-xs text-amber-200 mt-0.5">
-                      El trabajador aún no ha completado la fase anterior. Por normativa de seguridad minera, cada fase debe confirmarse en estricto orden secuencial.
+              {/* AISLAMIENTO DE ROL: SI ES CONTRATISTA */}
+              {userRole === 'CONTRATISTA' ? (
+                <div className="space-y-4">
+                  <div className="bg-amber-950/30 border border-amber-500/30 rounded-xl p-4 space-y-2">
+                    <h5 className="text-xs font-bold text-amber-300 uppercase flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4" /> Observación del Evaluador de Mina
+                    </h5>
+                    <p className="text-xs text-amber-100 italic bg-amber-950/50 p-3 rounded-lg border border-amber-500/20">
+                      "{postulante.ultima_observacion || 'Sin observaciones pendientes emitidas para este expediente.'}"
                     </p>
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      Respuesta / Descargo del Contratista:
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={descargoContratista}
+                      onChange={(e) => setDescargoContratista(e.target.value)}
+                      placeholder="Escriba aquí los descargos o precisiones para el evaluador de mina..."
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <p className="text-[11px] text-slate-400 italic">
+                    * Como empresa contratista, tus facultades están restringidas a la revisión y remisión de descargos/subsanaciones. Los dictámenes oficiales de aprobación y observación son potestad exclusiva de los evaluadores de mina.
+                  </p>
                 </div>
               ) : (
-                <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-2 text-xs text-emerald-300">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Fase previa confirmada. Expediente habilitado para evaluación.</span>
-                </div>
-              )}
+                /* VISTA PARA EVALUADORES DE MINA / SUPER ADMIN */
+                <>
+                  {/* CANDADO DE HARD GATING / PRERREQUISITO */}
+                  {isBloqueadoSecuencial ? (
+                    <div className="p-4 bg-amber-950/40 border border-amber-500/40 rounded-xl flex items-start gap-3">
+                      <Lock className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h5 className="text-xs font-bold text-amber-300 uppercase">Fase Bloqueada por Secuencia</h5>
+                        <p className="text-xs text-amber-200 mt-0.5">
+                          El trabajador aún no ha completado la fase anterior. Por normativa de seguridad minera, cada fase debe confirmarse en estricto orden secuencial.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-2 text-xs text-emerald-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Fase previa confirmada. Expediente habilitado para evaluación.</span>
+                    </div>
+                  )}
 
-              {/* CAMPOS DINÁMICOS POR FASE */}
-              {fase === 'FASE_4' && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Nota del Examen de Inducción (Mínimo aprobatorio 14/20):
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="20"
-                    value={notaExamen}
-                    onChange={(e) => setNotaExamen(Number(e.target.value))}
-                    disabled={isBloqueadoSecuencial}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              )}
+                  {/* CAMPOS DINÁMICOS POR FASE */}
+                  {fase === 'FASE_4' && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                        Nota del Examen de Inducción (Mínimo aprobatorio 14/20):
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="20"
+                        value={notaExamen}
+                        onChange={(e) => setNotaExamen(Math.min(20, Math.max(0, Number(e.target.value))))}
+                        disabled={isBloqueadoSecuencial}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  )}
 
-              {fase === 'FASE_5' && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Fecha de Vencimiento de la Póliza SCTR:
-                  </label>
-                  <input
-                    type="date"
-                    value={fechaVencSCTR}
-                    onChange={(e) => setFechaVencSCTR(e.target.value)}
-                    disabled={isBloqueadoSecuencial}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white font-bold focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              )}
+                  {fase === 'FASE_5' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          Clínica Autorizada de Cajamarca:
+                        </label>
+                        <select
+                          value={clinicaOrigen}
+                          onChange={(e) => setClinicaOrigen(e.target.value)}
+                          disabled={isBloqueadoSecuencial}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+                        >
+                          <option value="Clínica Limatambo Cajamarca">Clínica Limatambo Cajamarca</option>
+                          <option value="Policlínico San Antonio Cajamarca">Policlínico San Antonio Cajamarca</option>
+                          <option value="Centro Médico Ocupacional Yanacocha">Centro Médico Ocupacional Yanacocha</option>
+                          <option value="Suiza Lab Cajamarca">Suiza Lab Cajamarca</option>
+                          <option value="Otra Clínica Autorizada">Otra Clínica Autorizada</option>
+                        </select>
+                      </div>
 
-              {/* OBSERVACIONES TÉCNICAS */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Observaciones / Sustento Técnico del Dictamen:
-                </label>
-                <textarea
-                  rows={4}
-                  value={observaciones}
-                  onChange={(e) => setObservaciones(e.target.value)}
-                  disabled={isBloqueadoSecuencial}
-                  placeholder={
-                    isBloqueadoSecuencial
-                      ? 'Bloqueado hasta que concluya la fase previa...'
-                      : 'Detalla el sustento para el Visto Bueno o el motivo exacto de la observación para la contratista...'
-                  }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500"
-                />
-              </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 mb-1">
+                            Fecha Inicio Póliza:
+                          </label>
+                          <input
+                            type="date"
+                            value={fechaInicioSCTR}
+                            onChange={(e) => setFechaInicioSCTR(e.target.value)}
+                            disabled={isBloqueadoSecuencial}
+                            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-300 mb-1">
+                            Fecha Vencimiento:
+                          </label>
+                          <input
+                            type="date"
+                            value={fechaVencSCTR}
+                            onChange={(e) => setFechaVencSCTR(e.target.value)}
+                            disabled={isBloqueadoSecuencial}
+                            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* OBSERVACIONES TÉCNICAS */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      Observaciones / Sustento Técnico del Dictamen:
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={observaciones}
+                      onChange={(e) => setObservaciones(e.target.value)}
+                      disabled={isBloqueadoSecuencial}
+                      placeholder={
+                        isBloqueadoSecuencial
+                          ? 'Bloqueado hasta que concluya la fase previa...'
+                          : 'Detalla el sustento para el Visto Bueno o el motivo exacto de la observación para la contratista...'
+                      }
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* BOTONERA DE DICTAMEN INMEDIATO */}
+            {/* BOTONERA DE ACCIÓN */}
             <div className="pt-6 border-t border-slate-800 space-y-2">
-              <button
-                onClick={handleAprobar}
-                disabled={loading || isBloqueadoSecuencial}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2"
-              >
-                <CheckCircle2 className="w-4 h-4" /> 
-                {loading ? 'Procesando...' : 'Dar Visto Bueno (Aprobar Documento)'}
-              </button>
-
-              <div className="flex gap-2">
+              {userRole === 'CONTRATISTA' ? (
                 <button
-                  onClick={handleObservar}
-                  disabled={loading || isBloqueadoSecuencial}
-                  className="flex-1 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed text-amber-400 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                  type="button"
+                  onClick={onClose}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl text-sm transition-all"
                 >
-                  <AlertTriangle className="w-3.5 h-3.5" /> Observar Documento
+                  Cerrar Expediente
                 </button>
-
-                {(fase === 'FASE_2' || fase === 'FASE_3') && (
+              ) : (
+                <>
                   <button
-                    onClick={handleListaNegra}
+                    type="button"
+                    onClick={handleAprobar}
                     disabled={loading || isBloqueadoSecuencial}
-                    className="flex-1 bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20"
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2"
                   >
-                    <Ban className="w-3.5 h-3.5" /> NO APTO (Lista Negra)
+                    <CheckCircle2 className="w-4 h-4" /> 
+                    {loading ? 'Procesando...' : 'Dar Visto Bueno (Aprobar Documento)'}
                   </button>
-                )}
-              </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleObservar}
+                      disabled={loading || isBloqueadoSecuencial}
+                      className="flex-1 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed text-amber-400 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5" /> Observar Documento
+                    </button>
+
+                    {(fase === 'FASE_2' || fase === 'FASE_3') && (
+                      <button
+                        type="button"
+                        onClick={handleListaNegra}
+                        disabled={loading || isBloqueadoSecuencial}
+                        className="flex-1 bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20"
+                      >
+                        <Ban className="w-3.5 h-3.5" /> NO APTO (Lista Negra)
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

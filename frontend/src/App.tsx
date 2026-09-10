@@ -650,6 +650,45 @@ export const App: React.FC = () => {
     );
   };
 
+  const [toastVencimiento, setToastVencimiento] = useState<string | null>(null);
+
+  // Alerta flotante al login: consultar vencimientos en próximos 15/30 días
+  useEffect(() => {
+    if (currentUser) {
+      api.get('/vencimientos')
+        .then((res) => {
+          const { porVencer = 0, criticos = 0, vencidos = 0 } = res.data || {};
+          const totalAlertas = porVencer + vencidos;
+          if (totalAlertas > 0) {
+            setToastVencimiento(
+              `⚠️ Atención: Hay ${totalAlertas} trabajador(es) con SCTR ${
+                vencidos > 0 ? 'vencido o ' : ''
+              }próximo a vencer en los próximos 15/30 días (${criticos} críticos).`
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, [currentUser]);
+
+  const handleEliminarNotificacion = async (id: string) => {
+    try {
+      await api.delete(`/notificaciones/${id}`);
+    } catch (e) {
+      // Local
+    }
+    setNotificaciones((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const handleLimpiarLeidas = async () => {
+    try {
+      await api.delete('/notificaciones/limpiar');
+    } catch (e) {
+      // Local
+    }
+    setNotificaciones((prev) => prev.filter((n) => !n.leido));
+  };
+
   const handleMarcarNotificacionLeida = async (id: string) => {
     try {
       await api.patch(`/notificaciones/${id}/leido`);
@@ -687,8 +726,25 @@ export const App: React.FC = () => {
           onLogout={handleLogout}
           notificaciones={notificaciones}
           onMarcarLeida={handleMarcarNotificacionLeida}
+          onEliminarNotificacion={handleEliminarNotificacion}
+          onLimpiarLeidas={handleLimpiarLeidas}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
+
+        {/* TOAST FLOTANTE AL LOGIN: VENCIMIENTO PREVENTIVO 15/30 DÍAS */}
+        {toastVencimiento && (
+          <div className="fixed bottom-5 right-5 z-50 max-w-md bg-amber-950/95 border-2 border-amber-500/80 text-amber-100 p-4 rounded-2xl shadow-2xl backdrop-blur flex items-start justify-between gap-3 animate-slide-up">
+            <div className="text-xs font-medium leading-relaxed">
+              {toastVencimiento}
+            </div>
+            <button
+              onClick={() => setToastVencimiento(null)}
+              className="text-amber-400 hover:text-white p-1 rounded-lg transition-colors flex-shrink-0"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         <div className="p-3.5 sm:p-6 max-w-7xl w-full mx-auto pb-20">
           {currentView === 'admin' && (

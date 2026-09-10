@@ -21,7 +21,9 @@ import {
   RefreshCw,
   Activity,
   AlertTriangle,
-  BadgeCheck
+  BadgeCheck,
+  LogOut,
+  Ambulance
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -60,6 +62,60 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulante
   const [colaOffline, setColaOffline] = useState<any[]>([]);
   const [sincronizando, setSincronizando] = useState<boolean>(false);
   const [mensajeNotificacion, setMensajeNotificacion] = useState<{ texto: string; tipo: 'success' | 'warn' | 'error' } | null>(null);
+
+  // Estados de Bajada Anticipada por Emergencia (Punto 6)
+  const [modalEmergenciaOpen, setModalEmergenciaOpen] = useState(false);
+  const [emergenciasActivas, setEmergenciasActivas] = useState<any[]>([]);
+  const [formEmergencia, setFormEmergencia] = useState({
+    postulanteId: '',
+    tipoEmergencia: 'MEDICA_TRABAJADOR' as 'MEDICA_TRABAJADOR' | 'FAMILIAR_GRAVE' | 'OPERACIONAL',
+    motivoDetalle: '',
+  });
+
+  const fetchEmergencias = async () => {
+    try {
+      const res = await api.get('/emergencias/activas');
+      setEmergenciasActivas(res.data || []);
+    } catch (e) {}
+  };
+
+  const handleAutorizarEmergenciaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formEmergencia.postulanteId || !formEmergencia.motivoDetalle) {
+      alert('Seleccione un trabajador e ingrese el sustento de la emergencia médica o familiar.');
+      return;
+    }
+    try {
+      await api.post('/emergencias/autorizar', formEmergencia);
+      setMensajeNotificacion({
+        tipo: 'success',
+        texto: '✅ Bajada anticipada por emergencia autorizada con éxito. Código de pase habilitado en Garita.'
+      });
+      setModalEmergenciaOpen(false);
+      setFormEmergencia({
+        postulanteId: '',
+        tipoEmergencia: 'MEDICA_TRABAJADOR',
+        motivoDetalle: '',
+      });
+      fetchEmergencias();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Error al autorizar bajada de emergencia.');
+    }
+  };
+
+  const handleEjecutarSalidaEmergencia = async (bajaId: string, dni: string) => {
+    try {
+      await api.post('/emergencias/ejecutar-garita', { bajaId, numeroDocumento: dni });
+      setMensajeNotificacion({
+        tipo: 'success',
+        texto: `🚑 Salida de emergencia ejecutada para DNI ${dni}: Reconocida como Salida Justificada (Sin cómputo de abandono).`
+      });
+      fetchEmergencias();
+      fetchHistorial();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Error al validar salida de emergencia en Garita.');
+    }
+  };
 
   // Cargar padrón y cola offline de localStorage al iniciar
   useEffect(() => {
@@ -101,6 +157,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulante
 
   useEffect(() => {
     fetchHistorial();
+    fetchEmergencias();
   }, []);
 
   // Descargar Padrón Local para Contingencia sin Conexión
@@ -487,6 +544,17 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulante
               Sincronizar {colaOffline.length} Offline
             </button>
           )}
+
+          {/* Botón Bajada Anticipada por Emergencia (Punto 6) */}
+          <button
+            type="button"
+            onClick={() => setModalEmergenciaOpen(true)}
+            title="Autorizar o registrar salida anticipada de campamento por emergencia médica o familiar (14x7)"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-rose-700/80 hover:bg-rose-600 text-white border border-rose-500/50 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-sm"
+          >
+            <Ambulance className="w-4 h-4" />
+            Emergencia / Bajada 14x7
+          </button>
 
           <button
             onClick={() => setCamaraActiva(!camaraActiva)}
@@ -911,6 +979,126 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulante
           </table>
         </div>
       </div>
+
+      {/* MODAL AUTORIZAR BAJADA ANTICIPADA POR EMERGENCIA (Punto 6) */}
+      {modalEmergenciaOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800 bg-slate-950">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400">
+                  <Ambulance className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-white">Autorizar Bajada Anticipada de Campamento</h4>
+                  <p className="text-[11px] text-slate-400">Régimen Minero 14x7 • Desmovilización Justificada por Emergencia</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setModalEmergenciaOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAutorizarEmergenciaSubmit} className="p-6 space-y-4">
+              {/* Seleccionar Trabajador */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Seleccionar Trabajador de Turno:
+                </label>
+                <select
+                  value={formEmergencia.postulanteId}
+                  onChange={(e) => setFormEmergencia({ ...formEmergencia, postulanteId: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 font-medium"
+                >
+                  <option value="">-- Seleccionar personal habilitado --</option>
+                  {postulantes.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.apellidos}, {p.nombres} - DNI: {p.numero_documento} ({p.cargo} - {p.empresa_nombre})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Tipo de Emergencia */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Tipo de Emergencia / Motivo:
+                </label>
+                <select
+                  value={formEmergencia.tipoEmergencia}
+                  onChange={(e) => setFormEmergencia({ ...formEmergencia, tipoEmergencia: e.target.value as any })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 font-medium"
+                >
+                  <option value="MEDICA_TRABAJADOR">Emergencia Médica del Trabajador (Evacuación Clínica)</option>
+                  <option value="FAMILIAR_GRAVE">Emergencia Familiar Grave (Fallecimiento o Salud Crítica)</option>
+                  <option value="OPERACIONAL">Desmovilización Operativa / Parada de Planta</option>
+                </select>
+              </div>
+
+              {/* Detalle y Sustento */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Diagnóstico / Justificación Detallada (Médico de Mina / RRHH):
+                </label>
+                <textarea
+                  rows={3}
+                  value={formEmergencia.motivoDetalle}
+                  onChange={(e) => setFormEmergencia({ ...formEmergencia, motivoDetalle: e.target.value })}
+                  placeholder="Detallar el motivo clínico o sustento familiar comprobado para justificar la salida sin computar abandono..."
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500"
+                />
+              </div>
+
+              {/* Lista de Emergencias Activas */}
+              {emergenciasActivas.length > 0 && (
+                <div className="pt-3 border-t border-slate-800 space-y-2">
+                  <span className="text-[11px] font-bold text-amber-400 block uppercase">
+                    Salidas por Emergencia Autorizadas Pendientes de Ejecución en Garita:
+                  </span>
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    {emergenciasActivas.map((em) => (
+                      <div key={em.id} className="p-2.5 bg-slate-800/80 border border-rose-500/30 rounded-xl flex justify-between items-center text-xs">
+                        <div>
+                          <span className="font-bold text-white">{em.apellidos}, {em.nombres}</span>
+                          <span className="text-slate-400 font-mono ml-2">DNI: {em.numero_documento}</span>
+                          <p className="text-[10px] text-rose-300 mt-0.5 italic">"{em.motivo_detalle}"</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleEjecutarSalidaEmergencia(em.id, em.numero_documento)}
+                          className="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 shadow"
+                        >
+                          <LogOut className="w-3.5 h-3.5" /> Validar Salida
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-4 border-t border-slate-800 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setModalEmergenciaOpen(false)}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-rose-600/30 transition-all flex items-center gap-1.5"
+                >
+                  <Ambulance className="w-4 h-4" />
+                  Autorizar Bajada
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

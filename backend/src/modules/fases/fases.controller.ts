@@ -7,7 +7,10 @@ const evaluarSchema = z.object({
   decision: z.enum(['APROBAR', 'OBSERVAR', 'NO_APTO']),
   observaciones: z.string().optional(),
   nota: z.preprocess((val) => (val !== undefined && val !== '' ? Number(val) : undefined), z.number().min(0).max(20).optional()),
+  fechaInicio: z.string().optional(),
   fechaVencimiento: z.string().optional(),
+  clinicaOrigen: z.string().optional(),
+  numeroPoliza: z.string().optional(),
   motivoListaNegra: z.string().optional(),
 });
 
@@ -42,7 +45,10 @@ export class FasesController {
         decision: parsed.decision,
         observaciones: parsed.observaciones,
         nota: parsed.nota,
+        fechaInicio: parsed.fechaInicio,
         fechaVencimiento: parsed.fechaVencimiento,
+        clinicaOrigen: parsed.clinicaOrigen,
+        numeroPoliza: parsed.numeroPoliza,
         archivoUrl,
         motivoListaNegra: parsed.motivoListaNegra,
       });

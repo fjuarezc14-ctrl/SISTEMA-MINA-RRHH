@@ -47,7 +47,10 @@ export class FasesService {
     decision: 'APROBAR' | 'OBSERVAR' | 'NO_APTO';
     observaciones?: string;
     nota?: number;
+    fechaInicio?: string;
     fechaVencimiento?: string;
+    clinicaOrigen?: string;
+    numeroPoliza?: string;
     archivoUrl?: string;
     motivoListaNegra?: string;
   }) {
@@ -61,7 +64,10 @@ export class FasesService {
       decision,
       observaciones,
       nota,
+      fechaInicio,
       fechaVencimiento,
+      clinicaOrigen,
+      numeroPoliza,
       archivoUrl,
       motivoListaNegra,
     } = params;
@@ -173,6 +179,32 @@ export class FasesService {
         siguienteFase = 'FOTOCHECK';
         estadoGlobal = 'APTO_PARA_TRABAJAR'; // 5 Vistos Buenos completados
         
+        // Si viene fechaVencimiento o fechaInicio para SCTR, actualizar tabla postulantes
+        if (fechaVencimiento || fechaInicio) {
+          await query(
+            `UPDATE postulantes 
+             SET sctr_inicio = COALESCE($1, sctr_inicio), 
+                 sctr_vencimiento = COALESCE($2, sctr_vencimiento) 
+             WHERE id = $3`,
+            [fechaInicio || null, fechaVencimiento || null, postulanteId]
+          );
+        }
+
+        // Registrar en historial_seguros para auditoría de clínicas y pólizas
+        await query(
+          `INSERT INTO historial_seguros 
+           (postulante_id, tipo_seguro, clinica_origen, numero_poliza, fecha_inicio, fecha_vencimiento, archivo_url)
+           VALUES ($1, 'SCTR_SALUD_PENSION', $2, $3, $4, $5, $6)`,
+          [
+            postulanteId,
+            clinicaOrigen || 'Clínica Limatambo Cajamarca',
+            numeroPoliza || `POL-SCTR-${Math.floor(100000 + Math.random() * 900000)}`,
+            fechaInicio || new Date().toISOString().split('T')[0],
+            fechaVencimiento || null,
+            archivoUrl || null
+          ]
+        );
+
         // Configuración de vigencia y zona según el tipo de pase minero
         const tipoPase = postulante.tipo_pase || 'PERMANENTE';
         let intervaloVigencia = "INTERVAL '1 year'";

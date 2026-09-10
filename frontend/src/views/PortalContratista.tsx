@@ -3,7 +3,7 @@ import { Postulante, RolUsuario } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
-import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { api } from '../services/api';
 
 interface PortalContratistaProps {
@@ -38,6 +38,11 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
   });
   const [nuevoError, setNuevoError] = useState('');
   const [nuevoLoading, setNuevoLoading] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggleAccordion = (id: string) => {
+    setExpandedId(prev => prev === id ? null : id);
+  };
 
   const handleOpenSubsanar = (p: Postulante) => {
     setSelectedPostulante(p);
@@ -59,7 +64,20 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
     try {
       await api.post('/postulantes', nuevoForm);
       setNuevoModalOpen(false);
-      window.location.reload();
+      // Evitar reload completo: limpiar formulario
+      setNuevoForm({
+        tipo_documento: 'DNI',
+        numero_documento: '',
+        nombres: '',
+        apellidos: '',
+        cargo: '',
+        telefono: '',
+        email: '',
+        tipo_pase: 'PERMANENTE',
+        vigencia_inicio: '',
+        vigencia_fin: '',
+      });
+      alert('Personal / Pase registrado con éxito. Se actualizará en la lista.');
     } catch (err: any) {
       setNuevoError(err.response?.data?.error || 'Error al registrar pase o postulante.');
     } finally {
@@ -134,7 +152,8 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* VISTA DESKTOP: TABLA HTML (hidden en mobile y tablet, visible solo en lg:block) */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-900/90 text-slate-400 border-b border-slate-700/80">
               <tr>
@@ -225,8 +244,8 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
                     {/* ACCIONES Y SUBSANACIÓN */}
                     <td className="p-4">
                       <div className="flex flex-wrap items-center gap-2">
-                        {/* VISOR DE EXPEDIENTE */}
                         <button
+                          type="button"
                           onClick={() => handleOpenSplitViewer(postulante)}
                           className="inline-flex items-center gap-1 text-xs text-blue-300 bg-slate-700/80 hover:bg-slate-750 px-2.5 py-1.5 rounded-lg border border-slate-600 font-medium transition-colors"
                         >
@@ -235,6 +254,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
 
                         {isObservado && (
                           <button 
+                            type="button"
                             onClick={() => handleOpenSubsanar(postulante)}
                             className="inline-flex items-center gap-1 text-xs text-white bg-amber-600 hover:bg-amber-500 font-bold px-3 py-1.5 rounded-lg shadow transition-colors"
                           >
@@ -261,6 +281,138 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
             </tbody>
           </table>
         </div>
+
+        {/* VISTA MÓVIL Y TABLET: TARJETAS ACORDEÓN (lg:hidden) - CERO SCROLL HORIZONTAL */}
+        <div className="block lg:hidden divide-y divide-slate-800">
+          {postulantes.map((postulante) => {
+            const isObservado = postulante.estado_global === 'OBSERVADO';
+            const isAptoTotal = postulante.estado_global === 'APTO_PARA_TRABAJAR' || postulante.fase_actual === 'FOTOCHECK';
+            const isExpanded = expandedId === postulante.id;
+
+            return (
+              <div key={postulante.id} className="p-4 bg-slate-850/40 hover:bg-slate-800/40 transition-colors">
+                {/* CABECERA DE LA TARJETA (TAPABLE) */}
+                <div 
+                  onClick={() => toggleAccordion(postulante.id)}
+                  className="flex items-center justify-between cursor-pointer select-none gap-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-white text-sm">
+                        {postulante.apellidos}, {postulante.nombres}
+                      </span>
+                      {postulante.tipo_pase && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                          {postulante.tipo_pase.replace('_', ' ')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">
+                      {postulante.cargo} • Doc: <span className="font-mono text-slate-300">{postulante.numero_documento}</span>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Badge 
+                      estado={postulante.estado_global} 
+                      fase={isAptoTotal ? undefined : postulante.fase_actual}
+                    />
+                    <div className="p-1.5 text-slate-400 rounded-lg hover:bg-slate-700">
+                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </div>
+                  </div>
+                </div>
+
+                {/* CONTENIDO DESPLEGABLE (ACORDEÓN) */}
+                {isExpanded && (
+                  <div className="mt-4 pt-3 border-t border-slate-750/70 space-y-3 animate-fade-in">
+                    {/* SEMÁFORO VERTICAL DE LAS 5 FASES */}
+                    <div>
+                      <span className="text-[11px] font-semibold text-slate-400 block mb-1.5">
+                        Estado de Fases y Vistos Buenos:
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {[
+                          { num: 1, label: '1. RRHH' },
+                          { num: 2, label: '2. Médico' },
+                          { num: 3, label: '3. Seguridad' },
+                          { num: 4, label: '4. SSOMA' },
+                          { num: 5, label: '5. SCTR' },
+                        ].map(({ num, label }) => {
+                          const st = getFaseStatus(postulante, num);
+
+                          let bg = 'bg-slate-800 text-slate-400 border-slate-700';
+                          let icon = <Clock className="w-3 h-3" />;
+
+                          if (st === 'APROBADO') {
+                            bg = 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40 font-bold';
+                            icon = <Check className="w-3 h-3 text-emerald-400" />;
+                          } else if (st === 'OBSERVADO') {
+                            bg = 'bg-amber-950/70 text-amber-300 border-amber-500/40 font-bold';
+                            icon = <AlertTriangle className="w-3 h-3 text-amber-400" />;
+                          } else if (st === 'EN_PROCESO') {
+                            bg = 'bg-blue-950/70 text-blue-300 border-blue-500/40 font-bold';
+                            icon = <Clock className="w-3 h-3 text-blue-400" />;
+                          }
+
+                          return (
+                            <div key={num} className={`flex items-center gap-1.5 p-2 rounded-lg border text-xs ${bg}`}>
+                              {icon}
+                              <span className="truncate">{label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* OBSERVACIÓN SI EXISTE */}
+                    {isObservado && (
+                      <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-xl">
+                        <span className="text-[10px] font-bold text-amber-400 uppercase block">Observación Emitida:</span>
+                        <p className="text-xs text-amber-200 italic mt-0.5">
+                          "{postulante.ultima_observacion || 'Documento observado por el evaluador de área.'}"
+                        </p>
+                      </div>
+                    )}
+
+                    {/* BOTONES DIRECTOS (SIN SCROLL HORIZONTAL) */}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenSplitViewer(postulante);
+                        }}
+                        className="flex-1 bg-slate-750 hover:bg-slate-700 text-blue-300 border border-blue-500/30 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                      >
+                        <Eye className="w-4 h-4 text-blue-400" /> Ver Expediente
+                      </button>
+
+                      {isObservado && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenSubsanar(postulante);
+                          }}
+                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-colors"
+                        >
+                          <UploadCloud className="w-4 h-4" /> Subsanar v2
+                        </button>
+                      )}
+
+                      {isAptoTotal && (
+                        <div className="flex-1 bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+                          <ShieldCheck className="w-4 h-4 text-emerald-400" /> Habilitado Mina
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* MODAL VISOR SPLIT-SCREEN */}
@@ -271,7 +423,13 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
           postulante={viewerPostulante}
           fase={viewerPostulante.fase_actual}
           userRole={userRole}
-          onEvaluar={async () => {}}
+          onEvaluar={async (id, f, dec, det) => {
+            // Si el evaluador o contratista ejecuta alguna acción desde el visor
+            if (det?.observaciones && selectedFile) {
+              await onSubsanar(id, selectedFile, det.observaciones);
+            }
+            setSplitViewerOpen(false);
+          }}
         />
       )}
 

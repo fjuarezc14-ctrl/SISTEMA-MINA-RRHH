@@ -19,7 +19,9 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
   const candidatosFase5 = postulantes.filter((p) => p.fase_actual === 'FASE_5');
   const candidatosBloqueados = postulantes.filter((p) => ['FASE_1', 'FASE_2', 'FASE_3', 'FASE_4'].includes(p.fase_actual));
 
+  const [fechasInicio, setFechasInicio] = useState<Record<string, string>>({});
   const [fechasVenc, setFechasVenc] = useState<Record<string, string>>({});
+  const [clinicas, setClinicas] = useState<Record<string, string>>({});
   const [observarModalOpen, setObservarModalOpen] = useState(false);
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
@@ -27,8 +29,16 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
   const [motivoObs, setMotivoObs] = useState('La póliza SCTR subida está vencida o no cuenta con endoso minero.');
   const [loading, setLoading] = useState(false);
 
+  const handleFechaInicioChange = (id: string, val: string) => {
+    setFechasInicio((prev) => ({ ...prev, [id]: val }));
+  };
+
   const handleFechaChange = (id: string, val: string) => {
     setFechasVenc((prev) => ({ ...prev, [id]: val }));
+  };
+
+  const handleClinicaChange = (id: string, val: string) => {
+    setClinicas((prev) => ({ ...prev, [id]: val }));
   };
 
   const handleOpenObservar = (p: Postulante) => {
@@ -42,13 +52,17 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
   };
 
   const handleAprobar = async (id: string) => {
-    const fecha = fechasVenc[id] || '2026-10-30';
+    const fInicio = fechasInicio[id] || new Date().toISOString().split('T')[0];
+    const fVenc = fechasVenc[id] || '2026-10-30';
+    const clinica = clinicas[id] || 'Clínica Limatambo Cajamarca';
 
     try {
       setLoading(true);
       await onEvaluar(id, 'FASE_5', 'APROBAR', {
-        fechaVencimiento: fecha,
-        observaciones: 'Póliza SCTR validada conforme. Trabajador Apto para Trabajar.',
+        fechaInicio: fInicio,
+        fechaVencimiento: fVenc,
+        clinicaOrigen: clinica,
+        observaciones: `Póliza SCTR validada conforme con ${clinica}. Trabajador Apto para Trabajar.`,
       });
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al validar SCTR.');
@@ -110,14 +124,41 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
                       <CheckCircle className="w-3.5 h-3.5" /> Fases 1, 2, 3 y 4 Confirmadas con Visto Bueno
                     </div>
 
-                    <div className="flex flex-wrap gap-3 items-center pt-1">
-                      <span className="text-xs text-slate-400 font-medium">Vigencia Póliza:</span>
-                      <input 
-                        type="date" 
-                        value={fechaVal}
-                        onChange={(e) => handleFechaChange(candidato.id, e.target.value)}
-                        className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
-                      />
+                    <div className="flex flex-wrap gap-3 items-center pt-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-slate-400 font-medium">Clínica:</span>
+                        <select
+                          value={clinicas[candidato.id] || 'Clínica Limatambo Cajamarca'}
+                          onChange={(e) => handleClinicaChange(candidato.id, e.target.value)}
+                          className="bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+                        >
+                          <option value="Clínica Limatambo Cajamarca">Clínica Limatambo Cajamarca</option>
+                          <option value="Policlínico San Antonio Cajamarca">Policlínico San Antonio Cajamarca</option>
+                          <option value="Centro Médico Ocupacional Yanacocha">Centro Médico Ocupacional Yanacocha</option>
+                          <option value="Suiza Lab Cajamarca">Suiza Lab Cajamarca</option>
+                          <option value="Otra Clínica Autorizada">Otra Clínica Autorizada</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-slate-400 font-medium">Inicio:</span>
+                        <input 
+                          type="date" 
+                          value={fechasInicio[candidato.id] || new Date().toISOString().split('T')[0]}
+                          onChange={(e) => handleFechaInicioChange(candidato.id, e.target.value)}
+                          className="bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-slate-400 font-medium">Vencimiento:</span>
+                        <input 
+                          type="date" 
+                          value={fechaVal}
+                          onChange={(e) => handleFechaChange(candidato.id, e.target.value)}
+                          className="bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+                        />
+                      </div>
                     </div>
                   </div>
 
