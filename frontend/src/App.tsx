@@ -362,6 +362,14 @@ export const App: React.FC = () => {
     setCurrentUser(null);
   };
 
+  useEffect(() => {
+    const onSessionExpired = () => {
+      setCurrentUser(null);
+    };
+    window.addEventListener('vt_session_expired', onSessionExpired);
+    return () => window.removeEventListener('vt_session_expired', onSessionExpired);
+  }, []);
+
   // Estadísticas calculadas dinámicamente
   const stats: StatsDashboard = {
     total: postulantes.length,

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PostulantesController } from './postulantes.controller';
+import { DocumentosController } from '../documentos/documentos.controller';
 import { authenticateJWT, requireRoles } from '../../middlewares/auth.middleware';
 import { upload } from '../../middlewares/upload.middleware';
 
@@ -8,6 +9,7 @@ const router = Router();
 // Listado de postulantes (Filtrado según rol)
 router.get('/', authenticateJWT, PostulantesController.getMisPostulantes);
 router.get('/:id', authenticateJWT, PostulantesController.getById);
+router.get('/:postulanteId/expediente', authenticateJWT, DocumentosController.getExpediente);
 
 // Registro de nuevo postulante por contratista
 router.post(

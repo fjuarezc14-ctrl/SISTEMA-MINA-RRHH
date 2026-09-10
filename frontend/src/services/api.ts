@@ -14,14 +14,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor para manejar tokens expirados o no autorizados (401)
+// Interceptor para manejar tokens expirados o no autorizados (401 / token inválido)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
-      // Si el token expiró o es inválido, limpiar sesión
+    const status = error.response?.status;
+    const isLogin = error.config?.url?.includes('/auth/login');
+    const isTokenError =
+      status === 401 ||
+      (status === 403 && String(error.response?.data?.error || '').toLowerCase().includes('token'));
+
+    if (isTokenError && !isLogin) {
+      // Si el token expiró o es inválido, limpiar sesión y notificar
       localStorage.removeItem('vt_token');
       localStorage.removeItem('vt_user');
+      window.dispatchEvent(new Event('vt_session_expired'));
     }
     return Promise.reject(error);
   }

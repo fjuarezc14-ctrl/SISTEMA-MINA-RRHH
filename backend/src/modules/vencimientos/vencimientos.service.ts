@@ -4,6 +4,7 @@ export interface ResumenVencimientos {
   total: number;
   vigentes: number;
   porVencer: number;
+  criticos: number;
   vencidos: number;
   detalle: Array<{
     id: string;
@@ -14,9 +15,10 @@ export interface ResumenVencimientos {
     cargo: string;
     fase_actual: string;
     estado_global: string;
+    sctr_inicio?: string | null;
     sctr_vencimiento: string | null;
     dias_restantes: number | null;
-    semaforo: 'VERDE' | 'AMBAR' | 'ROJO' | 'SIN_FECHA';
+    semaforo: 'VERDE' | 'AMBAR' | 'NARANJA' | 'ROJO' | 'SIN_FECHA';
   }>;
 }
 
@@ -91,8 +93,6 @@ export class VencimientosService {
       porVencer,
       criticos,
       vencidos,
-      detalle,
-    };
       detalle,
     };
   }

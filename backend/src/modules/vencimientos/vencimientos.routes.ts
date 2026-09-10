@@ -5,6 +5,13 @@ import { authenticateJWT, requireRoles } from '../../middlewares/auth.middleware
 const router = Router();
 
 router.get(
+  '/',
+  authenticateJWT,
+  requireRoles('SUPER_ADMIN', 'STAFF_RRHH', 'ADMIN_CONTRATOS'),
+  VencimientosController.getResumen
+);
+
+router.get(
   '/resumen',
   authenticateJWT,
   requireRoles('SUPER_ADMIN', 'STAFF_RRHH', 'ADMIN_CONTRATOS'),
