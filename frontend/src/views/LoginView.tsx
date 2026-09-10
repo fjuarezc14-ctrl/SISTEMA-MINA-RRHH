@@ -177,35 +177,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         return;
       }
 
-      // Fallback demo local si el backend no estuviera disponible
-      const foundDemo = DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === loginEmail.toLowerCase());
-      if (foundDemo && (loginPassword === 'Password123!' || loginPassword.length >= 4)) {
-        const usuarioMock: UsuarioSistema = {
-          id: `u-${Date.now()}`,
-          nombre: foundDemo.nombre,
-          email: foundDemo.email,
-          rol: foundDemo.rol,
-          area_responsable: foundDemo.area,
-          activo: true,
-        };
-        const tokenMock = `mock-token-${Date.now()}`;
-        localStorage.setItem('vt_token', tokenMock);
-        localStorage.setItem('vt_user', JSON.stringify(usuarioMock));
-        onLoginSuccess(usuarioMock, tokenMock);
-        return;
-      }
-
-      setErrorMsg(err.response?.data?.error || 'Credenciales inválidas. Verifique su correo o contraseña.');
+      // Error de conexión o credenciales inválidas
+      setErrorMsg(err.response?.data?.error || 'Error de conexión con el servidor. Verifique su red.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickLogin = (demo: DemoAccount) => {
-    if (countdown > 0 || isLockedDefinitive) return;
-    setEmail(demo.email);
-    setPassword('Password123!');
-    handleLogin(undefined, demo.email, 'Password123!');
   };
 
   return (
@@ -317,7 +293,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
                   Contraseña
                 </label>
-                <span className="text-[11px] text-slate-500">Clave demo: Password123!</span>
               </div>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
@@ -373,42 +348,35 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           </div>
         </div>
 
-        {/* LADO DERECHO: Accesos de Prueba Rápidos (1-Clic) */}
+        {/* LADO DERECHO: Información Institucional */}
         <div className="lg:col-span-6 space-y-3">
           <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 sm:p-7 shadow-xl">
             <h3 className="font-bold text-base text-white flex items-center gap-2 mb-1">
-              <KeyRound className="w-4 h-4 text-blue-400" />
-              Accesos Rápidos por Rol (Simulación 1-Clic)
+              <ShieldCheck className="w-4 h-4 text-blue-400" />
+              Acceso Restringido por Roles (RBAC)
             </h3>
             <p className="text-xs text-slate-400 mb-4">
-              Haga clic sobre cualquier perfil para iniciar sesión inmediatamente y verificar cómo se restringe el menú y la privacidad para cada rol:
+              Cada usuario tiene acceso exclusivamente a las funciones que le corresponden según su rol asignado por el Administrador del Sistema.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[460px] overflow-y-auto pr-1">
+            <div className="space-y-2.5">
               {DEMO_ACCOUNTS.map((acc) => (
-                <button
+                <div
                   key={acc.email}
-                  type="button"
-                  onClick={() => handleQuickLogin(acc)}
-                  className="text-left bg-slate-950/70 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 p-3 rounded-xl transition-all group shadow-sm flex flex-col justify-between"
+                  className="bg-slate-950/70 border border-slate-800 p-3 rounded-xl flex items-center gap-3"
                 >
-                  <div>
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${acc.badgeColor}`}>
-                        {acc.icon} {acc.rol}
-                      </span>
-                    </div>
-                    <p className="font-bold text-xs text-slate-200 group-hover:text-blue-400 transition-colors">
-                      {acc.nombre}
-                    </p>
-                    <p className="text-[11px] text-slate-500 font-mono mt-0.5">{acc.email}</p>
-                  </div>
-                  <div className="mt-2 pt-1.5 border-t border-slate-800/50 flex items-center justify-between text-[10px] text-slate-500">
-                    <span className="truncate pr-1">{acc.area.split('/')[0]}</span>
-                    <span className="text-blue-400 group-hover:translate-x-0.5 transition-transform">Entrar →</span>
-                  </div>
-                </button>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${acc.badgeColor} shrink-0`}>
+                    {acc.icon} {acc.rol}
+                  </span>
+                  <span className="text-[11px] text-slate-400 truncate">{acc.area.split('/')[0]}</span>
+                </div>
               ))}
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-slate-800/50">
+              <p className="text-[11px] text-slate-500 text-center">
+                Si no tiene una cuenta asignada, comuníquese con el Administrador del Sistema.
+              </p>
             </div>
           </div>
         </div>

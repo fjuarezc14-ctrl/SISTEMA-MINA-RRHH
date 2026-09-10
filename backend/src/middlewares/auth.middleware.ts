@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
+import { query } from '../config/db';
 
 export interface AuthenticatedUser {
   id: string;
@@ -20,7 +21,7 @@ declare global {
   }
 }
 
-export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -31,6 +32,16 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as AuthenticatedUser;
+
+    // Verificar que el usuario siga activo y no bloqueado en la BD
+    const userCheck = await query(
+      'SELECT activo, bloqueado_definitivo FROM usuarios WHERE id = $1',
+      [decoded.id]
+    );
+    if (!userCheck.rows[0] || !userCheck.rows[0].activo || userCheck.rows[0].bloqueado_definitivo) {
+      return res.status(401).json({ error: 'Sesión revocada. El usuario fue desactivado o bloqueado.' });
+    }
+
     req.user = decoded;
     next();
   } catch (error) {
