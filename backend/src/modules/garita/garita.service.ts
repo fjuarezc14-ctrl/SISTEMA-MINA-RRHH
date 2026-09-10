@@ -1,4 +1,4 @@
-import { query } from '../../config/db';
+import { query, pool } from '../../config/db';
 
 export class GaritaService {
   static async validarAcceso(codigo: string) {
@@ -344,27 +344,65 @@ export class GaritaService {
   }
 
   static async sincronizarOffline(lote: any[], guardiaId?: string, guardiaNombre?: string) {
-    const insertados = [];
-    for (const item of lote) {
-      const res = await this.registrarIngreso({
-        tipoAcceso: item.tipoAcceso || 'PEATONAL_TRABAJADOR',
-        postulanteId: item.postulanteId,
-        vehiculoId: item.vehiculoId,
-        resultado: item.resultado || 'AUTORIZADO',
-        motivoDenegacion: item.motivoDenegacion,
-        garita: item.garita,
-        guardiaNombre: guardiaNombre || item.guardiaNombre || 'Oficial Garita (Offline)',
-        guardiaId: guardiaId || item.guardiaId,
-        alcotestResultado: item.alcotestResultado || '0.00 g/L (Apto)',
-        sincronizadoOffline: true,
-        creadoEn: item.timestamp || item.creadoEn,
-      });
-      insertados.push(res);
+    if (!Array.isArray(lote) || lote.length === 0) {
+      return { totalSincronizados: 0, mensaje: 'Lote vacío o no válido.' };
     }
-    return {
-      totalSincronizados: insertados.length,
-      mensaje: `Sincronización offline exitosa: ${insertados.length} accesos registrados en la bitácora central de mina.`
-    };
+
+    const client = await pool.connect();
+    const insertados = [];
+
+    try {
+      await client.query('BEGIN');
+
+      for (const item of lote) {
+        let finalResultado = item.resultado || 'AUTORIZADO';
+        let finalMotivo = item.motivoDenegacion;
+
+        // Validación estricta de alcotest también en sincronización offline
+        if (item.alcotestResultado) {
+          const alcUpper = String(item.alcotestResultado).toUpperCase();
+          if (
+            alcUpper.includes('POSITIVO') || 
+            alcUpper.includes('EBRIEDAD') || 
+            (!alcUpper.includes('0.00') && !alcUpper.includes('NEGATIVO') && !alcUpper.includes('APTO'))
+          ) {
+            finalResultado = 'DENEGADO';
+            finalMotivo = `ALCOTEST POSITIVO (OFFLINE): [${item.alcotestResultado}]. Infracción D.S. 024-2016-EM Art. 40.`;
+          }
+        }
+
+        const res = await client.query(
+          `INSERT INTO accesos_garita 
+           (tipo_acceso, postulante_id, vehiculo_id, resultado, motivo_denegacion, garita, guardia_nombre, guardia_id, alcotest_resultado, sincronizado_offline, creado_en)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE, COALESCE($10, CURRENT_TIMESTAMP))
+           RETURNING *`,
+          [
+            item.tipoAcceso || 'PEATONAL_TRABAJADOR',
+            item.postulanteId || null,
+            item.vehiculoId || null,
+            finalResultado,
+            finalMotivo || null,
+            item.garita || 'Garita Principal - Control Mina',
+            guardiaNombre || item.guardiaNombre || 'Oficial Garita (Offline)',
+            guardiaId || item.guardiaId || null,
+            item.alcotestResultado || '0.00 g/L (Apto)',
+            item.timestamp || item.creadoEn || null,
+          ]
+        );
+        insertados.push(res.rows[0]);
+      }
+
+      await client.query('COMMIT');
+      return {
+        totalSincronizados: insertados.length,
+        mensaje: `Sincronización offline atómica exitosa: ${insertados.length} accesos registrados en la bitácora central de mina.`
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   static async getHistorial(limit = 50) {
