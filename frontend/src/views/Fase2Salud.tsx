@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Postulante, RolUsuario } from '../types';
-import { Stethoscope, Ban, CheckCircle, ShieldAlert, Eye, Lock, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Stethoscope, Ban, CheckCircle, ShieldAlert, Eye, Lock, AlertCircle, AlertTriangle, Filter } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
+import { DocumentCardStatus, getDocumentCardBorderClass } from '../components/common/DocumentCardStatus';
 
 interface Fase2Props {
   postulantes: Postulante[];
@@ -16,6 +17,7 @@ interface Fase2Props {
 }
 
 export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEvaluar }) => {
+  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTES' | 'OBSERVADOS' | 'LISTA_NEGRA'>('TODOS');
   const [bloquearModalOpen, setBloquearModalOpen] = useState(false);
   const [observarModalOpen, setObservarModalOpen] = useState(false);
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
@@ -30,6 +32,19 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
   // Candidatos que ya están en Fase 2 o candidatos bloqueados en Fase 1
   const candidatosFase2 = postulantes.filter((p) => p.fase_actual === 'FASE_2');
   const candidatosEsperandoFase1 = postulantes.filter((p) => p.fase_actual === 'FASE_1');
+
+  const candidatosFiltrados = candidatosFase2.filter((p) => {
+    const isLN = p.estado_global === 'NO_APTO' || Boolean(p.en_lista_negra);
+    const isObs = p.estado_global === 'OBSERVADO';
+    if (filtroEstado === 'OBSERVADOS') return isObs;
+    if (filtroEstado === 'LISTA_NEGRA') return isLN;
+    if (filtroEstado === 'PENDIENTES') return !isObs && !isLN;
+    return true;
+  });
+
+  const conteoObs = candidatosFase2.filter((p) => p.estado_global === 'OBSERVADO').length;
+  const conteoLN = candidatosFase2.filter((p) => p.estado_global === 'NO_APTO' || Boolean(p.en_lista_negra)).length;
+  const conteoPendientes = candidatosFase2.length - conteoObs - conteoLN;
 
   const handleOpenBloqueo = (p: Postulante) => {
     setSelectedPostulante(p);
@@ -76,8 +91,8 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 border-t-4 border-t-rose-500 shadow-xl">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+      <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 border-t-4 border-t-rose-500 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-750">
           <div>
             <h3 className="font-bold text-lg flex items-center gap-2 text-rose-400">
               <Stethoscope className="w-5 h-5" /> 2. Área Médica: Evaluación EMO y Toxicológica
@@ -98,80 +113,162 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
           </div>
         </div>
 
+        {/* FILTROS DE ESTADO */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+          <span className="text-slate-400 font-semibold flex items-center gap-1 mr-1">
+            <Filter className="w-3.5 h-3.5" /> Estado:
+          </span>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado('TODOS')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+              filtroEstado === 'TODOS'
+                ? 'bg-rose-600 text-white shadow'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-700'
+            }`}
+          >
+            Todos ({candidatosFase2.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado('PENDIENTES')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+              filtroEstado === 'PENDIENTES'
+                ? 'bg-slate-700 text-white shadow'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-700'
+            }`}
+          >
+            Pendientes ({conteoPendientes})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado('OBSERVADOS')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+              filtroEstado === 'OBSERVADOS'
+                ? 'bg-amber-600 text-white shadow'
+                : 'bg-slate-900 text-amber-400/80 hover:text-amber-300 border border-slate-700'
+            }`}
+          >
+            Observados ({conteoObs})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado('LISTA_NEGRA')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+              filtroEstado === 'LISTA_NEGRA'
+                ? 'bg-rose-600 text-white shadow'
+                : 'bg-slate-900 text-rose-400/80 hover:text-rose-300 border border-slate-700'
+            }`}
+          >
+            Lista Negra ({conteoLN})
+          </button>
+        </div>
+
         {/* CANDIDATOS HABILITADOS EN FASE 2 */}
-        {candidatosFase2.length === 0 ? (
+        {candidatosFiltrados.length === 0 ? (
           <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-slate-750 text-slate-400 text-sm">
-            No hay postulantes pendientes de evaluación médica en este momento.
+            {filtroEstado === 'TODOS'
+              ? 'No hay postulantes pendientes de evaluación médica en este momento.'
+              : `No se encontraron postulantes con estado "${filtroEstado.replace('_', ' ')}".`}
           </div>
         ) : (
           <div className="space-y-4">
-            {candidatosFase2.map((candidato) => (
-              <div 
-                key={candidato.id}
-                className="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-slate-600 transition-colors"
-              >
-                <div>
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <h4 className="font-bold text-white text-base">
-                      {candidato.apellidos}, {candidato.nombres}
-                    </h4>
-                    {candidato.tipo_pase && (
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border ${
-                        candidato.tipo_pase === 'VISITA_TECNICA'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                          : candidato.tipo_pase === 'PROVEEDOR_LOGISTICO'
-                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                          : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                      }`}>
-                        {candidato.tipo_pase.replace('_', ' ')}
+            {candidatosFiltrados.map((candidato) => {
+              const isListaNegra = candidato.estado_global === 'NO_APTO' || Boolean(candidato.en_lista_negra);
+
+              return (
+                <div 
+                  key={candidato.id}
+                  className={`rounded-xl p-4 sm:p-5 border flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition-all ${getDocumentCardBorderClass(candidato)}`}
+                >
+                  <div className="flex-1 min-w-0 w-full">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <h4 className="font-bold text-white text-base">
+                        {candidato.apellidos}, {candidato.nombres}
+                      </h4>
+                      {candidato.tipo_pase && (
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border whitespace-nowrap ${
+                          candidato.tipo_pase === 'VISITA_TECNICA'
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                            : candidato.tipo_pase === 'PROVEEDOR_LOGISTICO'
+                            ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                            : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                        }`}>
+                          {candidato.tipo_pase.replace('_', ' ')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-400 mt-0.5">
+                      Evaluación toxicológica y EMO (Ficha 7D para gran altitud &gt; 4,000 msnm).
+                    </p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 mt-1 items-center">
+                      <span>DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span></span>
+                      <span>•</span>
+                      <span>Cargo: <span className="text-slate-300 font-medium">{candidato.cargo}</span></span>
+                      <span>•</span>
+                      <span className="text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
+                        <CheckCircle className="w-3.5 h-3.5" /> Fase 1 (CV) Confirmada
                       </span>
+                    </div>
+
+                    {/* ESTADO VISUAL DE LA TARJETA (OBSERVADO / LISTA NEGRA / PENDIENTE) */}
+                    <DocumentCardStatus postulante={candidato} />
+                  </div>
+
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full xl:w-auto justify-start xl:justify-end pt-3 xl:pt-0 border-t border-slate-800/80 xl:border-t-0 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenSplitViewer(candidato)}
+                      className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-rose-400" /> Inspeccionar EMO
+                    </button>
+
+                    {!isListaNegra && (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenObservar(candidato)}
+                        className="flex-1 sm:flex-initial bg-amber-600/15 hover:bg-amber-600/25 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
+                      >
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Observar
+                      </button>
                     )}
-                  </div>
-                  <p className="text-sm text-slate-400 mt-0.5">
-                    Evaluación toxicológica y EMO (Ficha 7D para gran altitud &gt; 4,000 msnm).
-                  </p>
-                  <div className="flex flex-wrap gap-3 text-xs text-slate-500 mt-1 items-center">
-                    <span>DNI: {candidato.numero_documento}</span>
-                    <span>•</span>
-                    <span>Cargo: {candidato.cargo}</span>
-                    <span>•</span>
-                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                      <CheckCircle className="w-3.5 h-3.5" /> Fase 1 (CV) Confirmada
-                    </span>
+
+                    {!isListaNegra && (
+                      <button 
+                        type="button"
+                        onClick={() => handleOpenBloqueo(candidato)}
+                        className="flex-1 sm:flex-initial bg-rose-600/15 hover:bg-rose-600/25 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
+                      >
+                        <Ban className="w-3.5 h-3.5 text-rose-400" /> Vetar
+                      </button>
+                    )}
+
+                    <button 
+                      type="button"
+                      onClick={() => onEvaluar(candidato.id, 'FASE_2', 'APROBAR', { observaciones: 'Apto médico y toxicológico verificado.' })}
+                      disabled={isListaNegra}
+                      title={isListaNegra ? 'Candidato en Lista Negra - Prohibido emitir V°B°' : undefined}
+                      className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow ${
+                        isListaNegra
+                          ? 'bg-slate-800 text-slate-500 border border-slate-750 cursor-not-allowed opacity-50 shadow-none'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                      }`}
+                    >
+                      {isListaNegra ? (
+                        <>
+                          <Ban className="w-3.5 h-3.5 text-rose-400" /> V°B° Bloqueado
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-3.5 h-3.5" /> Dar V°B° Médico
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex flex-wrap gap-3 w-full md:w-auto">
-                  <button
-                    onClick={() => handleOpenSplitViewer(candidato)}
-                    className="flex-1 md:flex-initial bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow"
-                  >
-                    <Eye className="w-4 h-4 text-rose-400" /> Inspeccionar EMO (Split-Screen)
-                  </button>
-
-                  <button
-                    onClick={() => handleOpenObservar(candidato)}
-                    className="flex-1 md:flex-initial bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <AlertCircle className="w-4 h-4 text-amber-400" /> Observar
-                  </button>
-
-                  <button 
-                    onClick={() => handleOpenBloqueo(candidato)}
-                    className="flex-1 md:flex-initial bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-rose-600/20"
-                  >
-                    <Ban className="w-3.5 h-3.5" /> NO APTO (Lista Negra)
-                  </button>
-
-                  <button 
-                    onClick={() => onEvaluar(candidato.id, 'FASE_2', 'APROBAR', { observaciones: 'Apto médico y toxicológico verificado.' })}
-                    className="flex-1 md:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-emerald-600/20"
-                  >
-                    <CheckCircle className="w-4 h-4" /> Dar V°B° Médico
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

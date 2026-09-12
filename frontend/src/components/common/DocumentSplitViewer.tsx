@@ -118,6 +118,8 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
   const faseActualNum = ordenFases[postulante.fase_actual] || 1;
   const faseVisualizandoNum = ordenFases[fase] || 1;
   const isBloqueadoSecuencial = faseVisualizandoNum > faseActualNum;
+  const isListaNegra = postulante.estado_global === 'NO_APTO' || Boolean(postulante.en_lista_negra);
+  const isObservado = postulante.estado_global === 'OBSERVADO';
 
   // Metadatos de la fase
   const faseInfo: Record<FaseOnboarding, { titulo: string; tipoDoc: string; area: string; archivo: string }> = {
@@ -169,6 +171,11 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
 
   // Acciones de evaluación
   const handleAprobar = async () => {
+    if (isListaNegra) {
+      alert('Postulante en Lista Negra: Está estrictamente prohibido otorgar Visto Bueno a un candidato vetado.');
+      return;
+    }
+
     if (isBloqueadoSecuencial) {
       alert('Bloqueo Secuencial: No se puede emitir Visto Bueno porque la fase previa aún no está confirmada.');
       return;
@@ -198,6 +205,11 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
   };
 
   const handleObservar = async () => {
+    if (isListaNegra) {
+      alert('Postulante en Lista Negra: Este expediente no es subsanable por encontrarse vetado permanentemente.');
+      return;
+    }
+
     if (!observaciones.trim()) {
       alert('Por favor especifique la observación técnica para que el contratista pueda subsanar el documento.');
       return;
@@ -651,20 +663,76 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
             <div className="space-y-5">
               
               {/* FICHA RESUMEN DEL POSTULANTE */}
-              <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-slate-700 border border-slate-600 flex items-center justify-center text-slate-300 flex-shrink-0">
-                  <User className="w-6 h-6" />
+              <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-slate-700 border border-slate-600 flex items-center justify-center text-slate-300 flex-shrink-0">
+                    <User className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white leading-tight">
+                      {postulante.apellidos}, {postulante.nombres}
+                    </h4>
+                    <p className="text-xs text-blue-400 font-semibold">{postulante.cargo}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Doc: <span className="font-mono text-slate-300">{postulante.numero_documento}</span> • {postulante.empresa_nombre}
+                    </p>
+                  </div>
                 </div>
+
+                {/* BADGE DE ESTADO DEL EXPEDIENTE */}
                 <div>
-                  <h4 className="text-sm font-bold text-white leading-tight">
-                    {postulante.apellidos}, {postulante.nombres}
-                  </h4>
-                  <p className="text-xs text-blue-400 font-semibold">{postulante.cargo}</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    Doc: <span className="font-mono text-slate-300">{postulante.numero_documento}</span> • {postulante.empresa_nombre}
-                  </p>
+                  {isListaNegra && (
+                    <span className="inline-flex items-center gap-1 bg-rose-950/80 border border-rose-500/50 text-rose-300 text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow">
+                      <Ban className="w-3 h-3 text-rose-400" /> Lista Negra
+                    </span>
+                  )}
+                  {isObservado && (
+                    <span className="inline-flex items-center gap-1 bg-amber-950/80 border border-amber-500/50 text-amber-300 text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow">
+                      <AlertTriangle className="w-3 h-3 text-amber-400" /> Observado
+                    </span>
+                  )}
+                  {!isListaNegra && !isObservado && (
+                    <span className="inline-flex items-center gap-1 bg-blue-950/60 border border-blue-500/30 text-blue-300 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
+                      <Clock className="w-3 h-3 text-blue-400" /> Pendiente
+                    </span>
+                  )}
                 </div>
               </div>
+
+              {/* BANNERS INFORMATIVOS DE ESTADO (OBSERVACIÓN Y LISTA NEGRA) */}
+              {isListaNegra && (
+                <div className="p-4 bg-rose-950/70 border-2 border-rose-500/60 rounded-xl flex items-start gap-3 shadow-lg shadow-rose-950/40">
+                  <Ban className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h5 className="text-xs font-black text-rose-300 uppercase tracking-wider">
+                      POSTULANTE EN LISTA NEGRA (VETADO EN MINA)
+                    </h5>
+                    <p className="text-xs text-rose-100">
+                      Causal: {postulante.motivo_lista_negra || postulante.ultima_observacion || 'Inclusión permanente en Lista Negra por dictamen médico crítico o antecedentes disciplinarios/penales.'}
+                    </p>
+                    <p className="text-[10px] text-rose-300 font-bold uppercase tracking-wider">
+                      * Prohibido emitir Visto Bueno o habilitar accesos para este expediente
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {isObservado && !isListaNegra && (
+                <div className="p-4 bg-amber-950/60 border-2 border-amber-500/50 rounded-xl flex items-start gap-3 shadow-lg shadow-amber-950/40">
+                  <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h5 className="text-xs font-black text-amber-300 uppercase tracking-wider">
+                      EXPEDIENTE OBSERVADO EN {currentFaseInfo.titulo.toUpperCase()}
+                    </h5>
+                    <p className="text-xs text-amber-100">
+                      Observación técnica previa: "{postulante.ultima_observacion || 'Documento observado con subsanación pendiente.'}"
+                    </p>
+                    <p className="text-[10px] text-amber-300/90 font-medium">
+                      * Revise la versión subsanada (v2) en el selector superior antes de emitir un nuevo dictamen.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* AISLAMIENTO DE ROL: SI ES CONTRATISTA */}
               {userRole === 'CONTRATISTA' ? (
@@ -822,18 +890,33 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                   <button
                     type="button"
                     onClick={handleAprobar}
-                    disabled={loading || isBloqueadoSecuencial}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2"
+                    disabled={loading || isBloqueadoSecuencial || isListaNegra}
+                    title={isListaNegra ? 'Postulante en Lista Negra - Prohibido emitir Visto Bueno' : undefined}
+                    className={`w-full font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 ${
+                      isListaNegra
+                        ? 'bg-slate-800 text-slate-500 border border-slate-750 cursor-not-allowed opacity-50 shadow-none'
+                        : 'bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-emerald-600/30'
+                    }`}
                   >
-                    <CheckCircle2 className="w-4 h-4" /> 
-                    {loading ? 'Procesando...' : 'Dar Visto Bueno (Aprobar Documento)'}
+                    {isListaNegra ? (
+                      <>
+                        <Ban className="w-4 h-4 text-rose-400" />
+                        Visto Bueno Bloqueado (Lista Negra)
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" /> 
+                        {loading ? 'Procesando...' : 'Dar Visto Bueno (Aprobar Documento)'}
+                      </>
+                    )}
                   </button>
 
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={handleObservar}
-                      disabled={loading || isBloqueadoSecuencial}
+                      disabled={loading || isBloqueadoSecuencial || isListaNegra}
+                      title={isListaNegra ? 'No disponible para postulantes en Lista Negra' : undefined}
                       className="flex-1 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed text-amber-400 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
                     >
                       <AlertTriangle className="w-3.5 h-3.5" /> Observar Documento
@@ -843,10 +926,10 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       <button
                         type="button"
                         onClick={handleListaNegra}
-                        disabled={loading || isBloqueadoSecuencial}
+                        disabled={loading || isBloqueadoSecuencial || isListaNegra}
                         className="flex-1 bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20"
                       >
-                        <Ban className="w-3.5 h-3.5" /> NO APTO (Lista Negra)
+                        <Ban className="w-3.5 h-3.5" /> {isListaNegra ? 'Vetado en Lista Negra' : 'NO APTO (Lista Negra)'}
                       </button>
                     )}
                   </div>

@@ -32,7 +32,9 @@ export class PostulantesService {
           WHERE ef.postulante_id = p.id 
           ORDER BY ef.creado_en DESC 
           LIMIT 1
-        ) as ultimo_archivo
+        ) as ultimo_archivo,
+        (EXISTS (SELECT 1 FROM lista_negra ln WHERE ln.numero_documento = p.numero_documento) OR p.estado_global = 'NO_APTO') as en_lista_negra,
+        (SELECT ln.motivo FROM lista_negra ln WHERE ln.numero_documento = p.numero_documento LIMIT 1) as motivo_lista_negra
       FROM postulantes p
       JOIN empresas_contratistas e ON p.empresa_id = e.id
     `;

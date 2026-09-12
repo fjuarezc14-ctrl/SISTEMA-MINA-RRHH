@@ -60,6 +60,8 @@ export interface Postulante {
   cv_url?: string;
   fase_actual: FaseOnboarding;
   estado_global: EstadoGlobal;
+  en_lista_negra?: boolean;
+  motivo_lista_negra?: string;
   tipo_pase?: 'PERMANENTE' | 'VISITA_TECNICA' | 'PROVEEDOR_LOGISTICO';
   vigencia_inicio?: string;
   vigencia_fin?: string;

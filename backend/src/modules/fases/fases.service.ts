@@ -15,6 +15,8 @@ export class FasesService {
          p.estado_global,
          p.cv_url,
          e.razon_social as empresa_nombre,
+         (EXISTS (SELECT 1 FROM lista_negra ln WHERE ln.numero_documento = p.numero_documento) OR p.estado_global = 'NO_APTO') as en_lista_negra,
+         (SELECT ln.motivo FROM lista_negra ln WHERE ln.numero_documento = p.numero_documento LIMIT 1) as motivo_lista_negra,
          (
            SELECT json_build_object(
              'nota', ef.nota,
@@ -29,7 +31,7 @@ export class FasesService {
          ) as ultima_evaluacion
        FROM postulantes p
        JOIN empresas_contratistas e ON p.empresa_id = e.id
-       WHERE p.fase_actual = $1 AND p.estado_global != 'NO_APTO'
+       WHERE p.fase_actual = $1
        ORDER BY p.creado_en ASC`,
       [fase]
     );
