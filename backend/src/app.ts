@@ -8,22 +8,25 @@ import { env } from './config/env';
 
 export const app = express();
 
+// Confiar en el proxy inverso (Nginx / Docker) para leer la IP real del cliente desde X-Forwarded-For
+app.set('trust proxy', 1);
+
 // Cabeceras de seguridad HTTP (HSTS, CSP, X-Frame-Options, X-Content-Type-Options)
 app.use(helmet());
 
 // Rate limiting global para toda la API (Anti DoS / Scraping)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 300, // máximo 300 peticiones por IP
+  max: 1000, // máximo peticiones por IP
   message: { error: 'Límite de solicitudes alcanzado. Por favor intente más tarde.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Rate limiting estricto para login (Anti brute-force)
+// Rate limiting para login (Anti brute-force, permite pruebas en red local)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10, // máximo 10 intentos por IP
+  max: process.env.NODE_ENV === 'production' ? 15 : 100, // flexible en pruebas locales
   message: { error: 'Demasiados intentos de inicio de sesión. Espere 15 minutos.' },
   standardHeaders: true,
   legacyHeaders: false,
