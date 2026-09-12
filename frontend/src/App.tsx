@@ -668,9 +668,9 @@ export const App: React.FC = () => {
 
   const [toastVencimiento, setToastVencimiento] = useState<string | null>(null);
 
-  // Alerta flotante al login: consultar vencimientos en próximos 15/30 días
+  // Alerta flotante al login: consultar vencimientos en próximos 15/30 días (solo roles autorizados)
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && ['SUPER_ADMIN', 'STAFF_RRHH', 'ADMIN_CONTRATOS'].includes(currentUser.rol)) {
       api.get('/vencimientos')
         .then((res) => {
           const { porVencer = 0, criticos = 0, vencidos = 0 } = res.data || {};
