@@ -29,9 +29,22 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// CORS restringido al frontend institucional
+// CORS: permite origen configurado, localhost y red local
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5150',
+  'http://127.0.0.1:5150',
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5150',
+  origin: (origin, callback) => {
+    // Permitir peticiones del mismo servidor (proxy de nginx) o sin header Origin (mobile/curl/proxy interno)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+):5150$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS no permitido para este origen.'));
+  },
   credentials: true,
 }));
 

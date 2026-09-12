@@ -60,7 +60,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:4050/api}
+        VITE_API_URL: ${VITE_API_URL:-/api}
     container_name: mina_frontend
     restart: unless-stopped
     depends_on:

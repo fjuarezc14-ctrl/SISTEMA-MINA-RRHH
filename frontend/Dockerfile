@@ -5,8 +5,8 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Argumento para inyectar URL de la API en build time
-ARG VITE_API_URL=http://localhost:4050/api
+# Argumento para inyectar URL de la API en build time (por defecto ruta relativa /api para proxy de Nginx)
+ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build
