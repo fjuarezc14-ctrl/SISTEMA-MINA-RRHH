@@ -77,6 +77,26 @@ export const Header: React.FC<HeaderProps> = ({
           <h2 className="text-base sm:text-xl font-bold text-white tracking-tight flex items-center gap-2 truncate">
             {currentView === 'admin' && <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 shrink-0" />}
             <span className="truncate">{title}</span>
+            {userRole === 'MEDICO_OCUPACIONAL' && (
+              <span className="bg-emerald-950/80 border border-emerald-600/50 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
+                🔒 SECRETO MÉDICO
+              </span>
+            )}
+            {userRole === 'INSTRUCTOR_SSOMA' && (
+              <span className="bg-amber-950/80 border border-amber-600/50 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
+                🦺 D.S. 024-2016-EM
+              </span>
+            )}
+            {userRole === 'CONTROL_ACCESOS' && (
+              <span className="bg-blue-950/80 border border-blue-600/50 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
+                ● EN LÍNEA GARITA
+              </span>
+            )}
+            {userRole === 'SEGURIDAD_PATRIMONIAL' && (
+              <span className="bg-indigo-950/80 border border-indigo-600/50 text-indigo-300 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
+                🛡️ CONTROL PATRIMONIAL
+              </span>
+            )}
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-0.5 truncate hidden sm:block">{subtitle}</p>
         </div>
@@ -177,9 +197,19 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Avatar / Status */}
-        <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold text-xs">
+        <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold text-xs shrink-0">
           <UserCheck className="w-4 h-4" />
         </div>
+
+        {/* Botón Cerrar Sesión en Header (esencial para roles sin sidebar) */}
+        <button
+          onClick={onLogout}
+          title="Cerrar Sesión"
+          className="flex items-center gap-1.5 bg-slate-800 hover:bg-rose-950/70 border border-slate-700 hover:border-rose-600/40 text-slate-300 hover:text-rose-200 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors shrink-0"
+        >
+          <LogOut className="w-4 h-4 text-rose-400" />
+          <span className="hidden md:inline">Salir</span>
+        </button>
       </div>
     </header>
   );

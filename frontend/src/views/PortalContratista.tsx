@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
-import { Postulante, RolUsuario } from '../types';
+import { Postulante, RolUsuario, VehiculoMaquinaria } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
-import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info, ChevronDown, ChevronUp, Users, Truck, FileCheck2 } from 'lucide-react';
 import { api } from '../services/api';
+import { VehiculosView } from './VehiculosView';
 
 interface PortalContratistaProps {
   postulantes: Postulante[];
   userRole: RolUsuario;
   onSubsanar: (id: string, file: File, notas?: string) => Promise<void>;
+  vehiculos?: VehiculoMaquinaria[];
+  onRegistrarVehiculo?: (data: any) => Promise<void>;
+  onEvaluarVehiculo?: (id: string, decision: 'APROBAR' | 'OBSERVAR', observaciones?: string) => Promise<void>;
 }
 
-export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulantes, userRole, onSubsanar }) => {
+export const PortalContratista: React.FC<PortalContratistaProps> = ({ 
+  postulantes, 
+  userRole, 
+  onSubsanar,
+  vehiculos = [],
+  onRegistrarVehiculo,
+  onEvaluarVehiculo
+}) => {
+  const [tabActiva, setTabActiva] = useState<'personal' | 'vehiculos' | 'sctr'>('personal');
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
   const [subsanarModalOpen, setSubsanarModalOpen] = useState(false);
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
@@ -173,14 +185,154 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
-        <div className="p-6 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-800/80">
-          <div>
-            <h3 className="font-bold text-lg text-white">Mis Postulantes (Servicios Mineros XYZ S.A.C.)</h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Semáforo de cumplimiento: Vistos Buenos requeridos para estar <span className="text-emerald-400 font-bold">APTO PARA TRABAJAR</span>
-            </p>
+      {/* TABS DE PORTAL CONTRATISTA */}
+      <div className="flex flex-wrap gap-2 border-b border-slate-750 pb-3">
+        <button
+          type="button"
+          onClick={() => setTabActiva('personal')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            tabActiva === 'personal'
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          1. Padrón de Personal ({postulantes.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabActiva('vehiculos')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            tabActiva === 'vehiculos'
+              ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+          }`}
+        >
+          <Truck className="w-4 h-4" />
+          2. Flota Vehicular ({vehiculos.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabActiva('sctr')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            tabActiva === 'sctr'
+              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+          }`}
+        >
+          <FileCheck2 className="w-4 h-4" />
+          3. Renovación Mensual SCTR
+        </button>
+      </div>
+
+      {tabActiva === 'vehiculos' && (
+        <VehiculosView 
+          vehiculos={vehiculos}
+          userRole={userRole}
+          onRegistrarVehiculo={onRegistrarVehiculo || (async () => {})}
+          onEvaluarVehiculo={onEvaluarVehiculo || (async () => {})}
+        />
+      )}
+
+      {tabActiva === 'sctr' && (
+        <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-700 mb-4">
+            <div>
+              <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2">
+                <FileCheck2 className="w-5 h-5" /> Monitoreo y Renovación de SCTR Colectivo
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Pólizas SCTR Salud y Pensión para habilitación legal en operaciones mineras
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-bold rounded-xl">
+                {postulantes.filter(p => p.fase_actual === 'FOTOCHECK' || p.estado_global === 'APTO_PARA_TRABAJAR').length} Asegurados Activos
+              </span>
+            </div>
           </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-900/80 text-slate-400 uppercase font-mono text-[11px] border-b border-slate-700">
+                <tr>
+                  <th className="p-3">Trabajador</th>
+                  <th className="p-3">DNI</th>
+                  <th className="p-3">Cargo</th>
+                  <th className="p-3">Pase</th>
+                  <th className="p-3">Estado SCTR</th>
+                  <th className="p-3">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-700/60">
+                {postulantes.map((p) => {
+                  const tieneSctr = p.fase_actual === 'FOTOCHECK' || p.estado_global === 'APTO_PARA_TRABAJAR';
+                  const sctrObs = p.fase_actual === 'FASE_5' && p.estado_global === 'OBSERVADO';
+
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-750 transition-colors">
+                      <td className="p-3 font-bold text-white">{p.apellidos}, {p.nombres}</td>
+                      <td className="p-3 font-mono">{p.numero_documento}</td>
+                      <td className="p-3 text-slate-400">{p.cargo}</td>
+                      <td className="p-3">
+                        <span className="bg-slate-900 border border-slate-700 text-slate-300 text-[10px] font-mono px-2 py-0.5 rounded">
+                          {p.tipo_pase || 'PERMANENTE'}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        {tieneSctr ? (
+                          <span className="bg-emerald-950 border border-emerald-600/40 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 w-fit">
+                            <CheckCircle className="w-3 h-3" /> VIGENTE
+                          </span>
+                        ) : sctrObs ? (
+                          <span className="bg-amber-950 border border-amber-600/40 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 w-fit animate-pulse">
+                            <AlertTriangle className="w-3 h-3" /> OBSERVADO
+                          </span>
+                        ) : (
+                          <span className="bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 w-fit">
+                            <Clock className="w-3 h-3" /> PENDIENTE FASE 5
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        {sctrObs ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenSubsanar(p)}
+                            className="text-amber-400 hover:text-amber-300 font-bold underline"
+                          >
+                            Subsanar SCTR
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenSplitViewer(p)}
+                            className="text-blue-400 hover:text-blue-300 font-medium"
+                          >
+                            Ver Póliza
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tabActiva === 'personal' && (
+        <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
+          <div className="p-6 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-800/80">
+            <div>
+              <h3 className="font-bold text-lg text-white">Mis Postulantes (Servicios Mineros XYZ S.A.C.)</h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Semáforo de cumplimiento: Vistos Buenos requeridos para estar <span className="text-emerald-400 font-bold">APTO PARA TRABAJAR</span>
+              </p>
+            </div>
           <div className="flex items-center gap-3">
             <span className="text-xs font-semibold px-3 py-1 bg-slate-700/60 text-slate-300 rounded-lg">
               {postulantes.length} Registrados
@@ -460,6 +612,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
           })}
         </div>
       </div>
+      )}
 
       {/* MODAL VISOR SPLIT-SCREEN */}
       {viewerPostulante && (

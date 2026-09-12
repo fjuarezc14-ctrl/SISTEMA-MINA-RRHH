@@ -23,12 +23,16 @@ import {
   AlertTriangle,
   BadgeCheck,
   LogOut,
-  Ambulance
+  Ambulance,
+  CreditCard
 } from 'lucide-react';
 import { api } from '../services/api';
+import { FotocheckView } from './FotocheckView';
 
 interface GaritaScannerViewProps {
   postulantes: Postulante[];
+  fotochecks?: any[];
+  onImprimirFotocheck?: (postulanteId: string) => Promise<void>;
 }
 
 interface PadronOfflineLocal {
@@ -40,7 +44,12 @@ interface PadronOfflineLocal {
   listaNegra: any[];
 }
 
-export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulantes }) => {
+export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ 
+  postulantes,
+  fotochecks = [],
+  onImprimirFotocheck
+}) => {
+  const [tabActiva, setTabActiva] = useState<'escaner' | 'fotochecks' | 'bajas'>('escaner');
   const [codigoInput, setCodigoInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [historial, setHistorial] = useState<AccesoGarita[]>([]);
@@ -485,15 +494,112 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulante
         </div>
       )}
 
-      {/* Barra de estado de garita y herramientas operativas mineras */}
-      <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <QrCode className="w-7 h-7" />
+      {/* TABS DE GARITA */}
+      <div className="flex flex-wrap gap-2 border-b border-slate-750 pb-3">
+        <button
+          type="button"
+          onClick={() => setTabActiva('escaner')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            tabActiva === 'escaner'
+              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+          }`}
+        >
+          <QrCode className="w-4 h-4" />
+          1. Escáner de Acceso (QR/Placa)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabActiva('fotochecks')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            tabActiva === 'fotochecks'
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          2. Impresión Fotochecks ({fotochecks.length || postulantes.filter(p => p.fase_actual === 'FOTOCHECK' || p.estado_global === 'APTO_PARA_TRABAJAR').length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabActiva('bajas')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            tabActiva === 'bajas'
+              ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+          }`}
+        >
+          <Ambulance className="w-4 h-4" />
+          3. Bajas y Desmovilización 14x7 ({emergenciasActivas.length})
+        </button>
+      </div>
+
+      {tabActiva === 'fotochecks' && (
+        <FotocheckView 
+          postulantes={postulantes} 
+          fotochecks={fotochecks} 
+          onImprimir={onImprimirFotocheck || (async () => {})} 
+        />
+      )}
+
+      {tabActiva === 'bajas' && (
+        <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-700">
+            <div>
+              <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
+                <Ambulance className="w-5 h-5" /> Bajas Anticipadas por Emergencia Médica / Familiar
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Salidas justificada fuera de régimen 14x7 sin penalidad ni cómputo de abandono de guardia
+              </p>
+            </div>
+            <button
+              onClick={() => setModalEmergenciaOpen(true)}
+              className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-rose-950 transition-colors"
+            >
+              <Ambulance className="w-4 h-4" /> Autorizar Nueva Salida de Emergencia
+            </button>
           </div>
-          <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h3 className="text-lg font-bold text-white">Lector y Scanner de Garita</h3>
+
+          {emergenciasActivas.length === 0 ? (
+            <div className="p-8 text-center bg-slate-900/50 rounded-xl text-slate-400 text-sm">
+              No hay solicitudes de bajada anticipada pendientes de salida en Garita.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {emergenciasActivas.map((baja) => (
+                <div key={baja.id} className="p-4 bg-slate-900 border border-rose-500/30 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div>
+                    <h4 className="font-bold text-white text-base">{baja.nombres} {baja.apellidos}</h4>
+                    <p className="text-xs text-slate-400">DNI: {baja.numero_documento} • {baja.empresa_nombre}</p>
+                    <p className="text-xs text-rose-300 font-mono mt-1">Causal: {baja.tipo_emergencia} - {baja.motivo_detalle}</p>
+                  </div>
+                  <button
+                    onClick={() => handleEjecutarSalidaEmergencia(baja.id, baja.numero_documento)}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                  >
+                    <LogOut className="w-4 h-4" /> Registrar Salida Justificada
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tabActiva === 'escaner' && (
+        <>
+        {/* Barra de estado de garita y herramientas operativas mineras */}
+        <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <QrCode className="w-7 h-7" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h3 className="text-lg font-bold text-white">Lector y Scanner de Garita</h3>
               
               {/* Indicador de Red en Vivo */}
               {isOnline ? (
@@ -979,6 +1085,8 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({ postulante
           </table>
         </div>
       </div>
+      </>
+      )}
 
       {/* MODAL AUTORIZAR BAJADA ANTICIPADA POR EMERGENCIA (Punto 6) */}
       {modalEmergenciaOpen && (

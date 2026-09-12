@@ -350,6 +350,7 @@ export const App: React.FC = () => {
   const [vehiculos, setVehiculos] = useState<VehiculoMaquinaria[]>(INITIAL_VEHICULOS);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>(INITIAL_NOTIFICACIONES);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleLoginSuccess = (usuario: UsuarioSistema, _token: string) => {
     setCurrentUser(usuario);
@@ -721,18 +722,23 @@ export const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
-      <Sidebar 
-        currentView={currentView} 
-        onSelectView={setCurrentView} 
-        userRole={currentUser.rol}
-        userName={currentUser.nombre}
-        userArea={currentUser.area_responsable}
-        onLogout={handleLogout}
-        isMobileOpen={isMobileMenuOpen}
-        onCloseMobile={() => setIsMobileMenuOpen(false)}
-      />
+      {/* Sidebar SOLO visible para SUPER_ADMIN (con modo Rail colapsable) */}
+      {currentUser.rol === 'SUPER_ADMIN' && (
+        <Sidebar 
+          currentView={currentView} 
+          onSelectView={setCurrentView} 
+          userRole={currentUser.rol}
+          userName={currentUser.nombre}
+          userArea={currentUser.area_responsable}
+          onLogout={handleLogout}
+          isMobileOpen={isMobileMenuOpen}
+          onCloseMobile={() => setIsMobileMenuOpen(false)}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
+        />
+      )}
 
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto w-full min-w-0">
         <Header 
           currentView={currentView} 
           userName={currentUser.nombre}
@@ -761,7 +767,7 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        <div className="p-3.5 sm:p-6 max-w-7xl w-full mx-auto pb-20">
+        <div className={`p-3.5 sm:p-6 w-full mx-auto pb-20 ${currentUser.rol === 'SUPER_ADMIN' ? 'max-w-[1600px]' : ''}`}>
           {currentView === 'admin' && (
             <SuperAdminView 
               usuarios={usuarios}
@@ -777,6 +783,9 @@ export const App: React.FC = () => {
               postulantes={postulantes} 
               userRole={currentUser.rol}
               onSubsanar={handleSubsanar} 
+              vehiculos={vehiculos}
+              onRegistrarVehiculo={handleRegistrarVehiculo}
+              onEvaluarVehiculo={handleEvaluarVehiculo}
             />
           )}
 
@@ -801,6 +810,9 @@ export const App: React.FC = () => {
               postulantes={postulantes} 
               userRole={currentUser.rol}
               onEvaluar={handleEvaluarFase} 
+              vehiculos={vehiculos}
+              onRegistrarVehiculo={handleRegistrarVehiculo}
+              onEvaluarVehiculo={handleEvaluarVehiculo}
             />
           )}
 
@@ -829,7 +841,11 @@ export const App: React.FC = () => {
           )}
 
           {currentView === 'garita' && (
-            <GaritaScannerView postulantes={postulantes} />
+            <GaritaScannerView 
+              postulantes={postulantes} 
+              fotochecks={fotochecks}
+              onImprimirFotocheck={handleMarcarImpreso}
+            />
           )}
 
           {currentView === 'vehiculos' && (

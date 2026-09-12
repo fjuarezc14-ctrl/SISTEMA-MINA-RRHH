@@ -12,7 +12,9 @@ import {
   Crown,
   QrCode,
   Truck,
-  BarChart3
+  BarChart3,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export type ViewType = 
@@ -40,6 +42,8 @@ interface SidebarProps {
   onLogout: () => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ 
@@ -50,7 +54,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   userArea,
   onLogout,
   isMobileOpen = false,
-  onCloseMobile
+  onCloseMobile,
+  isCollapsed = false,
+  onToggleCollapse
 }) => {
   const isSelected = (view: ViewType) => currentView === view;
 
@@ -60,6 +66,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const getButtonClass = (view: ViewType, isSpecial = false) => {
+    if (isCollapsed) {
+      if (isSelected(view)) {
+        return 'w-full flex items-center justify-center p-3 rounded-xl font-bold bg-purple-600/20 text-purple-300 border border-purple-500/40 shadow-lg transition-all';
+      }
+      return 'w-full flex items-center justify-center p-3 rounded-xl font-medium text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent transition-all';
+    }
+
     if (isSelected(view)) {
       if (isSpecial) {
         return 'w-full text-left flex items-center gap-3 bg-purple-600/20 text-purple-300 border border-purple-500/40 px-4 py-3 rounded-xl font-bold shadow-lg transition-colors';
@@ -107,38 +120,62 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const sidebarContent = (
     <div className="flex flex-col h-full select-none">
-      <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2 tracking-wide">
-            <span className="text-blue-500 flex items-center gap-1">
-              <HardHat className="w-6 h-6 sm:w-7 sm:h-7 text-blue-500" /> VT
-            </span>
-            ONBOARDING
-          </h1>
-          <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-medium">Gestión de Accesos - Unidad Minera</p>
-        </div>
-        {onCloseMobile && (
-          <button 
-            onClick={onCloseMobile}
-            className="md:hidden p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+      {/* Cabecera del Menú con Botón Toggle */}
+      <div className={`p-4 border-b border-slate-800 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
+        {!isCollapsed ? (
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2 tracking-wide">
+              <span className="text-blue-500 flex items-center gap-1">
+                <HardHat className="w-6 h-6 sm:w-7 sm:h-7 text-blue-500" /> VT
+              </span>
+              ONBOARDING
+            </h1>
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-medium">Gestión de Accesos - Mina</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            <HardHat className="w-7 h-7 text-blue-500" />
+            <span className="text-[10px] font-black text-white tracking-wider mt-0.5">VT</span>
+          </div>
         )}
+
+        <div className="flex items-center gap-1">
+          {onToggleCollapse && (
+            <button 
+              onClick={onToggleCollapse}
+              title={isCollapsed ? "Expandir menú (260px)" : "Colapsar menú (64px)"}
+              className="hidden md:flex p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+          )}
+          {onCloseMobile && (
+            <button 
+              onClick={onCloseMobile}
+              className="md:hidden p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
-      <nav className="flex-1 p-3 sm:p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-2 sm:p-3 space-y-1 overflow-y-auto">
         {/* Mando Central */}
         {canSee('admin') && (
           <>
-            <p className="text-xs font-bold text-purple-400 mb-2 mt-1 px-4 uppercase tracking-wider flex items-center gap-1.5">
-              <Crown className="w-3.5 h-3.5 text-purple-400" /> Mando Central
-            </p>
+            {!isCollapsed && (
+              <p className="text-xs font-bold text-purple-400 mb-2 mt-1 px-3 uppercase tracking-wider flex items-center gap-1.5">
+                <Crown className="w-3.5 h-3.5 text-purple-400" /> Mando Central
+              </p>
+            )}
             <button 
               onClick={() => handleSelectView('admin')} 
+              title="Panel Super Admin"
               className={getButtonClass('admin', true)}
             >
-              <ShieldCheck className="w-5 h-5 text-purple-400" /> Panel Super Admin
+              <ShieldCheck className="w-5 h-5 text-purple-400 shrink-0" />
+              {!isCollapsed && <span>Panel Super Admin</span>}
             </button>
           </>
         )}
@@ -146,76 +183,98 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Portal Externo */}
         {canSee('contratista') && (
           <>
-            <p className="text-xs font-bold text-slate-500 mb-2 mt-4 px-4 uppercase tracking-wider">
-              Portal Externo
-            </p>
+            {!isCollapsed ? (
+              <p className="text-xs font-bold text-slate-500 mb-2 mt-4 px-3 uppercase tracking-wider">
+                Portal Externo
+              </p>
+            ) : (
+              <div className="my-2 border-t border-slate-800/60" />
+            )}
             <button 
               onClick={() => handleSelectView('contratista')} 
+              title="Portal Contratista"
               className={getButtonClass('contratista')}
             >
-              <Building2 className="w-5 h-5" /> Portal Contratista
+              <Building2 className="w-5 h-5 shrink-0" />
+              {!isCollapsed && <span>Portal Contratista</span>}
             </button>
           </>
         )}
 
         {/* Embudo de Acreditación (Vistos Buenos Secuenciales) */}
         {(canSee('fase1') || canSee('fase2') || canSee('fase3') || canSee('fase4') || canSee('fase5') || canSee('fotocheck')) && (
-          <div className="pt-3">
-            <p className="text-xs font-bold text-slate-500 mb-2 px-4 uppercase tracking-wider">
-              Embudo de 5 V°B°
-            </p>
+          <div className="pt-2">
+            {!isCollapsed ? (
+              <p className="text-xs font-bold text-slate-500 mb-2 px-3 uppercase tracking-wider">
+                Embudo de 5 V°B°
+              </p>
+            ) : (
+              <div className="my-2 border-t border-slate-800/60" />
+            )}
             
             {canSee('fase1') && (
               <button 
                 onClick={() => handleSelectView('fase1')} 
+                title="1. V°B° RRHH (CV y Datos)"
                 className={getButtonClass('fase1')}
               >
-                <FileSearch className="w-5 h-5" /> 1. V°B° RRHH (CV y Datos)
+                <FileSearch className="w-5 h-5 shrink-0" />
+                {!isCollapsed && <span>1. V°B° RRHH (CV y Datos)</span>}
               </button>
             )}
 
             {canSee('fase2') && (
               <button 
                 onClick={() => handleSelectView('fase2')} 
+                title="2. V°B° Médico (Salud/EMO)"
                 className={getButtonClass('fase2')}
               >
-                <Stethoscope className="w-5 h-5" /> 2. V°B° Médico (Salud/EMO)
+                <Stethoscope className="w-5 h-5 shrink-0" />
+                {!isCollapsed && <span>2. V°B° Médico (Salud/EMO)</span>}
               </button>
             )}
 
             {canSee('fase3') && (
               <button 
                 onClick={() => handleSelectView('fase3')} 
+                title="3. V°B° Seguridad (Legal)"
                 className={getButtonClass('fase3')}
               >
-                <ShieldAlert className="w-5 h-5" /> 3. V°B° Seguridad (Legal)
+                <ShieldAlert className="w-5 h-5 shrink-0" />
+                {!isCollapsed && <span>3. V°B° Seguridad (Legal)</span>}
               </button>
             )}
 
             {canSee('fase4') && (
               <button 
                 onClick={() => handleSelectView('fase4')} 
+                title="4. V°B° SSOMA (Inducción)"
                 className={getButtonClass('fase4')}
               >
-                <GraduationCap className="w-5 h-5" /> 4. V°B° SSOMA (Inducción)
+                <GraduationCap className="w-5 h-5 shrink-0" />
+                {!isCollapsed && <span>4. V°B° SSOMA (Inducción)</span>}
               </button>
             )}
 
             {canSee('fase5') && (
               <button 
                 onClick={() => handleSelectView('fase5')} 
+                title="5. V°B° SCTR (Seguros)"
                 className={getButtonClass('fase5')}
               >
-                <ClipboardCheck className="w-5 h-5" /> 5. V°B° SCTR (Seguros)
+                <ClipboardCheck className="w-5 h-5 shrink-0" />
+                {!isCollapsed && <span>5. V°B° SCTR (Seguros)</span>}
               </button>
             )}
 
             {canSee('fotocheck') && (
               <button 
                 onClick={() => handleSelectView('fotocheck')} 
+                title="Meta: Emisión Fotocheck"
                 className={getButtonClass('fotocheck')}
               >
-                <CreditCard className="w-5 h-5" /> Meta: Emisión Fotocheck
+                <CreditCard className="w-5 h-5 shrink-0" />
+                {!isCollapsed && <span>Meta: Emisión Fotocheck</span>}
               </button>
             )}
           </div>
@@ -223,35 +282,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Operaciones de Garita y Campo */}
         {(canSee('garita') || canSee('vehiculos') || canSee('metricas')) && (
-          <div className="pt-3">
-            <p className="text-xs font-bold text-slate-500 mb-2 px-4 uppercase tracking-wider">
-              Operaciones de Mina
-            </p>
+          <div className="pt-2">
+            {!isCollapsed ? (
+              <p className="text-xs font-bold text-slate-500 mb-2 px-3 uppercase tracking-wider">
+                Operaciones de Mina
+              </p>
+            ) : (
+              <div className="my-2 border-t border-slate-800/60" />
+            )}
 
             {canSee('garita') && (
               <button 
                 onClick={() => handleSelectView('garita')} 
+                title="Control Garita (QR)"
                 className={getButtonClass('garita')}
               >
-                <QrCode className="w-5 h-5 text-emerald-400" /> Control Garita (QR)
+                <QrCode className="w-5 h-5 text-emerald-400 shrink-0" />
+                {!isCollapsed && <span>Control Garita (QR)</span>}
               </button>
             )}
 
             {canSee('vehiculos') && (
               <button 
                 onClick={() => handleSelectView('vehiculos')} 
+                title="Pases Vehiculares"
                 className={getButtonClass('vehiculos')}
               >
-                <Truck className="w-5 h-5 text-amber-400" /> Pases Vehiculares
+                <Truck className="w-5 h-5 text-amber-400 shrink-0" />
+                {!isCollapsed && <span>Pases Vehiculares</span>}
               </button>
             )}
 
             {canSee('metricas') && (
               <button 
                 onClick={() => handleSelectView('metricas')} 
+                title="SLAs y Rendimiento"
                 className={getButtonClass('metricas')}
               >
-                <BarChart3 className="w-5 h-5 text-cyan-400" /> SLAs y Rendimiento
+                <BarChart3 className="w-5 h-5 text-cyan-400 shrink-0" />
+                {!isCollapsed && <span>SLAs y Rendimiento</span>}
               </button>
             )}
           </div>
@@ -259,26 +328,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Tarjeta de Perfil y Botón Cerrar Sesión */}
-      <div className="p-4 border-t border-slate-800/80 bg-slate-950/90 space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
-            <User className="w-4 h-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-white truncate">{userName}</p>
-            <span className="text-[10px] text-blue-400 block font-mono uppercase truncate">
-              {userRole}
-            </span>
-          </div>
-        </div>
+      <div className={`border-t border-slate-800/80 bg-slate-950/90 ${isCollapsed ? 'p-2 flex flex-col items-center gap-2' : 'p-4 space-y-3'}`}>
+        {!isCollapsed ? (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                <User className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-white truncate">{userName}</p>
+                <span className="text-[10px] text-blue-400 block font-mono uppercase truncate">
+                  {userRole}
+                </span>
+              </div>
+            </div>
 
-        <button
-          onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-rose-950/60 border border-slate-800 hover:border-rose-600/40 text-slate-400 hover:text-rose-300 py-2 rounded-xl text-xs font-bold transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          Cerrar Sesión
-        </button>
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-rose-950/60 border border-slate-800 hover:border-rose-600/40 text-slate-400 hover:text-rose-300 py-2 rounded-xl text-xs font-bold transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Cerrar Sesión
+            </button>
+          </>
+        ) : (
+          <>
+            <div 
+              title={`${userName} (${userRole})`}
+              className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 cursor-pointer"
+            >
+              <User className="w-4 h-4" />
+            </div>
+            <button
+              onClick={onLogout}
+              title="Cerrar Sesión"
+              className="p-2 rounded-xl bg-slate-900 hover:bg-rose-950/60 border border-slate-800 hover:border-rose-600/40 text-slate-400 hover:text-rose-300 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -298,8 +387,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      {/* Sidebar Persistente de Escritorio */}
-      <aside className="w-72 bg-slate-950 border-r border-slate-800 flex flex-col hidden md:flex h-screen select-none shrink-0">
+      {/* Sidebar Persistente de Escritorio (Expandido o Rail 64px) */}
+      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-slate-950 border-r border-slate-800 flex flex-col hidden md:flex h-screen select-none shrink-0 transition-all duration-300`}>
         {sidebarContent}
       </aside>
     </>

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Postulante, RolUsuario } from '../types';
-import { FileSearch, CheckCircle2, AlertTriangle, User, Eye } from 'lucide-react';
+import { FileSearch, CheckCircle2, AlertTriangle, User, Eye, BarChart3, Users } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
+import { SlaMetricsView } from './SlaMetricsView';
 
 interface Fase1Props {
   postulantes: Postulante[];
@@ -16,6 +17,7 @@ interface Fase1Props {
 }
 
 export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, userRole, onEvaluar }) => {
+  const [tabActiva, setTabActiva] = useState<'cvs' | 'metricas'>('cvs');
   const [observarModalOpen, setObservarModalOpen] = useState(false);
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
@@ -51,15 +53,49 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, userRole, onEvaluar
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2 text-blue-400">
-            <FileSearch className="w-5 h-5" /> 1. Filtro Documentario: Datos y CV
-          </h3>
-          <span className="text-xs bg-blue-900/40 text-blue-300 border border-blue-500/20 px-3 py-1 rounded-lg font-medium">
-            Área Responsable: Reclutamiento y RRHH Mina
-          </span>
-        </div>
+      {/* TABS DE STAFF RRHH */}
+      <div className="flex flex-wrap gap-2 border-b border-slate-750 pb-3">
+        <button
+          type="button"
+          onClick={() => setTabActiva('cvs')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            tabActiva === 'cvs'
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          1. Revisión de Datos y CVs ({candidatosFase1.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabActiva('metricas')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            tabActiva === 'metricas'
+              ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          2. Monitor de Rendimiento y SLAs de Área
+        </button>
+      </div>
+
+      {tabActiva === 'metricas' && (
+        <SlaMetricsView />
+      )}
+
+      {tabActiva === 'cvs' && (
+        <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-blue-400">
+              <FileSearch className="w-5 h-5" /> 1. Filtro Documentario: Datos y CV
+            </h3>
+            <span className="text-xs bg-blue-900/40 text-blue-300 border border-blue-500/20 px-3 py-1 rounded-lg font-medium">
+              Área Responsable: Reclutamiento y RRHH Mina
+            </span>
+          </div>
 
         {candidatosFase1.length === 0 ? (
           <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-slate-750 text-slate-400 text-sm">
@@ -117,6 +153,7 @@ export const Fase1CV: React.FC<Fase1Props> = ({ postulantes, userRole, onEvaluar
           </div>
         )}
       </div>
+      )}
 
       {/* MODAL VISOR SPLIT-SCREEN */}
       {viewerPostulante && (
