@@ -20,12 +20,14 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png'];
+  const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/pjpeg'];
   const ext = path.extname(file.originalname).toLowerCase();
+  const mime = file.mimetype.toLowerCase();
   
-  if (allowedExtensions.includes(ext)) {
+  if (allowedExtensions.includes(ext) && allowedMimes.includes(mime)) {
     cb(null, true);
   } else {
-    cb(new Error('Solo se permiten archivos en formato PDF, JPG o PNG.'));
+    cb(new Error('Archivo denegado por seguridad: Solo se permiten documentos PDF e imágenes JPG/PNG legítimas con MIME type verificado.'));
   }
 };
 

@@ -55,13 +55,9 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, userRole,
 
   const handleAprobar = async (id: string) => {
     const notaStr = notas[id] ?? '16';
-    const nota = parseInt(notaStr, 10) || 16;
-    if (nota < 14) {
-      alert('Para otorgar el Visto Bueno SSOMA, la nota mínima aprobatoria según D.S. 024-2016-EM es 14/20.');
-      return;
-    }
-    if (nota < 14) {
-      alert('Para otorgar el Visto Bueno SSOMA, la nota mínima aprobatoria según D.S. 024-2016-EM es 14/20.');
+    const nota = parseInt(notaStr, 10);
+    if (isNaN(nota) || nota < 14 || nota > 20) {
+      alert('Normativa SSOMA D.S. 024-2016-EM: Para otorgar el Visto Bueno de inducción, la nota mínima aprobatoria es 14/20 (escala de 00 a 20).');
       return;
     }
 
@@ -70,7 +66,7 @@ export const Fase4Capacitacion: React.FC<Fase4Props> = ({ postulantes, userRole,
       await onEvaluar(id, 'FASE_4', 'APROBAR', {
         nota,
         file: archivos[id],
-        observaciones: `Inducción SSOMA aprobada satisfactoriamente con nota ${nota}/20.`,
+        observaciones: `Inducción SSOMA aprobada satisfactoriamente con nota ${String(nota).padStart(2, '0')}/20.`,
       });
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al otorgar Visto Bueno SSOMA.');

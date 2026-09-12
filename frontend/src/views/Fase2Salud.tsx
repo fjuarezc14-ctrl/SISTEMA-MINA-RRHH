@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante, RolUsuario } from '../types';
-import { Stethoscope, Ban, CheckCircle, ShieldAlert, Eye, Lock } from 'lucide-react';
+import { Stethoscope, Ban, CheckCircle, ShieldAlert, Eye, Lock, AlertCircle, AlertTriangle } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
 
@@ -17,10 +17,12 @@ interface Fase2Props {
 
 export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEvaluar }) => {
   const [bloquearModalOpen, setBloquearModalOpen] = useState(false);
+  const [observarModalOpen, setObservarModalOpen] = useState(false);
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
   const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
   const [motivoRechazo, setMotivoRechazo] = useState('');
+  const [motivoObs, setMotivoObs] = useState('');
   const [loading, setLoading] = useState(false);
 
   const isAuthorizedRole = userRole === 'MEDICO_OCUPACIONAL' || userRole === 'SUPER_ADMIN';
@@ -35,9 +37,28 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
     setBloquearModalOpen(true);
   };
 
+  const handleOpenObservar = (p: Postulante) => {
+    setSelectedPostulante(p);
+    setMotivoObs('');
+    setObservarModalOpen(true);
+  };
+
   const handleOpenSplitViewer = (p: Postulante) => {
     setViewerPostulante(p);
     setSplitViewerOpen(true);
+  };
+
+  const handleConfirmObservar = async () => {
+    if (!selectedPostulante || !motivoObs.trim()) return;
+    try {
+      setLoading(true);
+      await onEvaluar(selectedPostulante.id, 'FASE_2', 'OBSERVAR', { observaciones: motivoObs });
+      setObservarModalOpen(false);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Error al observar examen médico.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConfirmBloqueo = async () => {
@@ -126,6 +147,13 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
                     className="flex-1 md:flex-initial bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow"
                   >
                     <Eye className="w-4 h-4 text-rose-400" /> Inspeccionar EMO (Split-Screen)
+                  </button>
+
+                  <button
+                    onClick={() => handleOpenObservar(candidato)}
+                    className="flex-1 md:flex-initial bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <AlertCircle className="w-4 h-4 text-amber-400" /> Observar
                   </button>
 
                   <button 
@@ -222,6 +250,41 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
               className="bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm"
             >
               {loading ? 'Procesando...' : 'Confirmar Bloqueo en Lista Negra'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* MODAL OBSERVACIÓN MÉDICA PARA SUBSANACIÓN */}
+      <Modal 
+        isOpen={observarModalOpen} 
+        onClose={() => setObservarModalOpen(false)} 
+        title={`Observar Examen Médico - ${selectedPostulante?.nombres} ${selectedPostulante?.apellidos}`}
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-slate-400">
+            Detalla la observación médica (ej. ficha borrosa, examen complementario requerido) para que la contrata subsane el documento sin vetar al trabajador en Lista Negra:
+          </p>
+          <textarea 
+            rows={3} 
+            value={motivoObs} 
+            onChange={(e) => setMotivoObs(e.target.value)}
+            placeholder="Ej: Ficha 7D ilegible en sección cardiovascular / Requiere repetir examen de audiometría..."
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500"
+          />
+          <div className="flex justify-end gap-3 pt-2">
+            <button 
+              onClick={() => setObservarModalOpen(false)}
+              className="px-4 py-2 text-sm text-slate-400 hover:text-white"
+            >
+              Cancelar
+            </button>
+            <button 
+              onClick={handleConfirmObservar}
+              disabled={loading || !motivoObs.trim()}
+              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm"
+            >
+              {loading ? 'Procesando...' : 'Confirmar Observación'}
             </button>
           </div>
         </div>

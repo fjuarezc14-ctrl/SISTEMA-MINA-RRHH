@@ -32,6 +32,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
     cargo: '',
     telefono: '',
     email: '',
+    grupo_sanguineo: 'O+',
     tipo_pase: 'PERMANENTE' as 'PERMANENTE' | 'VISITA_TECNICA' | 'PROVEEDOR_LOGISTICO',
     vigencia_inicio: '',
     vigencia_fin: '',
@@ -60,6 +61,50 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
   const handleCrearSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setNuevoError('');
+
+    // 1. Validación de Nombres y Apellidos
+    const regexTexto = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]{2,50}$/;
+    if (!regexTexto.test(nuevoForm.nombres.trim())) {
+      setNuevoError('Los nombres solo deben contener letras (de 2 a 50 caracteres).');
+      return;
+    }
+    if (!regexTexto.test(nuevoForm.apellidos.trim())) {
+      setNuevoError('Los apellidos solo deben contener letras (de 2 a 50 caracteres).');
+      return;
+    }
+
+    // 2. Validación estricta de Documento
+    if (nuevoForm.tipo_documento === 'DNI' && !/^\d{8}$/.test(nuevoForm.numero_documento.trim())) {
+      setNuevoError('El DNI debe tener exactamente 8 dígitos numéricos.');
+      return;
+    }
+    if (nuevoForm.tipo_documento === 'CE' && !/^[A-Z0-9]{9}$/i.test(nuevoForm.numero_documento.trim())) {
+      setNuevoError('El Carné de Extranjería (CE) debe tener 9 caracteres alfanuméricos.');
+      return;
+    }
+    if (nuevoForm.tipo_documento === 'PASAPORTE' && !/^[A-Z0-9]{6,12}$/i.test(nuevoForm.numero_documento.trim())) {
+      setNuevoError('El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos.');
+      return;
+    }
+
+    // 3. Validación de Teléfono Móvil si se ingresa
+    if (nuevoForm.telefono.trim() && !/^9\d{8}$/.test(nuevoForm.telefono.trim())) {
+      setNuevoError('El teléfono celular debe tener 9 dígitos numéricos y comenzar con 9.');
+      return;
+    }
+
+    // 4. Validación de Vigencias para Pases Temporales
+    if (nuevoForm.tipo_pase !== 'PERMANENTE') {
+      if (!nuevoForm.vigencia_inicio || !nuevoForm.vigencia_fin) {
+        setNuevoError('Debe especificar fecha de inicio y término para pases temporales.');
+        return;
+      }
+      if (nuevoForm.vigencia_fin < nuevoForm.vigencia_inicio) {
+        setNuevoError('La fecha de salida/término debe ser posterior a la fecha de inicio.');
+        return;
+      }
+    }
+
     setNuevoLoading(true);
     try {
       await api.post('/postulantes', nuevoForm);
@@ -73,6 +118,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
         cargo: '',
         telefono: '',
         email: '',
+        grupo_sanguineo: 'O+',
         tipo_pase: 'PERMANENTE',
         vigencia_inicio: '',
         vigencia_fin: '',
@@ -594,25 +640,35 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-slate-300 mb-1">Número de DNI / Documento:</label>
-              <input
-                type="text"
-                required
-                value={nuevoForm.numero_documento}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, numero_documento: e.target.value })}
-                placeholder="Ej. 45891234"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
-              />
+              <label className="block text-xs text-slate-300 mb-1">Tipo de Documento:</label>
+              <select
+                value={nuevoForm.tipo_documento}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, tipo_documento: e.target.value, numero_documento: '' })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+              >
+                <option value="DNI">DNI (8 dígitos)</option>
+                <option value="CARNET_EXTRANJERIA">Carnet de Extranjería (9 car.)</option>
+                <option value="PASAPORTE">Pasaporte (6 a 12 car.)</option>
+              </select>
             </div>
             <div>
-              <label className="block text-xs text-slate-300 mb-1">Cargo / Puesto Minero:</label>
+              <label className="block text-xs text-slate-300 mb-1">
+                Número de {nuevoForm.tipo_documento === 'DNI' ? 'DNI' : nuevoForm.tipo_documento === 'CARNET_EXTRANJERIA' ? 'C.E.' : 'Pasaporte'}:
+              </label>
               <input
                 type="text"
                 required
-                value={nuevoForm.cargo}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, cargo: e.target.value })}
-                placeholder="Ej. Técnico Electricista / Conductor"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                maxLength={nuevoForm.tipo_documento === 'DNI' ? 8 : nuevoForm.tipo_documento === 'CARNET_EXTRANJERIA' ? 9 : 12}
+                value={nuevoForm.numero_documento}
+                onChange={(e) => {
+                  let val = e.target.value.toUpperCase().trim();
+                  if (nuevoForm.tipo_documento === 'DNI') {
+                    val = val.replace(/\D/g, '').slice(0, 8);
+                  }
+                  setNuevoForm({ ...nuevoForm, numero_documento: val });
+                }}
+                placeholder={nuevoForm.tipo_documento === 'DNI' ? 'Ej. 45891234' : 'Ej. 001234567'}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono uppercase"
               />
             </div>
           </div>
@@ -624,7 +680,10 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
                 type="text"
                 required
                 value={nuevoForm.nombres}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, nombres: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '');
+                  setNuevoForm({ ...nuevoForm, nombres: val });
+                }}
                 placeholder="Ej. Carlos Eduardo"
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
               />
@@ -635,7 +694,10 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
                 type="text"
                 required
                 value={nuevoForm.apellidos}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, apellidos: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '');
+                  setNuevoForm({ ...nuevoForm, apellidos: val });
+                }}
                 placeholder="Ej. Quispe Morales"
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
               />
@@ -644,21 +706,56 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({ postulante
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-slate-300 mb-1">Teléfono Móvil (Opcional):</label>
+              <label className="block text-xs text-slate-300 mb-1">Cargo / Puesto Minero:</label>
               <input
                 type="text"
-                value={nuevoForm.telefono}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, telefono: e.target.value })}
-                placeholder="+51 987654321"
+                required
+                value={nuevoForm.cargo}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, cargo: e.target.value })}
+                placeholder="Ej. Técnico Electricista / Conductor"
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-300 mb-1">Email (Opcional):</label>
+              <label className="block text-xs text-slate-300 mb-1">Grupo Sanguíneo y Factor RH:</label>
+              <select
+                value={nuevoForm.grupo_sanguineo}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, grupo_sanguineo: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
+              >
+                <option value="O+">O+ (O Positivo)</option>
+                <option value="O-">O- (O Negativo)</option>
+                <option value="A+">A+ (A Positivo)</option>
+                <option value="A-">A- (A Negativo)</option>
+                <option value="B+">B+ (B Positivo)</option>
+                <option value="B-">B- (B Negativo)</option>
+                <option value="AB+">AB+ (AB Positivo)</option>
+                <option value="AB-">AB- (AB Negativo)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Teléfono Móvil (9 dígitos, inicia en 9):</label>
+              <input
+                type="text"
+                maxLength={9}
+                value={nuevoForm.telefono}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 9);
+                  setNuevoForm({ ...nuevoForm, telefono: val });
+                }}
+                placeholder="Ej. 987654321"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-300 mb-1">Email Corporativo (Opcional):</label>
               <input
                 type="email"
                 value={nuevoForm.email}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, email: e.target.value })}
+                onChange={(e) => setNuevoForm({ ...nuevoForm, email: e.target.value.trim() })}
                 placeholder="trabajador@empresa.com"
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
               />

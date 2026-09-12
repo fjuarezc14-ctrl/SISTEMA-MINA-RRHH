@@ -53,8 +53,24 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
 
   const handleAprobar = async (id: string) => {
     const fInicio = fechasInicio[id] || new Date().toISOString().split('T')[0];
-    const fVenc = fechasVenc[id] || '2026-10-30';
+    const fVenc = fechasVenc[id];
     const clinica = clinicas[id] || 'Clínica Limatambo Cajamarca';
+
+    if (!fVenc) {
+      alert('Acción requerida: Seleccione en el calendario la fecha real de vencimiento consignada en la póliza SCTR.');
+      return;
+    }
+
+    if (fVenc <= fInicio) {
+      alert('Coherencia de fechas: La fecha de vencimiento debe ser posterior a la fecha de inicio de la póliza.');
+      return;
+    }
+
+    const hoyStr = new Date().toISOString().split('T')[0];
+    if (fVenc < hoyStr) {
+      alert('Normativa minera D.S. 024-2016-EM: No se puede otorgar Visto Bueno si la póliza SCTR se encuentra vencida a la fecha de hoy.');
+      return;
+    }
 
     try {
       setLoading(true);
@@ -88,10 +104,10 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
+      <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 border-t-4 border-t-emerald-500 shadow-xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2 text-blue-400">
-            <ClipboardCheck className="w-5 h-5" /> 5. Validación SCTR y Seguros de Alto Riesgo
+          <h3 className="font-bold text-lg flex items-center gap-2 text-emerald-400">
+            <ShieldCheck className="w-5 h-5" /> Fase 5: Validación SCTR y Pólizas de Alto Riesgo
           </h3>
           <span className="text-xs bg-blue-900/30 text-blue-300 border border-blue-500/20 px-3 py-1 rounded-lg font-medium">
             Área Responsable: Administración de Contratos y Seguros
@@ -105,7 +121,7 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
         ) : (
           <div className="space-y-4">
             {candidatosFase5.map((candidato) => {
-              const fechaVal = fechasVenc[candidato.id] || '2026-10-30';
+              const fechaVal = fechasVenc[candidato.id] || candidato.sctr_vencimiento || '';
 
               return (
                 <div 

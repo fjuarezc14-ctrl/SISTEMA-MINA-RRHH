@@ -13,6 +13,9 @@ export class GaritaService {
          p.nombres,
          p.apellidos,
          p.cargo,
+         p.tipo_pase,
+         p.vigencia_inicio,
+         p.vigencia_fin,
          p.fase_actual,
          p.estado_global,
          p.grupo_sanguineo,
@@ -76,8 +79,48 @@ export class GaritaService {
         };
       }
 
-      // C. Verificar vigencia de SCTR
       const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
+      // C. Verificar vigencia de Credencial / Fotocheck
+      if (p.fotocheck_vencimiento && new Date(p.fotocheck_vencimiento) < hoy) {
+        const fVencStr = new Date(p.fotocheck_vencimiento).toLocaleDateString('es-PE');
+        return {
+          tipo: 'TRABAJADOR' as const,
+          autorizado: false,
+          motivo: `ACCESO DENEGADO: Fotocheck / Credencial VENCIDA (expiró el ${fVencStr}). Debe renovar credencial en Control de Accesos.`,
+          trabajador: {
+            id: p.id,
+            nombreCompleto: `${p.nombres} ${p.apellidos}`,
+            dni: p.numero_documento,
+            empresa: p.empresa_nombre,
+            cargo: p.cargo,
+            estado: 'FOTOCHECK_VENCIDO',
+            fotocheckVencimiento: fVencStr,
+          },
+        };
+      }
+
+      // D. Verificar vigencia de Pase Temporal (Visita Técnica / Proveedor Logístico)
+      if (p.tipo_pase !== 'PERMANENTE' && p.vigencia_fin && new Date(p.vigencia_fin) < hoy) {
+        const finStr = new Date(p.vigencia_fin).toLocaleDateString('es-PE');
+        return {
+          tipo: 'TRABAJADOR' as const,
+          autorizado: false,
+          motivo: `ACCESO DENEGADO: Pase Temporal de [${p.tipo_pase}] VENCIDO (vigencia culminó el ${finStr}). Infracción de permanencia no autorizada en campamento minero.`,
+          trabajador: {
+            id: p.id,
+            nombreCompleto: `${p.nombres} ${p.apellidos}`,
+            dni: p.numero_documento,
+            empresa: p.empresa_nombre,
+            cargo: p.cargo,
+            estado: 'PASE_EXPIRADO',
+            vigenciaFin: finStr,
+          },
+        };
+      }
+
+      // E. Verificar vigencia de SCTR
       if (p.sctr_vencimiento && new Date(p.sctr_vencimiento) < hoy) {
         const fechaStr = new Date(p.sctr_vencimiento).toLocaleDateString('es-PE');
         return {
@@ -249,14 +292,28 @@ export class GaritaService {
 
     // Validación estricta de seguridad minera: Tolerancia CERO al alcohol (D.S. 024-2016-EM Art. 40)
     if (alcotestResultado) {
-      const alcotestUpper = alcotestResultado.toUpperCase();
-      const esPositivo = alcotestUpper.includes('POSITIVO') || 
-                         alcotestUpper.includes('EBRIEDAD') || 
-                         (!alcotestUpper.includes('0.00') && !alcotestUpper.includes('NEGATIVO') && !alcotestUpper.includes('APTO'));
-      
+      const alcUpper = String(alcotestResultado).toUpperCase().trim();
+      let esPositivo = false;
+      let detalleInfraccion = alcotestResultado;
+
+      if (alcUpper.includes('POSITIVO') || alcUpper.includes('EBRIEDAD') || alcUpper.includes('ALCOHOL')) {
+        esPositivo = true;
+      } else {
+        const numMatch = alcUpper.match(/(\d+(\.\d+)?)/);
+        if (numMatch) {
+          const valor = parseFloat(numMatch[1]);
+          if (valor > 0.0) {
+            esPositivo = true;
+            detalleInfraccion = `${valor} g/L`;
+          }
+        } else if (!alcUpper.includes('NEGATIVO') && !alcUpper.includes('APTO') && !alcUpper.includes('0.00')) {
+          esPositivo = true;
+        }
+      }
+
       if (esPositivo) {
         finalResultado = 'DENEGADO';
-        finalMotivo = `ALCOTEST POSITIVO: [${alcotestResultado}]. Acceso denegado automáticamente por normativa de seguridad minera (D.S. 024-2016-EM Art. 40).`;
+        finalMotivo = `ALCOTEST POSITIVO: [${detalleInfraccion}]. Acceso denegado automáticamente por normativa de seguridad minera (D.S. 024-2016-EM Art. 40 - Tolerancia Cero).`;
       }
     }
 
@@ -360,14 +417,28 @@ export class GaritaService {
 
         // Validación estricta de alcotest también en sincronización offline
         if (item.alcotestResultado) {
-          const alcUpper = String(item.alcotestResultado).toUpperCase();
-          if (
-            alcUpper.includes('POSITIVO') || 
-            alcUpper.includes('EBRIEDAD') || 
-            (!alcUpper.includes('0.00') && !alcUpper.includes('NEGATIVO') && !alcUpper.includes('APTO'))
-          ) {
+          const alcUpper = String(item.alcotestResultado).toUpperCase().trim();
+          let esPositivo = false;
+          let detalleInfraccion = item.alcotestResultado;
+
+          if (alcUpper.includes('POSITIVO') || alcUpper.includes('EBRIEDAD') || alcUpper.includes('ALCOHOL')) {
+            esPositivo = true;
+          } else {
+            const numMatch = alcUpper.match(/(\d+(\.\d+)?)/);
+            if (numMatch) {
+              const valor = parseFloat(numMatch[1]);
+              if (valor > 0.0) {
+                esPositivo = true;
+                detalleInfraccion = `${valor} g/L`;
+              }
+            } else if (!alcUpper.includes('NEGATIVO') && !alcUpper.includes('APTO') && !alcUpper.includes('0.00')) {
+              esPositivo = true;
+            }
+          }
+
+          if (esPositivo) {
             finalResultado = 'DENEGADO';
-            finalMotivo = `ALCOTEST POSITIVO (OFFLINE): [${item.alcotestResultado}]. Infracción D.S. 024-2016-EM Art. 40.`;
+            finalMotivo = `ALCOTEST POSITIVO (OFFLINE): [${detalleInfraccion}]. Infracción D.S. 024-2016-EM Art. 40.`;
           }
         }
 

@@ -200,6 +200,14 @@ export class FasesService {
           siguienteFase = 'FASE_4';
           break;
         case 'FASE_4':
+          // Validación de regla minera SSOMA D.S. 024-2016-EM: nota mínima aprobatoria 14/20
+          if (nota === undefined || nota === null || isNaN(Number(nota)) || Number(nota) < 14 || Number(nota) > 20) {
+            const error: any = new Error(
+              `Para otorgar Visto Bueno en Fase 4 (SSOMA), la calificación debe ser aprobatoria entre 14 y 20 según D.S. 024-2016-EM. Calificación registrada: ${nota ?? 'no proporcionada'}`
+            );
+            error.statusCode = 400;
+            throw error;
+          }
           siguienteFase = 'FASE_5';
           break;
         case 'FASE_5':
@@ -245,6 +253,12 @@ export class FasesService {
             zonaAutorizada = 'Solo Almacén Central y Patio de Superficie';
           }
 
+          // Generar correlativo único garantizado de credencial (VT-YYYY-XXXXX) para evitar colisiones
+          const countRes = await client.query('SELECT COUNT(*) as total FROM fotochecks');
+          const correlativo = String(Number(countRes.rows[0].total) + 1).padStart(5, '0');
+          const codigoCredencial = `VT-${new Date().getFullYear()}-${correlativo}`;
+          const codigoQr = `QR-VT-${postulante.numero_documento}-${Date.now()}`;
+
           // Generar credencial de Fotocheck listo para imprimir
           await client.query(
             `INSERT INTO fotochecks (postulante_id, codigo_credencial, codigo_qr, zona_autorizada, fecha_emision, fecha_vencimiento)
@@ -253,8 +267,8 @@ export class FasesService {
              SET zona_autorizada = EXCLUDED.zona_autorizada, fecha_vencimiento = EXCLUDED.fecha_vencimiento`,
             [
               postulanteId,
-              `VT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-              `QR-VT-${postulante.numero_documento}-${Date.now()}`,
+              codigoCredencial,
+              codigoQr,
               zonaAutorizada,
             ]
           );

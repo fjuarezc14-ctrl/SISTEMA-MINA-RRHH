@@ -84,8 +84,31 @@ export const VehiculosView: React.FC<VehiculosViewProps> = ({
 
   const handleSubmitRegistro = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formRegistro.placaCodigo || !formRegistro.marca || !formRegistro.modelo) {
-      alert('Por favor complete todos los campos obligatorios del vehículo.');
+    if (!formRegistro.placaCodigo.trim() || !formRegistro.marca.trim() || !formRegistro.modelo.trim()) {
+      alert('Por favor complete placa/código interno, marca y modelo.');
+      return;
+    }
+
+    if (!formRegistro.soatVencimiento || !formRegistro.revTecnicaVencimiento) {
+      alert('Debe ingresar obligatoriamente las fechas de vigencia de SOAT y Revisión Técnica.');
+      return;
+    }
+
+    const hoyStr = new Date().toISOString().split('T')[0];
+    if (formRegistro.soatVencimiento < hoyStr) {
+      alert('La fecha de vencimiento del SOAT no puede ser una fecha pasada para registrar una unidad.');
+      return;
+    }
+
+    if (formRegistro.revTecnicaVencimiento < hoyStr) {
+      alert('La fecha de vencimiento de la Revisión Técnica no puede ser una fecha pasada para registrar una unidad.');
+      return;
+    }
+
+    const anio = Number(formRegistro.anioFabricacion);
+    const maxAnio = new Date().getFullYear() + 1;
+    if (anio && (anio < 2015 || anio > maxAnio)) {
+      alert(`Por estándar de antigüedad minera, el año de fabricación debe estar entre 2015 y ${maxAnio}.`);
       return;
     }
 
@@ -415,6 +438,20 @@ export const VehiculosView: React.FC<VehiculosViewProps> = ({
                 value={formRegistro.modelo}
                 onChange={(e) => setFormRegistro({ ...formRegistro, modelo: e.target.value })}
                 placeholder="Ej. Hilux 4x4 SRV"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-300 font-bold mb-1">Año de Fabricación (≥ 2015) *</label>
+              <input
+                type="number"
+                min="2015"
+                max={new Date().getFullYear() + 1}
+                required
+                value={formRegistro.anioFabricacion || ''}
+                onChange={(e) => setFormRegistro({ ...formRegistro, anioFabricacion: Number(e.target.value) })}
+                placeholder={`Ej. ${new Date().getFullYear()}`}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white"
               />
             </div>

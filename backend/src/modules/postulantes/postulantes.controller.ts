@@ -3,17 +3,46 @@ import { PostulantesService } from './postulantes.service';
 import { z } from 'zod';
 
 const createPostulanteSchema = z.object({
-  tipo_documento: z.string().default('DNI'),
-  numero_documento: z.string().min(5),
-  nombres: z.string().min(2),
-  apellidos: z.string().min(2),
-  cargo: z.string().min(2),
-  telefono: z.string().optional(),
-  email: z.string().email().optional(),
-  grupo_sanguineo: z.string().optional(),
+  tipo_documento: z.enum(['DNI', 'CE', 'PASAPORTE']).default('DNI'),
+  numero_documento: z.string().trim(),
+  nombres: z.string().trim().regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]{2,50}$/, 'Los nombres solo deben contener letras (de 2 a 50 caracteres)'),
+  apellidos: z.string().trim().regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]{2,50}$/, 'Los apellidos solo deben contener letras (de 2 a 50 caracteres)'),
+  cargo: z.string().trim().min(2, 'El cargo debe tener al menos 2 caracteres'),
+  telefono: z.string().trim().regex(/^9\d{8}$/, 'El teléfono celular debe tener 9 dígitos y empezar con 9').optional().or(z.literal('')),
+  email: z.string().trim().email('Formato de correo electrónico inválido').optional().or(z.literal('')),
+  grupo_sanguineo: z.enum(['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']).optional().or(z.literal('')),
   tipo_pase: z.enum(['PERMANENTE', 'VISITA_TECNICA', 'PROVEEDOR_LOGISTICO']).default('PERMANENTE'),
-  vigencia_inicio: z.string().optional(),
-  vigencia_fin: z.string().optional(),
+  vigencia_inicio: z.string().optional().or(z.literal('')),
+  vigencia_fin: z.string().optional().or(z.literal('')),
+}).superRefine((data, ctx) => {
+  if (data.tipo_documento === 'DNI' && !/^\d{8}$/.test(data.numero_documento)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'El DNI debe tener exactamente 8 dígitos numéricos.',
+      path: ['numero_documento'],
+    });
+  }
+  if (data.tipo_documento === 'CE' && !/^[A-Z0-9]{9}$/i.test(data.numero_documento)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'El Carné de Extranjería (CE) debe tener exactamente 9 caracteres alfanuméricos.',
+      path: ['numero_documento'],
+    });
+  }
+  if (data.tipo_documento === 'PASAPORTE' && !/^[A-Z0-9]{6,12}$/i.test(data.numero_documento)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos.',
+      path: ['numero_documento'],
+    });
+  }
+  if (data.vigencia_inicio && data.vigencia_fin && data.vigencia_fin < data.vigencia_inicio) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'La fecha de término debe ser posterior o igual a la fecha de inicio del pase.',
+      path: ['vigencia_fin'],
+    });
+  }
 });
 
 export class PostulantesController {
