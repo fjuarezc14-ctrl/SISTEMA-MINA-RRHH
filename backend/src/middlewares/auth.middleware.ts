@@ -33,16 +33,21 @@ export const authenticateJWT = async (req: Request, res: Response, next: NextFun
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as AuthenticatedUser;
 
-    // Verificar que el usuario siga activo y no bloqueado en la BD
+    // Verificar que el usuario siga activo y no bloqueado en la BD, y sincronizar su rol actual
     const userCheck = await query(
-      'SELECT activo, bloqueado_definitivo FROM usuarios WHERE id = $1',
+      'SELECT activo, bloqueado_definitivo, rol, empresa_id FROM usuarios WHERE id = $1',
       [decoded.id]
     );
     if (!userCheck.rows[0] || !userCheck.rows[0].activo || userCheck.rows[0].bloqueado_definitivo) {
       return res.status(401).json({ error: 'Sesión revocada. El usuario fue desactivado o bloqueado.' });
     }
 
-    req.user = decoded;
+    // Asegurar que req.user use el rol y empresa_id vigentes en la base de datos
+    req.user = {
+      ...decoded,
+      rol: userCheck.rows[0].rol,
+      empresa_id: userCheck.rows[0].empresa_id,
+    };
     next();
   } catch (error) {
     return res.status(401).json({ error: 'Token inválido o expirado. Inicie sesión nuevamente.' });

@@ -133,15 +133,18 @@ export class FasesService {
         const motivoFinal = motivoListaNegra || observaciones || 'No Apto por evaluación en ' + fase;
         const tipoFalta = fase === 'FASE_2' ? 'MEDICA_CRITICA' : 'ANTECEDENTES_PENALES';
 
-        await ListaNegraService.bloquear({
-          numero_documento: postulante.numero_documento,
-          tipo_documento: postulante.tipo_documento,
-          nombres: postulante.nombres,
-          apellidos: postulante.apellidos,
-          motivo: motivoFinal,
-          tipo_falta: tipoFalta,
-          reportado_por: evaluadorId,
-        });
+        await ListaNegraService.bloquear(
+          {
+            numero_documento: postulante.numero_documento,
+            tipo_documento: postulante.tipo_documento,
+            nombres: postulante.nombres,
+            apellidos: postulante.apellidos,
+            motivo: motivoFinal,
+            tipo_falta: tipoFalta,
+            reportado_por: evaluadorId,
+          },
+          client
+        );
 
         await client.query(
           `UPDATE postulantes 

@@ -7,6 +7,8 @@ export class AuthService {
   static async login(email: string, passwordPlain: string) {
     const res = await query('SELECT * FROM usuarios WHERE email = $1', [email]);
     if (res.rows.length === 0) {
+      // Mitigación Timing Attack: ejecutar hash dummy para que el tiempo de respuesta sea indistinguible
+      await bcrypt.compare(passwordPlain, '$2a$10$MO.NB3/EqblCQPIRLrUAteLzZFc6z7soByeD0Fw3sWqQfExVYB0zu');
       const err: any = new Error('Credenciales incorrectas.');
       err.statusCode = 401;
       throw err;

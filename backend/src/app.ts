@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import path from 'path';
 import rateLimit from 'express-rate-limit';
 import apiRouter from './routes';
 import { errorHandler } from './middlewares/error.middleware';
@@ -12,7 +11,16 @@ export const app = express();
 // Cabeceras de seguridad HTTP (HSTS, CSP, X-Frame-Options, X-Content-Type-Options)
 app.use(helmet());
 
-// Rate limiting para login (anti brute-force)
+// Rate limiting global para toda la API (Anti DoS / Scraping)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 300, // máximo 300 peticiones por IP
+  message: { error: 'Límite de solicitudes alcanzado. Por favor intente más tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting estricto para login (Anti brute-force)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
   max: 10, // máximo 10 intentos por IP
@@ -30,7 +38,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limit en login
+// Aplicar limitadores de tráfico
+app.use('/api', globalLimiter);
 app.use('/api/auth/login', loginLimiter);
 
 // Los documentos se sirven con control de roles a través de /api/documentos/:id/stream (NO de forma estática)

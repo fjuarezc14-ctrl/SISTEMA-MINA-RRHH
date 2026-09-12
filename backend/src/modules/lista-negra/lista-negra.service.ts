@@ -11,17 +11,21 @@ export class ListaNegraService {
     return res.rows;
   }
 
-  static async bloquear(data: {
-    numero_documento: string;
-    tipo_documento?: string;
-    nombres: string;
-    apellidos: string;
-    motivo: string;
-    tipo_falta: string;
-    estado_bloqueo?: string;
-    reportado_por?: string;
-  }) {
-    const res = await query(
+  static async bloquear(
+    data: {
+      numero_documento: string;
+      tipo_documento?: string;
+      nombres: string;
+      apellidos: string;
+      motivo: string;
+      tipo_falta: string;
+      estado_bloqueo?: string;
+      reportado_por?: string;
+    },
+    dbClient?: { query: (text: string, params?: any[]) => Promise<any> }
+  ) {
+    const executor = dbClient ? dbClient.query.bind(dbClient) : query;
+    const res = await executor(
       `INSERT INTO lista_negra 
        (numero_documento, tipo_documento, nombres, apellidos, motivo, tipo_falta, estado_bloqueo, reportado_por)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
