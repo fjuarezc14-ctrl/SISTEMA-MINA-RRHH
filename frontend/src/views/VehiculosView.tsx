@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { VehiculoMaquinaria, RolUsuario } from '../types';
 import { 
   Truck, 
@@ -117,6 +118,7 @@ export const VehiculosView: React.FC<VehiculosViewProps> = ({
       await onRegistrarVehiculo({
         ...formRegistro,
         checklistSeguridad: formRegistro.checklist,
+        codigo_pase_qr: `PASE-${formRegistro.placaCodigo}-${Date.now()}`,
       });
       setModalRegistroOpen(false);
       setFormRegistro({
@@ -653,7 +655,7 @@ export const VehiculosView: React.FC<VehiculosViewProps> = ({
 
             <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 inline-block mx-auto">
               <div className="w-36 h-36 bg-white rounded-lg p-2 mx-auto flex items-center justify-center">
-                <QrCode className="w-32 h-32 text-slate-950" />
+                <QRCodeSVG value={selectedVehiculo.codigo_pase_qr} size={128} level="H" />
               </div>
               <p className="font-mono text-xs font-bold text-emerald-400 mt-2">
                 {selectedVehiculo.codigo_pase_qr}
