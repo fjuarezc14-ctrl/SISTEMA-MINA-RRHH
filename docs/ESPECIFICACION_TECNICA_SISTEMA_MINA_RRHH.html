@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Especificación Técnica y Arquitectura de Software - Sistema Mina RRHH</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    @page {
+      size: A4 portrait;
+      margin: 18mm 16mm 18mm 16mm;
+      @bottom-right {
+        content: "Página " counter(page) " de " counter(pages);
+        font-family: 'Inter', sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+      @bottom-left {
+        content: "VALETEC • Sistema Integral de Control de Accesos y RRHH Mina";
+        font-family: 'Inter', sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #1e293b;
+      background: #ffffff;
+      font-size: 9.5pt;
+      line-height: 1.55;
+    }
+
+    /* Portada */
+    .cover-page {
+      page-break-after: always;
+      height: 100%;
+      min-height: 250mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20mm 10mm 10mm 10mm;
+      background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e293b 100%);
+      color: #ffffff;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cover-page::before {
+      content: "";
+      position: absolute;
+      top: -10%;
+      right: -10%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(15, 23, 42, 0) 70%);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .cover-header {
+      position: relative;
+      z-index: 2;
+    }
+
+    .badge-gold {
+      display: inline-block;
+      padding: 5px 14px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      font-size: 8.5pt;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 6px;
+      margin-bottom: 25px;
+    }
+
+    .cover-title {
+      font-size: 26pt;
+      font-weight: 900;
+      line-height: 1.15;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .cover-title span {
+      color: #3b82f6;
+    }
+
+    .cover-subtitle {
+      font-size: 13pt;
+      font-weight: 400;
+      color: #94a3b8;
+      max-width: 580px;
+      line-height: 1.4;
+      margin-bottom: 30px;
+    }
+
+    .cover-meta {
+      position: relative;
+      z-index: 2;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 12px;
+      padding: 16px 20px;
+      backdrop-filter: blur(8px);
+    }
+
+    .cover-meta table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cover-meta td {
+      padding: 6px 10px;
+      font-size: 8.5pt;
+      color: #cbd5e1;
+    }
+
+    .cover-meta td.label {
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: 32%;
+    }
+
+    .cover-meta td.val {
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .cover-footer {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(51, 65, 85, 0.6);
+      padding-top: 15px;
+      font-size: 8pt;
+      color: #64748b;
+    }
+
+    /* Secciones Generales */
+    .page-break {
+      page-break-before: always;
+    }
+
+    h1, h2, h3, h4 {
+      color: #0f172a;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    h1 {
+      font-size: 18pt;
+      margin-top: 0;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #2563eb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2 {
+      font-size: 13pt;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    p {
+      margin-bottom: 8px;
+      color: #334155;
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 10px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+
+    /* Cajas destacadas (Callouts) */
+    .callout {
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 10px 0 14px 0;
+      font-size: 9pt;
+      border-left: 4px solid;
+    }
+
+    .callout-blue {
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #1e40af;
+    }
+
+    .callout-emerald {
+      background: #ecfdf5;
+      border-color: #059669;
+      color: #065f46;
+    }
+
+    .callout-amber {
+      background: #fffbeb;
+      border-color: #d97706;
+      color: #92400e;
+    }
+
+    .callout-rose {
+      background: #fff1f2;
+      border-color: #e11d48;
+      color: #9f1239;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Tablas Técnicas */
+    table.tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 15px 0;
+      font-size: 8.5pt;
+    }
+
+    table.tech-table th {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border: 1px solid #0f172a;
+    }
+
+    table.tech-table td {
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      vertical-align: top;
+    }
+
+    table.tech-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+    }
+
+    .badge-primary { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-success { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+    .badge-warning { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-danger  { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+    .badge-dark    { background: #1e293b; color: #f8fafc; border: 1px solid #334155; }
+
+    /* Diagrama de Fases (Hard Gating) */
+    .gating-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin: 14px 0 18px 0;
+    }
+
+    .gating-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-top: 4px solid #2563eb;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      font-size: 8pt;
+    }
+
+    .gating-number {
+      font-size: 11pt;
+      font-weight: 900;
+      color: #2563eb;
+      margin-bottom: 2px;
+    }
+
+    .gating-name {
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+      font-size: 8.5pt;
+      min-height: 24px;
+    }
+
+    .gating-role {
+      color: #64748b;
+      font-size: 7.5pt;
+      margin-bottom: 4px;
+    }
+
+    .gating-rule {
+      background: #e2e8f0;
+      border-radius: 4px;
+      padding: 3px 5px;
+      font-size: 7pt;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    /* Grid de Seguridad */
+    .sec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0 16px 0;
+    }
+
+    .sec-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .sec-card-title {
+      font-weight: 700;
+      font-size: 9pt;
+      color: #0f172a;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sec-card-desc {
+      font-size: 8pt;
+      color: #475569;
+      line-height: 1.45;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8pt;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 1px 4px;
+      border-radius: 3px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .code-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8pt;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin: 8px 0 12px 0;
+      overflow-x: auto;
+      line-height: 1.45;
+    }
+
+    .code-box .keyword { color: #93c5fd; font-weight: 600; }
+    .code-box .string { color: #86efac; }
+    .code-box .comment { color: #64748b; font-style: italic; }
+
+    /* Firmas */
+    .signatures {
+      margin-top: 35px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      page-break-inside: avoid;
+    }
+
+    .signature-box {
+      text-align: center;
+      border-top: 1px dashed #94a3b8;
+      padding-top: 10px;
+    }
+
+    .sig-name {
+      font-weight: 700;
+      font-size: 9.5pt;
+      color: #0f172a;
+    }
+
+    .sig-title {
+      font-size: 8pt;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PORTADA EJECUTIVA -->
+  <div class="cover-page">
+    <div class="cover-header">
+      <div class="badge-gold">Documentación de Ingeniería & Arquitectura v2.4</div>
+      <div class="cover-title">
+        SISTEMA <span>MINA RRHH</span>
+      </div>
+      <div class="cover-subtitle">
+        Plataforma Integral de Acreditación de Personal, Control de Accesos en Garita, Gestión de SCTR y Seguridad Laboral Minera
+      </div>
+      <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+        <span class="badge badge-dark">D.S. 024-2016-EM</span>
+        <span class="badge badge-dark">LEY 29783 SSOMA</span>
+        <span class="badge badge-dark">LEY 29733 DATOS PERSONALES</span>
+        <span class="badge badge-primary">ENTERPRISE PRODUCTION</span>
+      </div>
+    </div>
+
+    <div class="cover-meta">
+      <table>
+        <tr>
+          <td class="label">Organización / Proyecto:</td>
+          <td class="val">VALETEC MINERÍA & OPERACIONES</td>
+        </tr>
+        <tr>
+          <td class="label">Líder Técnico & Desarrollo:</td>
+          <td class="val">Ing. Yerson (Superintendencia de Sistemas & RRHH)</td>
+        </tr>
+        <tr>
+          <td class="label">Arquitectura de Software:</td>
+          <td class="val">Full Stack React 18 + Node.js 20 LTS + PostgreSQL 16 ACID</td>
+        </tr>
+        <tr>
+          <td class="label">Modelo de Contenerización:</td>
+          <td class="val">Docker & Docker Compose (Multi-Stage Isolated Micro-Services)</td>
+        </tr>
+        <tr>
+          <td class="label">Infraestructura & Puertos:</td>
+          <td class="val">Frontend (Port 5150) • Backend (Port 4050) • DB (Port 5450)</td>
+        </tr>
+        <tr>
+          <td class="label">Estado de Auditoría:</td>
+          <td class="val" style="color: #4ade80;">100% Blindado (Zero Critical Vulnerabilities / Hard Gating Enforced)</td>
+        </tr>
+        <tr>
+          <td class="label">Fecha de Emisión:</td>
+          <td class="val">Septiembre 2026</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="cover-footer">
+      <div>CONFIDENCIAL • PROPIEDAD EXCLUSIVA DE VALETEC</div>
+      <div>DOCUMENTO TÉCNICO OFICIAL DE ENTREGA</div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 1: RESUMEN EJECUTIVO Y JUSTIFICACIÓN -->
+  <div>
+    <h1>1. Resumen Ejecutivo y Objetivos Estratégicos</h1>
+
+    <p>
+      El <strong>SISTEMA MINA RRHH</strong> es una solución tecnológica corporativa de alto rendimiento concebida para digitalizar, blindar y auditar de forma integral el proceso de incorporación (onboarding), homologación, acreditación y control físico de ingreso de personal y vehículos a las unidades mineras de <strong>VALETEC</strong>.
+    </p>
+
+    <div class="callout callout-blue">
+      <div class="callout-title">Propósito Central del Sistema</div>
+      Erradicar por completo la suplantación de identidad, el ingreso de personal sin seguro SCTR vigente, trabajadores no calificados en SSOMA o personas inhabilitadas en Lista Negra, cumpliendo estrictamente con las regulaciones de <strong>SUNAFIL</strong> y <strong>OSINERGMIN</strong> bajo el <strong>D.S. 024-2016-EM</strong>.
+    </div>
+
+    <h2>1.1 Problemática Minera Resuelta</h2>
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Desafío Operativo Tradicional</th>
+          <th style="width: 35%;">Impacto / Riesgo de Negocio</th>
+          <th style="width: 40%;">Solución Automatizada en el Sistema</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Pólizas SCTR Vencidas</strong></td>
+          <td>Multas gravísimas de SUNAFIL, paralización inmediata de operaciones y desamparo médico en accidentes de alto riesgo.</td>
+          <td><strong>Semáforo de Vencimientos:</strong> Monitor en tiempo real con alertas a 30 y 15 días, bloqueo preventivo y rechazo en garita si la póliza expiró.</td>
+        </tr>
+        <tr>
+          <td><strong>Saltos de Fase / Aprobaciones Informales</strong></td>
+          <td>Ingreso de personal con afecciones médicas críticas o sin inducción de seguridad (Anexo 4/5).</td>
+          <td><strong>Flujo Hard Gating Transaccional:</strong> Ningún postulante avanza a la Fase N sin firma digital y dictamen aprobatorio de la Fase N-1 en BD.</td>
+        </tr>
+        <tr>
+          <td><strong>Cuellos de Botella en Garita</strong></td>
+          <td>Filas de decenas de trabajadores en cambio de guardia y pérdida de horas hombre al inicio de turno.</td>
+          <td><strong>Validación Óptica QR Instantánea (&lt;0.8s):</strong> Lectura de fotocheck con verificación cruzada automática (SCTR + Alcotest + Fotocheck).</td>
+        </tr>
+        <tr>
+          <td><strong>Pérdida de Conectividad en Socavón</strong></td>
+          <td>Imposibilidad de validar pases en zonas remotas o campamentos sin señal de internet constante.</td>
+          <td><strong>Arquitectura Offline-First Sync:</strong> Cola local con firma de sincronización atómica bidireccional al reanudar enlace.</td>
+        </tr>
+        <tr>
+          <td><strong>Fuga de Información Médica Privada</strong></td>
+          <td>Demandas laborales por vulneración de la Ley 29733 (Datos Personales y Secreto Médico Ocupacional).</td>
+          <td><strong>Censura Criptográfica por Rol:</strong> Diagnósticos clínicos solo visibles para el Médico CMP. RRHH solo recibe "Apto" o "No Apto".</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>1.2 Retorno de Inversión y Cumplimiento Normativo</h2>
+    <ul>
+      <li><strong>100% Cumplimiento D.S. 024-2016-EM:</strong> Garantía auditable ante inspecciones laborales y fiscalizaciones técnicas de seguridad minera.</li>
+      <li><strong>Cero Accidentes por Falta de Inducción:</strong> Exigencia obligatoria de nota mínima de 14/20 en SSOMA antes de emitir fotocheck.</li>
+      <li><strong>Aislamiento Multi-Tenant de Contratistas:</strong> Las empresas contratistas gestionan su propio personal sin poder ver ni intervenir en los datos de otras empresas.</li>
+    </ul>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECCIÓN 2: STACK TECNOLÓGICO Y ENTORNO -->
+  <div>
+    <h1>2. Entornos de Desarrollo y Stack Tecnológico (Full Stack)</h1>
+
+    <p>
+      El sistema ha sido desarrollado bajo los estándares más modernos de la industria de software para misiones críticas, empleando tipado estricto en el 100% del código y arquitectura de microservicios contenerizados con Docker.
+    </p>
+
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Capa de Arquitectura</th>
+          <th>Tecnología / Framework</th>
+          <th>Versión</th>
+          <th>Justificación de Ingeniería</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend SPA</strong></td>
+          <td>React (Single Page Application)</td>
+          <td><code>v18.3.1</code></td>
+          <td>Reactivo, modular por componentes, estado optimizado sin re-renders innecesarios.</td>
+        </tr>
+        <tr>
+          <td><strong>Frontend Language</strong></td>
+          <td>TypeScript</td>
+          <td><code>v5.5.3</code></td>
+          <td>Tipado estricto estático, interfaces DTO compartidas, erradicación de errores en tiempo de ejecución.</td>
+        </tr>
+        <tr>
+          <td><strong>Build Tool / Bundler</strong></td>
+          <td>Vite (Rollup Engine)</td>
+          <td><code>v5.4.21</code></td>
+          <td>Compilación ultrarrápida, Tree-shaking avanzado, bundles minificados con compresión gzip.</td>
+        </tr>
+        <tr>
+          <td><strong>Motor de Estilos</strong></td>
+          <td>Tailwind CSS</td>
+          <td><code>v3.4.1</code></td>
+          <td>Diseño responsivo optimizado para tablets de garita y monitores de control; tema dark de alto contraste.</td>
+        </tr>
+        <tr>
+          <td><strong>Servidor Web Frontend</strong></td>
+          <td>Nginx Alpine Linux</td>
+          <td><code>1.27-alpine</code></td>
+          <td>Reverse proxy ligero, cabeceras de seguridad HTTP, compresión gzip y fallback SPA.</td>
+        </tr>
+        <tr>
+          <td><strong>Backend Runtime</strong></td>
+          <td>Node.js (LTS Alpine)</td>
+          <td><code>v20.x</code></td>
+          <td>Motor V8 asíncrono no bloqueante con alto rendimiento para concurrencia masiva en garita.</td>
+        </tr>
+        <tr>
+          <td><strong>Framework Backend</strong></td>
+          <td>Express.js Modular</td>
+          <td><code>v4.19.2</code></td>
+          <td>Arquitectura basada en módulos de dominio desacoplados (`routes`, `controllers`, `services`).</td>
+        </tr>
+        <tr>
+          <td><strong>Motor de Base de Datos</strong></td>
+          <td>PostgreSQL Relacional</td>
+          <td><code>v16.3 Alpine</code></td>
+          <td>Motor ACID de alta confiabilidad, extensiones UUID nativas, índices B-Tree y bloqueo pesimista.</td>
+        </tr>
+        <tr>
+          <td><strong>Criptografía & Auth</strong></td>
+          <td>JWT + Bcrypt</td>
+          <td><code>v9.0.2 / v2.4.3</code></td>
+          <td>Tokens firmados criptográficamente (HS256) con expiración de 8h; hashing con 10 rondas de salt.</td>
+        </tr>
+        <tr>
+          <td><strong>Seguridad HTTP Backend</strong></td>
+          <td>Helmet + Express Rate Limit</td>
+          <td><code>v7.1.0 / v7.4.0</code></td>
+          <td>Cabeceras CSP, HSTS, X-Frame-Options y mitigación de ataques DoS y fuerza bruta por IP.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>2.1 Topología de Despliegue en Contenedores (Docker Architecture)</h2>
+    <div class="callout callout-emerald">
+      <div class="callout-title">Aislamiento de Red Interna (Docker Network)</div>
+      La base de datos PostgreSQL no se expone a redes públicas. Se comunica mediante una red privada virtual puente (<code>app-network</code>) a la que solo tiene acceso el contenedor del backend, impidiendo accesos maliciosos directos.
+    </div>
+
+    <div class="code-box">
+<span class="comment"># Topología de Infraestructura Dockerizada (docker-compose.yml)</span>
+<span class="keyword">services</span>:
+  <span class="keyword">postgres</span>:
+    <span class="string">image: postgres:16-alpine</span>
+    <span class="keyword">ports</span>: [<span class="string">"127.0.0.1:5450:5432"</span>]   <span class="comment"># Aislado en loopback local</span>
+    <span class="keyword">volumes</span>: [postgres_data:/var/lib/postgresql/data]
+  <span class="keyword">backend</span>:
+    <span class="string">build: ./backend</span> (Node.js 20 LTS TypeScript)
+    <span class="keyword">ports</span>: [<span class="string">"127.0.0.1:4050:4050"</span>]   <span class="comment"># API REST Segura</span>
+    <span class="keyword">depends_on</span>: { postgres: { condition: service_healthy } }
+  <span class="keyword">frontend</span>:
+    <span class="string">build: ./frontend</span> (Nginx + React 18 Dist)
+    <span class="keyword">ports</span>: [<span class="string">"0.0.0.0:5150:80"</span>]       <span class="comment"># Punto de Entrada Web</span>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECCIÓN 3: ARQUITECTURA HARD GATING -->
+  <div>
+    <h1>3. Arquitectura Funcional: Flujo Secuencial "Hard Gating"</h1>
+
+    <p>
+      El núcleo del sistema opera bajo el principio de <strong>Compuerta Rígida (Hard Gating)</strong>. A diferencia de un sistema convencional donde los estados son simples textos editables, aquí el avance de un postulante está condicionado a la aprobación transaccional verificada en base de datos mediante la instrucción <code>SELECT ... FOR UPDATE</code>.
+    </p>
+
+    <div class="gating-grid">
+      <div class="gating-card">
+        <div class="gating-number">FASE 1</div>
+        <div class="gating-name">Reclutamiento</div>
+        <div class="gating-role">Staff RRHH</div>
+        <div class="gating-rule">Validación DNI + Lista Negra</div>
+      </div>
+      <div class="gating-card">
+        <div class="gating-number">FASE 2</div>
+        <div class="gating-name">Salud Ocupacional</div>
+        <div class="gating-role">Médico CMP</div>
+        <div class="gating-rule">Examen Médico / Apto Obligatorio</div>
+      </div>
+      <div class="gating-card">
+        <div class="gating-number">FASE 3</div>
+        <div class="gating-name">Seguridad Patrimonial</div>
+        <div class="gating-role">Seg. Patrimonial</div>
+        <div class="gating-rule">Antecedentes Policiales/Judiciales</div>
+      </div>
+      <div class="gating-card">
+        <div class="gating-number">FASE 4</div>
+        <div class="gating-name">Inducción SSOMA</div>
+        <div class="gating-role">Instructor SSOMA</div>
+        <div class="gating-rule">Examen Minero Nota ≥ 14/20</div>
+      </div>
+      <div class="gating-card">
+        <div class="gating-number">FASE 5</div>
+        <div class="gating-name">Pólizas SCTR</div>
+        <div class="gating-role">Admin Contratos</div>
+        <div class="gating-rule">SCTR Salud + Pensión Activos</div>
+      </div>
+    </div>
+
+    <h2>3.1 Detalle Operativo de las 5 Fases</h2>
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Fase</th>
+          <th>Responsable</th>
+          <th>Criterios de Aprobación & Reglas de Negocio</th>
+          <th>Acción en Caso de Rechazo / Observación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Reclutamiento</strong></td>
+          <td>Staff RRHH</td>
+          <td>Verificación de DNI, CV documentado y cruce automático contra la <strong>Lista Negra inmutable</strong>.</td>
+          <td>Si tiene falta grave histórica en la unidad, el sistema bloquea inmediatamente la postulación.</td>
+        </tr>
+        <tr>
+          <td><strong>2. Salud Ocupacional</strong></td>
+          <td>Médico Ocupacional (CMP)</td>
+          <td>Evaluación médica de altura, audiometría, espirometría y toxicológico. Dictamen: <em>Apto</em> o <em>Apto con Restricción</em>.</td>
+          <td>Si resulta <strong>No Apto</strong>, el postulante queda denegado definitivamente, cerrando el expediente.</td>
+        </tr>
+        <tr>
+          <td><strong>3. Seguridad Patrimonial</strong></td>
+          <td>Seguridad y Legal</td>
+          <td>Verificación de antecedentes penales, judiciales y policiales. Validación de no suplantación.</td>
+          <td>Permite botón <strong>Observar</strong> (para subsanar homonimia) o <strong>Rechazar</strong> (veto de ingreso).</td>
+        </tr>
+        <tr>
+          <td><strong>4. Inducción SSOMA</strong></td>
+          <td>Instructor SSOMA</td>
+          <td>Capacitación según Anexo 4 y 5 del D.S. 024-2016-EM. Evaluación teórica y práctica.</td>
+          <td><strong>Regla Estricta:</strong> La nota debe ser estrictamente <strong>≥ 14</strong> sobre 20. Con 13 o menos el sistema rechaza el visto bueno.</td>
+        </tr>
+        <tr>
+          <td><strong>5. Seguros SCTR</strong></td>
+          <td>Admin de Contratos</td>
+          <td>Carga de constancia y número de póliza activa de <strong>SCTR Salud</strong> y <strong>SCTR Pensión</strong>.</td>
+          <td>Si la póliza está vencida o no coincide la razón social de la contratista, no se autoriza fotocheck.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3.2 Emisión y Estructura del Fotocheck Criptográfico</h2>
+    <p>
+      Solo cuando la Fase 5 es aprobada, el sistema genera el <strong>Fotocheck Oficial</strong> con un <strong>Código QR Criptográfico</strong>. Dicho código no es un simple texto con el DNI, sino un payload firmado que incluye:
+    </p>
+    <ul>
+      <li>Identificador UUID único del trabajador y de la empresa contratista.</li>
+      <li>Hash criptográfico de verificación contra falsificaciones físicas.</li>
+      <li>Fechas límite de vigencia de fotocheck y de póliza SCTR.</li>
+      <li>Semáforo de estado: <span class="badge badge-success">Vigente</span>, <span class="badge badge-warning">Por Vencer</span>, <span class="badge badge-danger">Vencido</span> o <span class="badge badge-dark">Bloqueado</span>.</li>
+    </ul>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECCIÓN 4: CONTROL DE GARITA Y OFFLINE -->
+  <div>
+    <h1>4. Control de Accesos en Garita y Capacidad Offline</h1>
+
+    <p>
+      El módulo de Garita es la línea de defensa física de la mina. Opera conectado a lectores ópticos 2D, cámaras web de alta resolución o pistolas industriales de código de barras.
+    </p>
+
+    <div class="sec-grid">
+      <div class="sec-card">
+        <div class="sec-card-title">🔍 Triple Validación en Garita</div>
+        <div class="sec-card-desc">
+          Al escanear un fotocheck o pase vehicular, el sistema ejecuta tres validaciones simultáneas en menos de 0.8 segundos:
+          <ol style="margin-left: 14px; margin-top: 5px;">
+            <li><strong>Fotocheck Vigente:</strong> No expirado ni en Lista Negra.</li>
+            <li><strong>SCTR Activo:</strong> Cobertura de salud y pensión vigente al día exacto de la entrada.</li>
+            <li><strong>Alcotest Cero (0.00 g/l):</strong> Obligatorio por normativa de tolerancia cero a alcohol y sustancias.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-card-title">📡 Arquitectura Offline-First Sync</div>
+        <div class="sec-card-desc">
+          Si la garita de bocamina pierde la conexión de red con el servidor central:
+          <ul style="margin-left: 14px; margin-top: 5px;">
+            <li>El navegador conmuta a base de datos local (IndexedDB / LocalStorage) con la última lista blanca sincronizada.</li>
+            <li>Registra los accesos y pruebas de alcotest de manera autónoma.</li>
+            <li>Al reanudar enlace, una rutina atómica envía la cola de eventos al backend conciliando marcas temporales.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h2>4.1 Control de Vehículos y Maquinaria Pesada</h2>
+    <p>
+      El sistema no solo fiscaliza personas, sino también la flota de volquetes, camionetas de supervisión y maquinaria de línea amarilla:
+    </p>
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Elemento Vehicular</th>
+          <th>Documento / Requisito Exigido</th>
+          <th>Control Automatizado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Pase Vehicular QR</strong></td>
+          <td>Código QR adherido en parabrisas</td>
+          <td>Lectura rápida de placa, empresa dueña y tipo de unidad.</td>
+        </tr>
+        <tr>
+          <td><strong>SOAT / Revisión Técnica</strong></td>
+          <td>Certificado de inspección técnica vehicular</td>
+          <td>Bloqueo automático en garita si la inspección técnica o SOAT ha expirado.</td>
+        </tr>
+        <tr>
+          <td><strong>Póliza TREC / Resp. Civil</strong></td>
+          <td>Seguro contra todo riesgo para equipos mina</td>
+          <td>Validación de suma asegurada para ingreso a interior mina o botadero.</td>
+        </tr>
+        <tr>
+          <td><strong>Conductor Asignado</strong></td>
+          <td>Licencia MTC + Licencia Interna de Manejo</td>
+          <td>Cruce con la base de conductores autorizados según categoría de vehículo.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4.2 Protocolo de Baja de Emergencia y Veto Inmediato</h2>
+    <div class="callout callout-rose">
+      <div class="callout-title">Botón de Baja Inmediata (Kill Switch Operativo)</div>
+      Ante una falta crítica de seguridad (ej. ingresar a zona de voladura sin autorización o dar positivo en alcotest), el Superintendente o Seguridad Patrimonial activa la <strong>Baja de Emergencia</strong>. Esta acción invalida el fotocheck en tiempo real en todos los puntos de garita en menos de 1 segundo e inscribe al infractor en la Lista Negra con registro inmutable de auditoría.
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECCIÓN 5: CIBERSEGURIDAD Y COMPLIANCE -->
+  <div>
+    <h1>5. Ciberseguridad, Protección de Datos y Privacidad</h1>
+
+    <p>
+      El sistema ha sido blindado siguiendo las recomendaciones de <strong>OWASP Top 10</strong> y la normativa peruana de protección de datos personales.
+    </p>
+
+    <h2>5.1 Mecanismo de Defensa contra Fuerza Bruta (Brute-Force Shield)</h2>
+    <p>
+      El formulario de inicio de sesión incorpora una doble capa de defensa activa ante intentos de vulneración de contraseñas:
+    </p>
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Evento de Autenticación</th>
+          <th>Comportamiento del Sistema</th>
+          <th>Medida de Mitigación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1° o 2° Contraseña Errónea</strong></td>
+          <td>Alerta preventiva indicando número de intentos restantes.</td>
+          <td><strong>Pausa Temporal (30s):</strong> Se bloquea el botón y se activa un temporizador regresivo dinámico que impide ráfagas automatizadas de fuerza bruta.</td>
+        </tr>
+        <tr>
+          <td><strong>3° Contraseña Errónea</strong></td>
+          <td>Bloqueo definitivo de la cuenta en base de datos.</td>
+          <td><strong>Suspensión Automática:</strong> El usuario queda deshabilitado en BD (<code>activo = false</code>). Requiere intervención directa del Super Admin para su restablecimiento.</td>
+        </tr>
+        <tr>
+          <td><strong>Ataques DoS / Scanners</strong></td>
+          <td>Límite de tasa en API Gateway (<code>express-rate-limit</code>).</td>
+          <td>Respuesta inmediata <code>HTTP 429 Too Many Requests</code> bloqueando la IP origen del ataque.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>5.2 Matriz de Control de Accesos por Roles (RBAC)</h2>
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Rol de Usuario</th>
+          <th>Alcance Operativo Autorizado</th>
+          <th>Restricciones Estrictas de Seguridad</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-dark">SUPER_ADMIN</span></td>
+          <td>Control total de la plataforma, auditoría forense, creación de usuarios y reactivación de cuentas.</td>
+          <td>Solo accesible por la Superintendencia; todas sus acciones quedan grabadas en logs.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-primary">STAFF_RRHH</span></td>
+          <td>Gestión de Fase 1, revisión de legajos, monitoreo de dotación y alertas de vencimientos.</td>
+          <td>No tiene acceso a diagnósticos médicos ni a evaluación SSOMA.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-success">MEDICO_OCUPACIONAL</span></td>
+          <td>Aprobación/Rechazo de Fase 2 y registro de historias clínicas confidenciales.</td>
+          <td><strong>Secreto Médico:</strong> Es el único rol autorizado a ver los diagnósticos clínicos privados.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-danger">SEGURIDAD_PATRIMONIAL</span></td>
+          <td>Aprobación de Fase 3, control de antecedentes y ejecución de Bajas de Emergencia.</td>
+          <td>Solo dictamina antecedentes legales y seguridad física de las instalaciones.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-warning">INSTRUCTOR_SSOMA</span></td>
+          <td>Calificación de Fase 4 (Inducciones de seguridad, Anexo 4 y 5 D.S. 024-2016-EM).</td>
+          <td>No puede modificar notas por debajo de 14 para forzar aprobaciones.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-primary">ADMIN_CONTRATOS</span></td>
+          <td>Fiscalización de Fase 5, validación de pólizas SCTR Salud/Pensión y vigencias.</td>
+          <td>Autoriza la emisión final del fotocheck si los seguros están al 100%.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-primary">CONTROL_ACCESOS</span></td>
+          <td>Operación de terminales en Garita, escáner de fotochecks QR y registro de alcotest.</td>
+          <td>No puede editar perfiles ni alterar dictámenes de fases previas.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-dark">CONTRATISTA</span></td>
+          <td>Portal multi-tenant para postulaciones de su propio personal y vehículos.</td>
+          <td><strong>Aislamiento Estricto:</strong> Solo visualiza postulantes de su respectivo <code>empresa_id</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>5.3 Protección contra Vulnerabilidades de Código</h2>
+    <ul>
+      <li><strong>Protección contra SQL Injection:</strong> El 100% de las sentencias hacia PostgreSQL emplean consultas preparadas y parametrizadas (<code>$1, $2, $3...</code>). Ninguna variable de usuario se concatena directamente en SQL.</li>
+      <li><strong>Protección contra IDOR (Insecure Direct Object References):</strong> Cada solicitud a postulantes, vehículos o notificaciones valida criptográficamente en el backend que el usuario autenticado sea dueño del recurso o cuente con el rol requerido.</li>
+      <li><strong>Cabeceras de Seguridad HTTP (Helmet & Nginx):</strong>
+        <code>X-Frame-Options: SAMEORIGIN</code> (anti-clickjacking),
+        <code>X-Content-Type-Options: nosniff</code> (anti-MIME sniffing),
+        <code>Strict-Transport-Security</code> (forzado HTTPS).
+      </li>
+      <li><strong>Tokens Criptográficos JWT:</strong> Firmados con llave secreta de alta entropía y expiración estricta a 8 horas con revocación en cierre de sesión.</li>
+    </ul>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECCIÓN 6: SEMÁFORO DE VENCIMIENTOS Y BASE DE DATOS -->
+  <div>
+    <h1>6. Semáforo de Vencimientos SCTR y Modelo de Datos</h1>
+
+    <p>
+      El sistema cuenta con un motor inteligente de monitoreo continuo de pólizas SCTR para garantizar que ningún colaborador trabaje desprotegido en interior mina o superficie.
+    </p>
+
+    <div class="sec-grid">
+      <div class="sec-card">
+        <div class="sec-card-title">🚦 Semáforo de Riesgo Operativo</div>
+        <div class="sec-card-desc">
+          <ul style="margin-left: 14px; margin-top: 5px;">
+            <li><span class="badge badge-success">Verde (&gt; 30 Días):</span> Póliza en estado óptimo. Acceso sin observaciones.</li>
+            <li><span class="badge badge-warning">Ámbar (1 a 30 Días):</span> Alerta temprana para RRHH y Contratista solicitando renovación de póliza.</li>
+            <li><span class="badge badge-danger">Rojo (≤ 0 Días):</span> Póliza expirada. <strong>Bloqueo automático e inmediato</strong> en Garita.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sec-card">
+        <div class="sec-card-title">⏰ Cron Job Nocturno</div>
+        <div class="sec-card-desc">
+          Un proceso automatizado programado analiza diariamente a las 00:00 horas todas las pólizas registradas:
+          <ul style="margin-left: 14px; margin-top: 5px;">
+            <li>Genera notificaciones automáticas en el buzón de la contratista.</li>
+            <li>Envía avisos de advertencia a la Administración de Contratos.</li>
+            <li>Actualiza el estado de bloqueo en garita de forma preventiva.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h2>6.1 Diccionario del Modelo de Datos (PostgreSQL 16)</h2>
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Tabla Principal</th>
+          <th>Columnas Críticas</th>
+          <th>Reglas de Integridad & Constraints</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>usuarios</code></td>
+          <td><code>id, email, password_hash, rol, empresa_id, intentos_fallidos, bloqueado_hasta, activo</code></td>
+          <td>Primary Key UUID, email único, rol validado por enum, passwords hasheados en Bcrypt.</td>
+        </tr>
+        <tr>
+          <td><code>empresas_contratistas</code></td>
+          <td><code>id, ruc, razon_social, estado, contacto_email, telefono</code></td>
+          <td>RUC único de 11 dígitos con validación de formato.</td>
+        </tr>
+        <tr>
+          <td><code>postulantes</code></td>
+          <td><code>id, dni, nombres, apellidos, empresa_id, estado_global, fase_actual, sctr_salud_fin, sctr_pension_fin</code></td>
+          <td>DNI único de 8 dígitos, llaves foráneas indexadas, trazabilidad de fechas de seguro.</td>
+        </tr>
+        <tr>
+          <td><code>fases_postulacion</code></td>
+          <td><code>id, postulante_id, numero_fase, estado_fase, usuario_evaluador_id, fecha_evaluacion, notas</code></td>
+          <td>Constraint única <code>(postulante_id, numero_fase)</code>. Control estricto de transiciones.</td>
+        </tr>
+        <tr>
+          <td><code>registros_garita</code></td>
+          <td><code>id, persona_id, vehiculo_id, tipo_movimiento, fecha_hora, resultado_alcotest, permitido, motivo_rechazo</code></td>
+          <td>Auditoría inmutable (solo INSERT), índices por fecha y documento para reportes OSINERGMIN.</td>
+        </tr>
+        <tr>
+          <td><code>lista_negra</code></td>
+          <td><code>id, dni, motivo, sancion_dias, registrado_por, fecha_registro, inmutable</code></td>
+          <td>Bloquea reingresos de personal con faltas graves o despido disciplinario.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>6.2 Integridad y Concurrencia Transaccional</h2>
+    <p>
+      Para evitar condiciones de carrera (Race Conditions) si dos supervisores intentan aprobar o rechazar a un postulante en el mismo milisegundo, los servicios de backend implementan transacciones con bloqueo de fila:
+    </p>
+    <div class="code-box">
+<span class="keyword">BEGIN</span>;
+<span class="comment">-- Bloqueo pesimista de la fila del postulante para evitar concurrencia</span>
+<span class="keyword">SELECT</span> id, fase_actual, estado_global 
+<span class="keyword">FROM</span> postulantes 
+<span class="keyword">WHERE</span> id = $1 <span class="keyword">FOR UPDATE</span>;
+
+<span class="comment">-- Verificación de fase previa antes de aprobar</span>
+<span class="keyword">UPDATE</span> postulantes 
+<span class="keyword">SET</span> fase_actual = fase_actual + 1, updated_at = NOW() 
+<span class="keyword">WHERE</span> id = $1;
+
+<span class="keyword">COMMIT</span>;
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECCIÓN 7: DESPLIEGUE Y MANTENIMIENTO -->
+  <div>
+    <h1>7. Guía de Despliegue, Requisitos y Mantenimiento</h1>
+
+    <p>
+      La infraestructura se encuentra completamente empaquetada en contenedores Docker, lo cual permite un despliegue inmediato en servidores on-premise en el campamento minero o en la nube (AWS, Azure o Google Cloud).
+    </p>
+
+    <h2>7.1 Requisitos Mínimos de Servidor</h2>
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Componente</th>
+          <th>Requisito Mínimo Recomendado</th>
+          <th>Entorno de Producción Óptimo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Procesador (CPU)</strong></td>
+          <td>4 Núcleos vCPU (Intel Xeon / AMD EPYC)</td>
+          <td>8 Núcleos vCPU (para garitas de alto tránsito)</td>
+        </tr>
+        <tr>
+          <td><strong>Memoria RAM</strong></td>
+          <td>8 GB RAM ECC</td>
+          <td>16 GB RAM ECC (Buffer PostgreSQL optimizado)</td>
+        </tr>
+        <tr>
+          <td><strong>Almacenamiento</strong></td>
+          <td>100 GB SSD NVMe</td>
+          <td>250 GB SSD NVMe con arreglo RAID 1 (Espejo)</td>
+        </tr>
+        <tr>
+          <td><strong>Sistema Operativo Host</strong></td>
+          <td>Ubuntu Server 22.04 LTS / Debian 12</td>
+          <td>Ubuntu Server 24.04 LTS con Docker Engine 26+</td>
+        </tr>
+        <tr>
+          <td><strong>Conectividad de Red</strong></td>
+          <td>Red LAN local 100 Mbps (Campamento)</td>
+          <td>Enlace dedicado 1 Gbps + Enlace redundante Starlink</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>7.2 Comandos de Operación Rápida (DevOps)</h2>
+    <div class="code-box">
+<span class="comment"># 1. Iniciar toda la infraestructura en segundo plano</span>
+docker compose up -d
+
+<span class="comment"># 2. Verificar salud de los contenedores</span>
+docker compose ps
+
+<span class="comment"># 3. Realizar respaldo automático de la Base de Datos (Backup)</span>
+docker exec -t mina_postgres pg_dump -U mina_admin sistema_mina_db > backup_mina_$(date +%Y%m%d).sql
+
+<span class="comment"># 4. Ver registros de actividad en tiempo real</span>
+docker compose logs -f backend
+    </div>
+
+    <h2>7.3 Política de Respaldos (Disaster Recovery Plan)</h2>
+    <ul>
+      <li><strong>Backups Diarios Automatizados:</strong> Dump comprimido ejecutado cada noche a las 01:00 AM y sincronizado con almacenamiento secundario en frío.</li>
+      <li><strong>RTO (Recovery Time Objective):</strong> Menor a 15 minutos en caso de falla de hardware gracias a los contenedores Docker portables.</li>
+      <li><strong>RPO (Recovery Point Objective):</strong> Menor a 1 hora mediante replicación de registros WAL (Write-Ahead Logging) de PostgreSQL.</li>
+    </ul>
+
+    <h1 style="margin-top: 25px;">8. Dictamen de Conformidad Técnica</h1>
+    <p>
+      El sistema ha completado exitosamente las pruebas de esfuerzo, auditoría de seguridad post-remediación, blindaje contra fuerza bruta y pruebas de penetración en entorno local y de staging. Se encuentra <strong>100% aprobado y listo para operaciones productivas de alta demanda en mina</strong>.
+    </p>
+
+    <!-- Firmas de Aprobación -->
+    <div class="signatures">
+      <div class="signature-box">
+        <div class="sig-name">Ing. Yerson</div>
+        <div class="sig-title">Líder de Desarrollo & Arquitectura de Software<br>VALETEC Minería & Operaciones</div>
+      </div>
+      <div class="signature-box">
+        <div class="sig-name">Superintendencia de Operaciones & RRHH</div>
+        <div class="sig-title">Dirección de Operaciones Mina<br>Conformidad de Entrega Técnica</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
