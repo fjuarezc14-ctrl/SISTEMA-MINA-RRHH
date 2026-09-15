@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante, RolUsuario } from '../types';
-import { Stethoscope, Ban, CheckCircle, ShieldAlert, Eye, Lock, AlertCircle, AlertTriangle, Filter } from 'lucide-react';
-import { Modal } from '../components/common/Modal';
+import { Stethoscope, CheckCircle, ShieldAlert, Eye, Lock, Filter, User } from 'lucide-react';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
 import { DocumentCardStatus, getDocumentCardBorderClass } from '../components/common/DocumentCardStatus';
 
@@ -17,15 +16,9 @@ interface Fase2Props {
 }
 
 export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEvaluar }) => {
-  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTES' | 'OBSERVADOS' | 'LISTA_NEGRA'>('TODOS');
-  const [bloquearModalOpen, setBloquearModalOpen] = useState(false);
-  const [observarModalOpen, setObservarModalOpen] = useState(false);
-  const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
+  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTES' | 'OBSERVADOS' | 'LISTA_NEGRA'>('PENDIENTES');
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
   const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
-  const [motivoRechazo, setMotivoRechazo] = useState('');
-  const [motivoObs, setMotivoObs] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const isAuthorizedRole = userRole === 'MEDICO_OCUPACIONAL' || userRole === 'SUPER_ADMIN';
 
@@ -46,47 +39,9 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
   const conteoLN = candidatosFase2.filter((p) => p.estado_global === 'NO_APTO' || Boolean(p.en_lista_negra)).length;
   const conteoPendientes = candidatosFase2.length - conteoObs - conteoLN;
 
-  const handleOpenBloqueo = (p: Postulante) => {
-    setSelectedPostulante(p);
-    setMotivoRechazo('');
-    setBloquearModalOpen(true);
-  };
-
-  const handleOpenObservar = (p: Postulante) => {
-    setSelectedPostulante(p);
-    setMotivoObs('');
-    setObservarModalOpen(true);
-  };
-
   const handleOpenSplitViewer = (p: Postulante) => {
     setViewerPostulante(p);
     setSplitViewerOpen(true);
-  };
-
-  const handleConfirmObservar = async () => {
-    if (!selectedPostulante || !motivoObs.trim()) return;
-    try {
-      setLoading(true);
-      await onEvaluar(selectedPostulante.id, 'FASE_2', 'OBSERVAR', { observaciones: motivoObs });
-      setObservarModalOpen(false);
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al observar examen médico.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmBloqueo = async () => {
-    if (!selectedPostulante || !motivoRechazo.trim()) return;
-    try {
-      setLoading(true);
-      await onEvaluar(selectedPostulante.id, 'FASE_2', 'NO_APTO', { motivo: motivoRechazo });
-      setBloquearModalOpen(false);
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al dictaminar no apto.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -120,17 +75,6 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
           </span>
           <button
             type="button"
-            onClick={() => setFiltroEstado('TODOS')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all ${
-              filtroEstado === 'TODOS'
-                ? 'bg-rose-600 text-white shadow'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-700'
-            }`}
-          >
-            Todos ({candidatosFase2.length})
-          </button>
-          <button
-            type="button"
             onClick={() => setFiltroEstado('PENDIENTES')}
             className={`px-3 py-1 rounded-lg font-bold transition-all ${
               filtroEstado === 'PENDIENTES'
@@ -162,6 +106,17 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
           >
             Lista Negra ({conteoLN})
           </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado('TODOS')}
+            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+              filtroEstado === 'TODOS'
+                ? 'bg-rose-600 text-white shadow'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-700'
+            }`}
+          >
+            Todos ({candidatosFase2.length})
+          </button>
         </div>
 
         {/* CANDIDATOS HABILITADOS EN FASE 2 */}
@@ -174,96 +129,56 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
         ) : (
           <div className="space-y-4">
             {candidatosFiltrados.map((candidato) => {
-              const isListaNegra = candidato.estado_global === 'NO_APTO' || Boolean(candidato.en_lista_negra);
-
               return (
-                <div 
+                <div
                   key={candidato.id}
-                  className={`rounded-xl p-4 sm:p-5 border flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition-all ${getDocumentCardBorderClass(candidato)}`}
+                  className={`rounded-xl p-4 sm:p-5 border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 transition-all ${getDocumentCardBorderClass(candidato)}`}
                 >
-                  <div className="flex-1 min-w-0 w-full">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <h4 className="font-bold text-white text-base">
-                        {candidato.apellidos}, {candidato.nombres}
-                      </h4>
-                      {candidato.tipo_pase && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border whitespace-nowrap ${
-                          candidato.tipo_pase === 'VISITA_TECNICA'
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                            : candidato.tipo_pase === 'PROVEEDOR_LOGISTICO'
-                            ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                            : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                        }`}>
-                          {candidato.tipo_pase.replace('_', ' ')}
+                  <div className="w-full flex-1 min-w-0">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 flex-shrink-0 mt-0.5">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <div className="flex flex-wrap items-center h-full gap-x-3 gap-y-1">
+                        <h4 className="font-bold text-white text-base whitespace-nowrap">
+                          {candidato.apellidos}, {candidato.nombres}
+                        </h4>
+                        {candidato.tipo_pase && (
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border whitespace-nowrap ${
+                            candidato.tipo_pase === 'VISITA_TECNICA'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                              : candidato.tipo_pase === 'PROVEEDOR_LOGISTICO'
+                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                              : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                          }`}>
+                            {candidato.tipo_pase.replace('_', ' ')}
+                          </span>
+                        )}
+                        <span className="text-sm text-slate-400 whitespace-nowrap">
+                          Cargo: <span className="text-slate-200 font-medium">{candidato.cargo}</span>
                         </span>
-                      )}
+                        <span className="text-sm text-slate-400 whitespace-nowrap">
+                          DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span>
+                        </span>
+                        <span className="text-sm text-slate-400 whitespace-nowrap">
+                          Empresa: <span className="text-slate-300">{candidato.empresa_nombre}</span>
+                        </span>
+                        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
+                          <CheckCircle className="w-3.5 h-3.5" /> Fase 1 (CV) Confirmada
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-sm text-slate-400 mt-0.5">
-                      Evaluación toxicológica y EMO (Ficha 7D para gran altitud &gt; 4,000 msnm).
-                    </p>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 mt-1 items-center">
-                      <span>DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span></span>
-                      <span>•</span>
-                      <span>Cargo: <span className="text-slate-300 font-medium">{candidato.cargo}</span></span>
-                      <span>•</span>
-                      <span className="text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
-                        <CheckCircle className="w-3.5 h-3.5" /> Fase 1 (CV) Confirmada
-                      </span>
-                    </div>
-
-                    {/* ESTADO VISUAL DE LA TARJETA (OBSERVADO / LISTA NEGRA / PENDIENTE) */}
-                    <DocumentCardStatus postulante={candidato} />
                   </div>
 
-                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full xl:w-auto justify-start xl:justify-end pt-3 xl:pt-0 border-t border-slate-800/80 xl:border-t-0 shrink-0">
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t border-slate-800/80 lg:border-t-0 shrink-0">
+                    <DocumentCardStatus postulante={candidato} />
+
                     <button
                       type="button"
                       onClick={() => handleOpenSplitViewer(candidato)}
                       className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
                     >
                       <Eye className="w-3.5 h-3.5 text-rose-400" /> Inspeccionar EMO
-                    </button>
-
-                    {!isListaNegra && (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenObservar(candidato)}
-                        className="flex-1 sm:flex-initial bg-amber-600/15 hover:bg-amber-600/25 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Observar
-                      </button>
-                    )}
-
-                    {!isListaNegra && (
-                      <button 
-                        type="button"
-                        onClick={() => handleOpenBloqueo(candidato)}
-                        className="flex-1 sm:flex-initial bg-rose-600/15 hover:bg-rose-600/25 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
-                      >
-                        <Ban className="w-3.5 h-3.5 text-rose-400" /> Vetar
-                      </button>
-                    )}
-
-                    <button 
-                      type="button"
-                      onClick={() => onEvaluar(candidato.id, 'FASE_2', 'APROBAR', { observaciones: 'Apto médico y toxicológico verificado.' })}
-                      disabled={isListaNegra}
-                      title={isListaNegra ? 'Candidato en Lista Negra - Prohibido emitir V°B°' : undefined}
-                      className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow ${
-                        isListaNegra
-                          ? 'bg-slate-800 text-slate-500 border border-slate-750 cursor-not-allowed opacity-50 shadow-none'
-                          : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
-                      }`}
-                    >
-                      {isListaNegra ? (
-                        <>
-                          <Ban className="w-3.5 h-3.5 text-rose-400" /> V°B° Bloqueado
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="w-3.5 h-3.5" /> Dar V°B° Médico
-                        </>
-                      )}
                     </button>
                   </div>
                 </div>
@@ -306,86 +221,6 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
           onEvaluar={onEvaluar}
         />
       )}
-
-      {/* MODAL LISTA NEGRA */}
-      <Modal 
-        isOpen={bloquearModalOpen} 
-        onClose={() => setBloquearModalOpen(false)} 
-        title="Dictamen Médico: NO APTO / Inclusión en Lista Negra"
-      >
-        <div className="space-y-4">
-          <div className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl flex items-start gap-3">
-            <ShieldAlert className="w-5 h-5 text-rose-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-rose-200">
-              Esta acción bloqueará de forma inmediata y transversal al postulante para cualquier acceso a la unidad minera.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Motivo médico de no aptitud / Hallazgo crítico:
-            </label>
-            <textarea 
-              rows={3} 
-              value={motivoRechazo} 
-              onChange={(e) => setMotivoRechazo(e.target.value)}
-              placeholder="Ej: Prueba toxicológica positiva para sustancias controladas / Restricción cardiovascular severa..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-rose-500"
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button 
-              onClick={() => setBloquearModalOpen(false)}
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white"
-            >
-              Cancelar
-            </button>
-            <button 
-              onClick={handleConfirmBloqueo}
-              disabled={loading || !motivoRechazo.trim()}
-              className="bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm"
-            >
-              {loading ? 'Procesando...' : 'Confirmar Bloqueo en Lista Negra'}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* MODAL OBSERVACIÓN MÉDICA PARA SUBSANACIÓN */}
-      <Modal 
-        isOpen={observarModalOpen} 
-        onClose={() => setObservarModalOpen(false)} 
-        title={`Observar Examen Médico - ${selectedPostulante?.nombres} ${selectedPostulante?.apellidos}`}
-      >
-        <div className="space-y-4">
-          <p className="text-xs text-slate-400">
-            Detalla la observación médica (ej. ficha borrosa, examen complementario requerido) para que la contrata subsane el documento sin vetar al trabajador en Lista Negra:
-          </p>
-          <textarea 
-            rows={3} 
-            value={motivoObs} 
-            onChange={(e) => setMotivoObs(e.target.value)}
-            placeholder="Ej: Ficha 7D ilegible en sección cardiovascular / Requiere repetir examen de audiometría..."
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500"
-          />
-          <div className="flex justify-end gap-3 pt-2">
-            <button 
-              onClick={() => setObservarModalOpen(false)}
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white"
-            >
-              Cancelar
-            </button>
-            <button 
-              onClick={handleConfirmObservar}
-              disabled={loading || !motivoObs.trim()}
-              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm"
-            >
-              {loading ? 'Procesando...' : 'Confirmar Observación'}
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

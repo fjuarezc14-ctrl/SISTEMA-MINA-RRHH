@@ -40,6 +40,7 @@ interface DocumentSplitViewerProps {
       clinicaOrigen?: string;
       numeroPoliza?: string;
       motivo?: string;
+      file?: File;
     }
   ) => Promise<void>;
 }
@@ -60,6 +61,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
   const [fechaVencSCTR, setFechaVencSCTR] = useState<string>('2026-10-30');
   const [clinicaOrigen, setClinicaOrigen] = useState<string>('Clínica Limatambo Cajamarca');
   const [numeroPoliza, setNumeroPoliza] = useState<string>('');
+  const [archivoActa, setArchivoActa] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'DOCUMENTO' | 'HISTORIAL_VB' | 'HISTORIAL_SEGUROS'>('DOCUMENTO');
   const [historialVB, setHistorialVB] = useState<any[]>([]);
@@ -71,6 +73,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
     if (postulante) {
       setObservaciones('');
       setDescargoContratista('');
+      setArchivoActa(null);
       setFechaInicioSCTR(postulante.sctr_inicio || new Date().toISOString().split('T')[0]);
       setFechaVencSCTR(postulante.sctr_vencimiento || '2026-10-30');
     }
@@ -195,6 +198,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
         fechaVencimiento: fase === 'FASE_5' ? fechaVencSCTR : undefined,
         clinicaOrigen: fase === 'FASE_5' ? clinicaOrigen : undefined,
         numeroPoliza: fase === 'FASE_5' ? numeroPoliza : undefined,
+        file: fase === 'FASE_4' ? archivoActa || undefined : undefined,
       });
       onClose();
     } catch (e: any) {
@@ -220,6 +224,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
       await onEvaluar(postulante.id, fase, 'OBSERVAR', {
         observaciones,
         nota: fase === 'FASE_4' ? notaExamen : undefined,
+        file: fase === 'FASE_4' ? archivoActa || undefined : undefined,
       });
       onClose();
     } catch (e: any) {
@@ -788,19 +793,42 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
 
                   {/* CAMPOS DINÁMICOS POR FASE */}
                   {fase === 'FASE_4' && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                        Nota del Examen de Inducción (Mínimo aprobatorio 14/20):
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="20"
-                        value={notaExamen}
-                        onChange={(e) => setNotaExamen(Math.min(20, Math.max(0, Number(e.target.value))))}
-                        disabled={isBloqueadoSecuencial}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
-                      />
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          Nota del Examen de Inducción (Mínimo aprobatorio 14/20):
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="20"
+                          value={notaExamen}
+                          onChange={(e) => setNotaExamen(Math.min(20, Math.max(0, Number(e.target.value))))}
+                          disabled={isBloqueadoSecuencial}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          Acta de Examen SSOMA (evidencia):
+                        </label>
+                        <label className={`text-xs border px-3 py-2.5 rounded-xl flex items-center gap-1.5 transition-colors ${
+                          isBloqueadoSecuencial
+                            ? 'bg-slate-800/40 text-slate-500 border-slate-750 cursor-not-allowed'
+                            : 'bg-slate-800 hover:bg-slate-750 border-slate-700 text-blue-400 cursor-pointer'
+                        }`}>
+                          <FileCheck className="w-3.5 h-3.5" />
+                          <span>{archivoActa ? archivoActa.name : 'Subir Acta_Examen.pdf'}</span>
+                          <input
+                            type="file"
+                            accept=".pdf,.png,.jpg"
+                            disabled={isBloqueadoSecuencial}
+                            className="hidden"
+                            onChange={(e) => setArchivoActa(e.target.files?.[0] || null)}
+                          />
+                        </label>
+                      </div>
                     </div>
                   )}
 

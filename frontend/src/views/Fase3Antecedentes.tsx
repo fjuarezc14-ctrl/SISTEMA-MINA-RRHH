@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Postulante, RolUsuario, VehiculoMaquinaria } from '../types';
-import { ShieldAlert, Ban, ShieldCheck, Eye, Lock, CheckCircle, AlertCircle, Truck, UserX, FileText, Filter } from 'lucide-react';
-import { Modal } from '../components/common/Modal';
+import { ShieldAlert, Ban, Eye, Lock, CheckCircle, Truck, Filter, User } from 'lucide-react';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
 import { DocumentCardStatus, getDocumentCardBorderClass } from '../components/common/DocumentCardStatus';
 import { VehiculosView } from './VehiculosView';
@@ -29,15 +28,9 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({
   onEvaluarVehiculo
 }) => {
   const [tabActiva, setTabActiva] = useState<'antecedentes' | 'vehiculos' | 'lista_negra'>('antecedentes');
-  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTES' | 'OBSERVADOS' | 'LISTA_NEGRA'>('TODOS');
-  const [bloquearModalOpen, setBloquearModalOpen] = useState(false);
-  const [observarModalOpen, setObservarModalOpen] = useState(false);
-  const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
+  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTES' | 'OBSERVADOS' | 'LISTA_NEGRA'>('PENDIENTES');
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
   const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
-  const [motivoRechazo, setMotivoRechazo] = useState('');
-  const [motivoObs, setMotivoObs] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const isAuthorizedRole = userRole === 'SEGURIDAD_PATRIMONIAL' || userRole === 'SUPER_ADMIN';
 
@@ -58,47 +51,9 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({
   const conteoLN = candidatosFase3.filter((p) => p.estado_global === 'NO_APTO' || Boolean(p.en_lista_negra)).length;
   const conteoPendientes = candidatosFase3.length - conteoObs - conteoLN;
 
-  const handleOpenBloqueo = (p: Postulante) => {
-    setSelectedPostulante(p);
-    setMotivoRechazo('');
-    setBloquearModalOpen(true);
-  };
-
-  const handleOpenObservar = (p: Postulante) => {
-    setSelectedPostulante(p);
-    setMotivoObs('');
-    setObservarModalOpen(true);
-  };
-
   const handleOpenSplitViewer = (p: Postulante) => {
     setViewerPostulante(p);
     setSplitViewerOpen(true);
-  };
-
-  const handleConfirmObservar = async () => {
-    if (!selectedPostulante || !motivoObs.trim()) return;
-    try {
-      setLoading(true);
-      await onEvaluar(selectedPostulante.id, 'FASE_3', 'OBSERVAR', { observaciones: motivoObs });
-      setObservarModalOpen(false);
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al observar certificado.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmBloqueo = async () => {
-    if (!selectedPostulante || !motivoRechazo.trim()) return;
-    try {
-      setLoading(true);
-      await onEvaluar(selectedPostulante.id, 'FASE_3', 'NO_APTO', { motivo: motivoRechazo });
-      setBloquearModalOpen(false);
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al procesar antecedente.');
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -238,17 +193,6 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({
             </span>
             <button
               type="button"
-              onClick={() => setFiltroEstado('TODOS')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                filtroEstado === 'TODOS'
-                  ? 'bg-rose-600 text-white shadow'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-700'
-              }`}
-            >
-              Todos ({candidatosFase3.length})
-            </button>
-            <button
-              type="button"
               onClick={() => setFiltroEstado('PENDIENTES')}
               className={`px-3 py-1 rounded-lg font-bold transition-all ${
                 filtroEstado === 'PENDIENTES'
@@ -280,6 +224,17 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({
             >
               Lista Negra ({conteoLN})
             </button>
+            <button
+              type="button"
+              onClick={() => setFiltroEstado('TODOS')}
+              className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                filtroEstado === 'TODOS'
+                  ? 'bg-rose-600 text-white shadow'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-700'
+              }`}
+            >
+              Todos ({candidatosFase3.length})
+            </button>
           </div>
 
           {candidatosFiltrados.length === 0 ? (
@@ -291,83 +246,45 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({
           ) : (
             <div className="space-y-4">
               {candidatosFiltrados.map((candidato) => {
-                const isListaNegra = candidato.estado_global === 'NO_APTO' || Boolean(candidato.en_lista_negra);
-
                 return (
-                  <div 
+                  <div
                     key={candidato.id}
-                    className={`rounded-xl p-4 sm:p-5 border flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 transition-all ${getDocumentCardBorderClass(candidato)}`}
+                    className={`rounded-xl p-4 sm:p-5 border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 transition-all ${getDocumentCardBorderClass(candidato)}`}
                   >
-                    <div className="flex-1 min-w-0 w-full">
-                      <h4 className="font-bold text-white text-base">
-                        {candidato.apellidos}, {candidato.nombres}
-                      </h4>
-                      <p className="text-sm text-slate-400 mt-0.5">
-                        Validación de Certificado Único Laboral (Antecedentes Policiales, Penales y Judiciales).
-                      </p>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 mt-1 items-center">
-                        <span>DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span></span>
-                        <span>•</span>
-                        <span>Empresa: <span className="text-slate-300">{candidato.empresa_nombre}</span></span>
-                        <span>•</span>
-                        <span className="text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
-                          <CheckCircle className="w-3.5 h-3.5" /> Fase 2 (Médico) Confirmada
-                        </span>
+                    <div className="w-full flex-1 min-w-0">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 flex-shrink-0 mt-0.5">
+                          <User className="w-5 h-5" />
+                        </div>
+                        <div className="flex flex-wrap items-center h-full gap-x-3 gap-y-1">
+                          <h4 className="font-bold text-white text-base whitespace-nowrap">
+                            {candidato.apellidos}, {candidato.nombres}
+                          </h4>
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            Cargo: <span className="text-slate-200 font-medium">{candidato.cargo}</span>
+                          </span>
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span>
+                          </span>
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            Empresa: <span className="text-slate-300">{candidato.empresa_nombre}</span>
+                          </span>
+                          <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
+                            <CheckCircle className="w-3.5 h-3.5" /> Fase 2 (Médico) Confirmada
+                          </span>
+                        </div>
                       </div>
-
-                      {/* ESTADO VISUAL DE LA TARJETA (OBSERVADO / LISTA NEGRA / PENDIENTE) */}
-                      <DocumentCardStatus postulante={candidato} />
                     </div>
 
-                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full xl:w-auto justify-start xl:justify-end pt-3 xl:pt-0 border-t border-slate-800/80 xl:border-t-0 shrink-0">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t border-slate-800/80 lg:border-t-0 shrink-0">
+                      <DocumentCardStatus postulante={candidato} />
+
                       <button
                         type="button"
                         onClick={() => handleOpenSplitViewer(candidato)}
                         className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
                       >
                         <Eye className="w-3.5 h-3.5 text-rose-400" /> Inspeccionar CUL
-                      </button>
-
-                      {!isListaNegra && (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenObservar(candidato)}
-                          className="flex-1 sm:flex-initial bg-amber-600/15 hover:bg-amber-600/25 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
-                        >
-                          <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Observar
-                        </button>
-                      )}
-
-                      {!isListaNegra && (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenBloqueo(candidato)}
-                          className="flex-1 sm:flex-initial bg-rose-600/15 hover:bg-rose-600/25 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
-                        >
-                          <Ban className="w-3.5 h-3.5 text-rose-400" /> Vetar
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        disabled={loading || !isAuthorizedRole || isListaNegra}
-                        onClick={() => onEvaluar(candidato.id, 'FASE_3', 'APROBAR')}
-                        title={isListaNegra ? 'Candidato vetado en Lista Negra - Prohibido emitir V°B°' : undefined}
-                        className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow whitespace-nowrap ${
-                          isListaNegra
-                            ? 'bg-slate-800 text-slate-500 border border-slate-750 cursor-not-allowed opacity-50 shadow-none'
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/40 disabled:opacity-50'
-                        }`}
-                      >
-                        {isListaNegra ? (
-                          <>
-                            <Ban className="w-3.5 h-3.5 text-rose-400" /> V°B° Bloqueado
-                          </>
-                        ) : (
-                          <>
-                            <ShieldCheck className="w-3.5 h-3.5" /> Dar V°B° Seguridad
-                          </>
-                        )}
                       </button>
                     </div>
                   </div>
@@ -411,86 +328,6 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({
           onEvaluar={onEvaluar}
         />
       )}
-
-      {/* MODAL LISTA NEGRA */}
-      <Modal 
-        isOpen={bloquearModalOpen} 
-        onClose={() => setBloquearModalOpen(false)} 
-        title="Seguridad Patrimonial: Registrar en Lista Negra"
-      >
-        <div className="space-y-4">
-          <div className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl flex items-start gap-3">
-            <ShieldAlert className="w-5 h-5 text-rose-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-rose-200">
-              Postulante con antecedentes vigentes no subsanables. Se registrará la causal y se denegará el pase de acceso.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Registro del antecedente / Causal de rechazo:
-            </label>
-            <textarea 
-              rows={3} 
-              value={motivoRechazo} 
-              onChange={(e) => setMotivoRechazo(e.target.value)}
-              placeholder="Ej: Registro de antecedente penal por hurto agravado / orden de requisitoria pendiente..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-rose-500"
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button 
-              onClick={() => setBloquearModalOpen(false)}
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white"
-            >
-              Cancelar
-            </button>
-            <button 
-              onClick={handleConfirmBloqueo}
-              disabled={loading || !motivoRechazo.trim()}
-              className="bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm"
-            >
-              {loading ? 'Procesando...' : 'Confirmar Bloqueo'}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* MODAL OBSERVACIÓN LEGAL / PATRIMONIAL PARA SUBSANACIÓN */}
-      <Modal 
-        isOpen={observarModalOpen} 
-        onClose={() => setObservarModalOpen(false)} 
-        title={`Observar Certificado de Antecedentes - ${selectedPostulante?.nombres} ${selectedPostulante?.apellidos}`}
-      >
-        <div className="space-y-4">
-          <p className="text-xs text-slate-400">
-            Detalla la causal de observación (ej. documento CUL desactualizado mayor a 90 días, requiere certificado judicial ampliatorio o carta de homonimia):
-          </p>
-          <textarea 
-            rows={3} 
-            value={motivoObs} 
-            onChange={(e) => setMotivoObs(e.target.value)}
-            placeholder="Ej: El Certificado Único Laboral tiene más de 3 meses de antigüedad. Adjuntar certificado policial reciente..."
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500"
-          />
-          <div className="flex justify-end gap-3 pt-2">
-            <button 
-              onClick={() => setObservarModalOpen(false)}
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white"
-            >
-              Cancelar
-            </button>
-            <button 
-              onClick={handleConfirmObservar}
-              disabled={loading || !motivoObs.trim()}
-              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-sm"
-            >
-              {loading ? 'Procesando...' : 'Confirmar Observación'}
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };
