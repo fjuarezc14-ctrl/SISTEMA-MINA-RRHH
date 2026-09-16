@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Postulante, RolUsuario } from '../types';
 import { ShieldCheck, Eye, Lock, CheckCircle, Filter, User } from 'lucide-react';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
-import { DocumentCardStatus, getDocumentCardBorderClass } from '../components/common/DocumentCardStatus';
+import { DocumentCardStatus, DocumentCardDetail, getDocumentCardBorderClass } from '../components/common/DocumentCardStatus';
 
 interface Fase5Props {
   postulantes: Postulante[];
@@ -116,44 +116,48 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
               return (
                 <div
                   key={candidato.id}
-                  className={`rounded-xl p-4 sm:p-5 border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 transition-all ${getDocumentCardBorderClass(candidato)}`}
+                  className={`rounded-xl p-4 sm:p-5 border transition-all ${getDocumentCardBorderClass(candidato)}`}
                 >
-                  <div className="w-full flex-1 min-w-0">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0 mt-0.5">
-                        <User className="w-5 h-5" />
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div className="w-full flex-1 min-w-0">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0 mt-0.5">
+                          <User className="w-5 h-5" />
+                        </div>
+                        <div className="flex flex-wrap items-center h-full gap-x-3 gap-y-1">
+                          <h4 className="font-bold text-white text-base whitespace-nowrap">
+                            {candidato.apellidos}, {candidato.nombres}
+                          </h4>
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            Cargo: <span className="text-slate-200 font-medium">{candidato.cargo}</span>
+                          </span>
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span>
+                          </span>
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            Empresa: <span className="text-slate-300">{candidato.empresa_nombre}</span>
+                          </span>
+                          <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
+                            <CheckCircle className="w-3.5 h-3.5" /> Fases 1, 2, 3 y 4 Confirmadas
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap items-center h-full gap-x-3 gap-y-1">
-                        <h4 className="font-bold text-white text-base whitespace-nowrap">
-                          {candidato.apellidos}, {candidato.nombres}
-                        </h4>
-                        <span className="text-sm text-slate-400 whitespace-nowrap">
-                          Cargo: <span className="text-slate-200 font-medium">{candidato.cargo}</span>
-                        </span>
-                        <span className="text-sm text-slate-400 whitespace-nowrap">
-                          DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span>
-                        </span>
-                        <span className="text-sm text-slate-400 whitespace-nowrap">
-                          Empresa: <span className="text-slate-300">{candidato.empresa_nombre}</span>
-                        </span>
-                        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
-                          <CheckCircle className="w-3.5 h-3.5" /> Fases 1, 2, 3 y 4 Confirmadas
-                        </span>
-                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t border-slate-800/80 lg:border-t-0 shrink-0">
+                      <DocumentCardStatus postulante={candidato} />
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSplitViewer(candidato)}
+                        className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-750 text-blue-300 border border-blue-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-blue-400" /> Inspeccionar Póliza
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t border-slate-800/80 lg:border-t-0 shrink-0">
-                    <DocumentCardStatus postulante={candidato} />
-
-                    <button
-                      type="button"
-                      onClick={() => handleOpenSplitViewer(candidato)}
-                      className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-750 text-blue-300 border border-blue-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-blue-400" /> Inspeccionar Póliza
-                    </button>
-                  </div>
+                  <DocumentCardDetail postulante={candidato} />
                 </div>
               );
             })}

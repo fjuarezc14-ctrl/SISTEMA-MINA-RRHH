@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Postulante, RolUsuario } from '../types';
 import { Stethoscope, CheckCircle, ShieldAlert, Eye, Lock, Filter, User } from 'lucide-react';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
-import { DocumentCardStatus, getDocumentCardBorderClass } from '../components/common/DocumentCardStatus';
+import { DocumentCardStatus, DocumentCardDetail, getDocumentCardBorderClass } from '../components/common/DocumentCardStatus';
 
 interface Fase2Props {
   postulantes: Postulante[];
@@ -132,55 +132,59 @@ export const Fase2Salud: React.FC<Fase2Props> = ({ postulantes, userRole, onEval
               return (
                 <div
                   key={candidato.id}
-                  className={`rounded-xl p-4 sm:p-5 border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 transition-all ${getDocumentCardBorderClass(candidato)}`}
+                  className={`rounded-xl p-4 sm:p-5 border transition-all ${getDocumentCardBorderClass(candidato)}`}
                 >
-                  <div className="w-full flex-1 min-w-0">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 flex-shrink-0 mt-0.5">
-                        <User className="w-5 h-5" />
-                      </div>
-                      <div className="flex flex-wrap items-center h-full gap-x-3 gap-y-1">
-                        <h4 className="font-bold text-white text-base whitespace-nowrap">
-                          {candidato.apellidos}, {candidato.nombres}
-                        </h4>
-                        {candidato.tipo_pase && (
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border whitespace-nowrap ${
-                            candidato.tipo_pase === 'VISITA_TECNICA'
-                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                              : candidato.tipo_pase === 'PROVEEDOR_LOGISTICO'
-                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                              : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                          }`}>
-                            {candidato.tipo_pase.replace('_', ' ')}
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div className="w-full flex-1 min-w-0">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 flex-shrink-0 mt-0.5">
+                          <User className="w-5 h-5" />
+                        </div>
+                        <div className="flex flex-wrap items-center h-full gap-x-3 gap-y-1">
+                          <h4 className="font-bold text-white text-base whitespace-nowrap">
+                            {candidato.apellidos}, {candidato.nombres}
+                          </h4>
+                          {candidato.tipo_pase && (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border whitespace-nowrap ${
+                              candidato.tipo_pase === 'VISITA_TECNICA'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                : candidato.tipo_pase === 'PROVEEDOR_LOGISTICO'
+                                ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                                : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                            }`}>
+                              {candidato.tipo_pase.replace('_', ' ')}
+                            </span>
+                          )}
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            Cargo: <span className="text-slate-200 font-medium">{candidato.cargo}</span>
                           </span>
-                        )}
-                        <span className="text-sm text-slate-400 whitespace-nowrap">
-                          Cargo: <span className="text-slate-200 font-medium">{candidato.cargo}</span>
-                        </span>
-                        <span className="text-sm text-slate-400 whitespace-nowrap">
-                          DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span>
-                        </span>
-                        <span className="text-sm text-slate-400 whitespace-nowrap">
-                          Empresa: <span className="text-slate-300">{candidato.empresa_nombre}</span>
-                        </span>
-                        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
-                          <CheckCircle className="w-3.5 h-3.5" /> Fase 1 (CV) Confirmada
-                        </span>
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span>
+                          </span>
+                          <span className="text-sm text-slate-400 whitespace-nowrap">
+                            Empresa: <span className="text-slate-300">{candidato.empresa_nombre}</span>
+                          </span>
+                          <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
+                            <CheckCircle className="w-3.5 h-3.5" /> Fase 1 (CV) Confirmada
+                          </span>
+                        </div>
                       </div>
+                    </div>
+
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t border-slate-800/80 lg:border-t-0 shrink-0">
+                      <DocumentCardStatus postulante={candidato} />
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSplitViewer(candidato)}
+                        className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-rose-400" /> Inspeccionar EMO
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t border-slate-800/80 lg:border-t-0 shrink-0">
-                    <DocumentCardStatus postulante={candidato} />
-
-                    <button
-                      type="button"
-                      onClick={() => handleOpenSplitViewer(candidato)}
-                      className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-rose-400" /> Inspeccionar EMO
-                    </button>
-                  </div>
+                  <DocumentCardDetail postulante={candidato} />
                 </div>
               );
             })}
