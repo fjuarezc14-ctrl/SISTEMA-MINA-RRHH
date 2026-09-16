@@ -6,9 +6,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  size?: 'md' | 'xl';
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -23,8 +24,8 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-slate-800">
+      <div className={`bg-slate-900 border border-slate-700 rounded-2xl w-full ${size === 'xl' ? 'max-w-6xl' : 'max-w-lg'} max-h-[92vh] flex flex-col overflow-hidden shadow-2xl`}>
+        <div className="flex items-center justify-between p-5 border-b border-slate-800 shrink-0">
           <h3 className="text-lg font-bold text-white">{title}</h3>
           <button 
             onClick={onClose}
@@ -33,7 +34,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto">
           {children}
         </div>
       </div>

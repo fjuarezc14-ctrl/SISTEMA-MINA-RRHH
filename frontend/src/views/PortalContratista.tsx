@@ -3,8 +3,22 @@ import { Postulante, RolUsuario } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
-import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info, ChevronDown, ChevronUp, Users, FileCheck2 } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info, ChevronDown, ChevronUp, Users, FileCheck2, FlaskConical, X } from 'lucide-react';
 import { api } from '../services/api';
+
+// El campo coincide con el que espera el backend en POST /postulantes
+const DOCUMENTOS_EXPEDIENTE = [
+  { campo: 'cv', fase: 'Fase 1', area: 'RRHH', titulo: 'CV y DNI digital', obligatorio: true, prueba: 'fase1-cv-y-dni.pdf' },
+  { campo: 'emo', fase: 'Fase 2', area: 'Salud ocupacional', titulo: 'Examen médico ocupacional y toxicológico', obligatorio: false, prueba: 'fase2-emo-toxicologico.pdf' },
+  { campo: 'antecedentes', fase: 'Fase 3', area: 'Seguridad patrimonial', titulo: 'Certificado de antecedentes', obligatorio: false, prueba: 'fase3-antecedentes.pdf' },
+  { campo: 'induccion', fase: 'Fase 4', area: 'SSOMA', titulo: 'Constancia de inducción de seguridad', obligatorio: false, prueba: 'fase4-induccion-ssoma.pdf' },
+  { campo: 'sctr', fase: 'Fase 5', area: 'Contratos y seguros', titulo: 'Póliza SCTR salud y pensión', obligatorio: false, prueba: 'fase5-poliza-sctr.pdf' },
+] as const;
+
+type CampoDocumento = (typeof DOCUMENTOS_EXPEDIENTE)[number]['campo'];
+
+const formatearTamano = (bytes: number) =>
+  bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 
 interface PortalContratistaProps {
   postulantes: Postulante[];
@@ -44,7 +58,9 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
   });
   const [nuevoError, setNuevoError] = useState('');
   const [nuevoLoading, setNuevoLoading] = useState(false);
-  const [nuevoCv, setNuevoCv] = useState<File | null>(null);
+  const [nuevosDocumentos, setNuevosDocumentos] = useState<Partial<Record<CampoDocumento, File>>>({});
+  const [cargandoPrueba, setCargandoPrueba] = useState(false);
+  const [campoArrastre, setCampoArrastre] = useState<CampoDocumento | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleAccordion = (id: string) => {
@@ -62,6 +78,42 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
   const handleOpenSplitViewer = (p: Postulante) => {
     setViewerPostulante(p);
     setSplitViewerOpen(true);
+  };
+
+  const asignarDocumento = (campo: CampoDocumento, archivo?: File) => {
+    if (!archivo) return;
+    if (!/\.(pdf|jpe?g|png)$/i.test(archivo.name)) {
+      setNuevoError('Solo se permiten documentos PDF, JPG o PNG.');
+      return;
+    }
+    setNuevoError('');
+    setNuevosDocumentos((prev) => ({ ...prev, [campo]: archivo }));
+  };
+
+  const quitarDocumento = (campo: CampoDocumento) =>
+    setNuevosDocumentos((prev) => {
+      const { [campo]: _quitado, ...resto } = prev;
+      return resto;
+    });
+
+  const handleUsarDocumentosPrueba = async () => {
+    setCargandoPrueba(true);
+    setNuevoError('');
+    try {
+      const archivos = await Promise.all(
+        DOCUMENTOS_EXPEDIENTE.map(async ({ campo, prueba }) => {
+          const res = await fetch(`/documentos-prueba/${prueba}`);
+          if (!res.ok) throw new Error(prueba);
+          const blob = await res.blob();
+          return [campo, new File([blob], prueba, { type: 'application/pdf' })] as const;
+        })
+      );
+      setNuevosDocumentos(Object.fromEntries(archivos));
+    } catch {
+      setNuevoError('No se pudieron cargar los documentos de prueba.');
+    } finally {
+      setCargandoPrueba(false);
+    }
   };
 
   const handleCrearSubmit = async (e: React.FormEvent) => {
@@ -111,7 +163,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
       }
     }
 
-    if (!nuevoCv) {
+    if (!nuevosDocumentos.cv) {
       setNuevoError('Debe adjuntar el CV y DNI digital: es la versión 1 del expediente que revisará el evaluador.');
       return;
     }
@@ -120,11 +172,15 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
     try {
       const formData = new FormData();
       Object.entries(nuevoForm).forEach(([campo, valor]) => formData.append(campo, valor));
-      formData.append('cv', nuevoCv);
+      DOCUMENTOS_EXPEDIENTE.forEach(({ campo }) => {
+        const archivo = nuevosDocumentos[campo];
+        if (archivo) formData.append(campo, archivo);
+      });
 
-      await api.post('/postulantes', formData);
+      // Varios documentos pueden tardar más que el timeout global del cliente
+      await api.post('/postulantes', formData, { timeout: 120000 });
       setNuevoModalOpen(false);
-      setNuevoCv(null);
+      setNuevosDocumentos({});
       // Evitar reload completo: limpiar formulario
       setNuevoForm({
         tipo_documento: 'DNI',
@@ -694,222 +750,322 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
         isOpen={nuevoModalOpen} 
         onClose={() => setNuevoModalOpen(false)}
         title="Registrar Nuevo Personal / Solicitud de Pase Minero"
+        size="xl"
       >
-        <form onSubmit={handleCrearSubmit} className="space-y-4">
+        <form onSubmit={handleCrearSubmit} className="space-y-5">
           {nuevoError && (
             <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 text-rose-300 text-xs font-medium">
               {nuevoError}
             </div>
           )}
 
-          {/* Selector de Tipo de Pase */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-              Tipo de Pase / Categoría de Acceso Minero:
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'PERMANENTE' })}
-                className={`p-3 rounded-xl border text-left transition-all ${
-                  nuevoForm.tipo_pase === 'PERMANENTE'
-                    ? 'bg-blue-600/20 border-blue-500 text-white shadow-md'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-                }`}
-              >
-                <div className="font-bold text-xs">Permanente</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">Roster 14x7 / Planta / Mina (5/5 V°B°)</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'VISITA_TECNICA' })}
-                className={`p-3 rounded-xl border text-left transition-all ${
-                  nuevoForm.tipo_pase === 'VISITA_TECNICA'
-                    ? 'bg-amber-600/20 border-amber-500 text-white shadow-md'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-                }`}
-              >
-                <div className="font-bold text-xs text-amber-300">Visita Técnica</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">1 a 7 días • Con Acompañante</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'PROVEEDOR_LOGISTICO' })}
-                className={`p-3 rounded-xl border text-left transition-all ${
-                  nuevoForm.tipo_pase === 'PROVEEDOR_LOGISTICO'
-                    ? 'bg-purple-600/20 border-purple-500 text-white shadow-md'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-                }`}
-              >
-                <div className="font-bold text-xs text-purple-300">Proveedor Logístico</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">Solo Almacén / Patio Superficie</div>
-              </button>
-            </div>
-          </div>
-
-          {/* Fechas de vigencia para pases temporales */}
-          {nuevoForm.tipo_pase !== 'PERMANENTE' && (
-            <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
+            <div className="space-y-4 min-w-0">
+              {/* Selector de Tipo de Pase */}
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Fecha de Ingreso / Inicio:</label>
-                <input
-                  type="date"
-                  value={nuevoForm.vigencia_inicio}
-                  onChange={(e) => setNuevoForm({ ...nuevoForm, vigencia_inicio: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Tipo de Pase / Categoría de Acceso Minero:
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'PERMANENTE' })}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      nuevoForm.tipo_pase === 'PERMANENTE'
+                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-md'
+                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="font-bold text-xs">Permanente</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Roster 14x7 / Planta / Mina (5/5 V°B°)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'VISITA_TECNICA' })}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      nuevoForm.tipo_pase === 'VISITA_TECNICA'
+                        ? 'bg-amber-600/20 border-amber-500 text-white shadow-md'
+                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="font-bold text-xs text-amber-300">Visita Técnica</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">1 a 7 días • Con Acompañante</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'PROVEEDOR_LOGISTICO' })}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      nuevoForm.tipo_pase === 'PROVEEDOR_LOGISTICO'
+                        ? 'bg-purple-600/20 border-purple-500 text-white shadow-md'
+                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="font-bold text-xs text-purple-300">Proveedor Logístico</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Solo Almacén / Patio Superficie</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Fechas de vigencia para pases temporales */}
+              {nuevoForm.tipo_pase !== 'PERMANENTE' && (
+                <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Fecha de Ingreso / Inicio:</label>
+                    <input
+                      type="date"
+                      value={nuevoForm.vigencia_inicio}
+                      onChange={(e) => setNuevoForm({ ...nuevoForm, vigencia_inicio: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Fecha de Salida / Término:</label>
+                    <input
+                      type="date"
+                      value={nuevoForm.vigencia_fin}
+                      onChange={(e) => setNuevoForm({ ...nuevoForm, vigencia_fin: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1">Tipo de Documento:</label>
+                  <select
+                    value={nuevoForm.tipo_documento}
+                    onChange={(e) => setNuevoForm({ ...nuevoForm, tipo_documento: e.target.value, numero_documento: '' })}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                  >
+                    <option value="DNI">DNI (8 dígitos)</option>
+                    <option value="CARNET_EXTRANJERIA">Carnet de Extranjería (9 car.)</option>
+                    <option value="PASAPORTE">Pasaporte (6 a 12 car.)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1">
+                    Número de {nuevoForm.tipo_documento === 'DNI' ? 'DNI' : nuevoForm.tipo_documento === 'CARNET_EXTRANJERIA' ? 'C.E.' : 'Pasaporte'}:
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={nuevoForm.tipo_documento === 'DNI' ? 8 : nuevoForm.tipo_documento === 'CARNET_EXTRANJERIA' ? 9 : 12}
+                    value={nuevoForm.numero_documento}
+                    onChange={(e) => {
+                      let val = e.target.value.toUpperCase().trim();
+                      if (nuevoForm.tipo_documento === 'DNI') {
+                        val = val.replace(/\D/g, '').slice(0, 8);
+                      }
+                      setNuevoForm({ ...nuevoForm, numero_documento: val });
+                    }}
+                    placeholder={nuevoForm.tipo_documento === 'DNI' ? 'Ej. 45891234' : 'Ej. 001234567'}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono uppercase"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1">Nombres:</label>
+                  <input
+                    type="text"
+                    required
+                    value={nuevoForm.nombres}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '');
+                      setNuevoForm({ ...nuevoForm, nombres: val });
+                    }}
+                    placeholder="Ej. Carlos Eduardo"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1">Apellidos:</label>
+                  <input
+                    type="text"
+                    required
+                    value={nuevoForm.apellidos}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '');
+                      setNuevoForm({ ...nuevoForm, apellidos: val });
+                    }}
+                    placeholder="Ej. Quispe Morales"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1">Cargo / Puesto Minero:</label>
+                  <input
+                    type="text"
+                    required
+                    value={nuevoForm.cargo}
+                    onChange={(e) => setNuevoForm({ ...nuevoForm, cargo: e.target.value })}
+                    placeholder="Ej. Técnico Electricista / Conductor"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1">Grupo Sanguíneo y Factor RH:</label>
+                  <select
+                    value={nuevoForm.grupo_sanguineo}
+                    onChange={(e) => setNuevoForm({ ...nuevoForm, grupo_sanguineo: e.target.value })}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
+                  >
+                    <option value="O+">O+ (O Positivo)</option>
+                    <option value="O-">O- (O Negativo)</option>
+                    <option value="A+">A+ (A Positivo)</option>
+                    <option value="A-">A- (A Negativo)</option>
+                    <option value="B+">B+ (B Positivo)</option>
+                    <option value="B-">B- (B Negativo)</option>
+                    <option value="AB+">AB+ (AB Positivo)</option>
+                    <option value="AB-">AB- (AB Negativo)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1">Teléfono Móvil (9 dígitos, inicia en 9):</label>
+                  <input
+                    type="text"
+                    maxLength={9}
+                    value={nuevoForm.telefono}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 9);
+                      setNuevoForm({ ...nuevoForm, telefono: val });
+                    }}
+                    placeholder="Ej. 987654321"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1">Email Corporativo (Opcional):</label>
+                  <input
+                    type="email"
+                    value={nuevoForm.email}
+                    onChange={(e) => setNuevoForm({ ...nuevoForm, email: e.target.value.trim() })}
+                    placeholder="trabajador@empresa.com"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            {/* EXPEDIENTE DOCUMENTAL: un documento por fase */}
+            <aside
+              // Evita que el navegador abra el archivo si se suelta fuera de una fila
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => e.preventDefault()}
+              className="min-w-0 lg:self-start lg:border-l lg:border-slate-800 lg:pl-6"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <h4 className="text-sm font-semibold text-white">Documentos</h4>
+                <span className="text-xs text-slate-400 tabular-nums">
+                  {Object.keys(nuevosDocumentos).length} de {DOCUMENTOS_EXPEDIENTE.length}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">Haz clic o arrastra un archivo · PDF, JPG o PNG</p>
+
+              <div className="mt-3 h-1 rounded-full bg-slate-800 overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-300"
+                  style={{ width: `${(Object.keys(nuevosDocumentos).length / DOCUMENTOS_EXPEDIENTE.length) * 100}%` }}
                 />
               </div>
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Fecha de Salida / Término:</label>
-                <input
-                  type="date"
-                  value={nuevoForm.vigencia_fin}
-                  onChange={(e) => setNuevoForm({ ...nuevoForm, vigencia_fin: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"
-                />
-              </div>
-            </div>
-          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-300 mb-1">Tipo de Documento:</label>
-              <select
-                value={nuevoForm.tipo_documento}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, tipo_documento: e.target.value, numero_documento: '' })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
-              >
-                <option value="DNI">DNI (8 dígitos)</option>
-                <option value="CARNET_EXTRANJERIA">Carnet de Extranjería (9 car.)</option>
-                <option value="PASAPORTE">Pasaporte (6 a 12 car.)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-300 mb-1">
-                Número de {nuevoForm.tipo_documento === 'DNI' ? 'DNI' : nuevoForm.tipo_documento === 'CARNET_EXTRANJERIA' ? 'C.E.' : 'Pasaporte'}:
-              </label>
-              <input
-                type="text"
-                required
-                maxLength={nuevoForm.tipo_documento === 'DNI' ? 8 : nuevoForm.tipo_documento === 'CARNET_EXTRANJERIA' ? 9 : 12}
-                value={nuevoForm.numero_documento}
-                onChange={(e) => {
-                  let val = e.target.value.toUpperCase().trim();
-                  if (nuevoForm.tipo_documento === 'DNI') {
-                    val = val.replace(/\D/g, '').slice(0, 8);
+              <ul className="mt-2 divide-y divide-slate-800">
+                {DOCUMENTOS_EXPEDIENTE.map(({ campo, area, titulo, obligatorio }, indice) => {
+                  const archivo = nuevosDocumentos[campo];
+
+                  if (archivo) {
+                    return (
+                      <li key={campo} className="flex items-center gap-3 py-3">
+                        <span className="w-7 h-7 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                          <Check className="w-4 h-4" />
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm text-slate-200 truncate">{titulo}</span>
+                          <span className="block text-xs text-slate-500 truncate">
+                            {archivo.name} · {formatearTamano(archivo.size)}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => quitarDocumento(campo)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition-colors shrink-0"
+                          title="Quitar documento"
+                          aria-label={`Quitar ${titulo}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </li>
+                    );
                   }
-                  setNuevoForm({ ...nuevoForm, numero_documento: val });
-                }}
-                placeholder={nuevoForm.tipo_documento === 'DNI' ? 'Ej. 45891234' : 'Ej. 001234567'}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono uppercase"
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-300 mb-1">Nombres:</label>
-              <input
-                type="text"
-                required
-                value={nuevoForm.nombres}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '');
-                  setNuevoForm({ ...nuevoForm, nombres: val });
-                }}
-                placeholder="Ej. Carlos Eduardo"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-300 mb-1">Apellidos:</label>
-              <input
-                type="text"
-                required
-                value={nuevoForm.apellidos}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '');
-                  setNuevoForm({ ...nuevoForm, apellidos: val });
-                }}
-                placeholder="Ej. Quispe Morales"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
-              />
-            </div>
-          </div>
+                  return (
+                    <li key={campo}>
+                      <label
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setCampoArrastre(campo);
+                        }}
+                        onDragLeave={(e) => {
+                          if (!e.currentTarget.contains(e.relatedTarget as Node)) setCampoArrastre(null);
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setCampoArrastre(null);
+                          asignarDocumento(campo, e.dataTransfer.files[0]);
+                        }}
+                        className={`group flex items-center gap-3 py-3 -mx-2 px-2 rounded-lg cursor-pointer transition-colors ${
+                          campoArrastre === campo ? 'bg-blue-500/10' : 'hover:bg-slate-800/50'
+                        }`}
+                      >
+                        <span className="w-7 h-7 rounded-full border border-slate-700 text-xs text-slate-500 flex items-center justify-center shrink-0 group-hover:border-blue-500 group-hover:text-blue-400 transition-colors">
+                          {indice + 1}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-sm text-slate-200 truncate">
+                            {titulo}
+                            {obligatorio && <span className="text-rose-400"> *</span>}
+                          </span>
+                          <span className="block text-xs text-slate-500">{area}</span>
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-slate-400 group-hover:text-blue-400 transition-colors shrink-0">
+                          <UploadCloud className="w-4 h-4" /> Subir
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          className="sr-only"
+                          onChange={(e) => {
+                            asignarDocumento(campo, e.target.files?.[0]);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-300 mb-1">Cargo / Puesto Minero:</label>
-              <input
-                type="text"
-                required
-                value={nuevoForm.cargo}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, cargo: e.target.value })}
-                placeholder="Ej. Técnico Electricista / Conductor"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-300 mb-1">Grupo Sanguíneo y Factor RH:</label>
-              <select
-                value={nuevoForm.grupo_sanguineo}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, grupo_sanguineo: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
+              <button
+                type="button"
+                onClick={handleUsarDocumentosPrueba}
+                disabled={cargandoPrueba}
+                className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-slate-700 text-xs text-slate-400 hover:text-amber-300 hover:border-amber-500/50 disabled:opacity-50 transition-colors"
               >
-                <option value="O+">O+ (O Positivo)</option>
-                <option value="O-">O- (O Negativo)</option>
-                <option value="A+">A+ (A Positivo)</option>
-                <option value="A-">A- (A Negativo)</option>
-                <option value="B+">B+ (B Positivo)</option>
-                <option value="B-">B- (B Negativo)</option>
-                <option value="AB+">AB+ (AB Positivo)</option>
-                <option value="AB-">AB- (AB Negativo)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-300 mb-1">Teléfono Móvil (9 dígitos, inicia en 9):</label>
-              <input
-                type="text"
-                maxLength={9}
-                value={nuevoForm.telefono}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 9);
-                  setNuevoForm({ ...nuevoForm, telefono: val });
-                }}
-                placeholder="Ej. 987654321"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-300 mb-1">Email Corporativo (Opcional):</label>
-              <input
-                type="email"
-                value={nuevoForm.email}
-                onChange={(e) => setNuevoForm({ ...nuevoForm, email: e.target.value.trim() })}
-                placeholder="trabajador@empresa.com"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs text-slate-300 mb-1">
-              CV y DNI Digital (PDF o imagen) <span className="text-rose-400">*</span>
-            </label>
-            <input
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={(e) => setNuevoCv(e.target.files?.[0] || null)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-xs file:font-bold hover:file:bg-blue-500"
-            />
-            <p className="text-[10px] text-slate-500 mt-1">
-              Queda registrado como versión 1 del expediente. Si luego hay observaciones, la subsanación se guarda como v2.
-            </p>
+                <FlaskConical className="w-3.5 h-3.5" />
+                {cargandoPrueba ? 'Cargando documentos…' : 'Usar documentos de prueba'}
+              </button>
+            </aside>
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
