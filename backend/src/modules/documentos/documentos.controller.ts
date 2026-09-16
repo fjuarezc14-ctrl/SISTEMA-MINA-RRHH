@@ -46,7 +46,12 @@ export class DocumentosController {
         });
       }
 
-      res.download(filePath, fileName);
+      // Por defecto se envía en línea para poder visualizarlo dentro del expediente;
+      // con ?download=1 se fuerza la descarga.
+      if (req.query.download === '1') {
+        return res.download(filePath, fileName);
+      }
+      res.sendFile(filePath);
     } catch (err) {
       next(err);
     }

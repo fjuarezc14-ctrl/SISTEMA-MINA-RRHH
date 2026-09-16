@@ -51,6 +51,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
   });
   const [nuevoError, setNuevoError] = useState('');
   const [nuevoLoading, setNuevoLoading] = useState(false);
+  const [nuevoCv, setNuevoCv] = useState<File | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleAccordion = (id: string) => {
@@ -117,10 +118,20 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
       }
     }
 
+    if (!nuevoCv) {
+      setNuevoError('Debe adjuntar el CV y DNI digital: es la versión 1 del expediente que revisará el evaluador.');
+      return;
+    }
+
     setNuevoLoading(true);
     try {
-      await api.post('/postulantes', nuevoForm);
+      const formData = new FormData();
+      Object.entries(nuevoForm).forEach(([campo, valor]) => formData.append(campo, valor));
+      formData.append('cv', nuevoCv);
+
+      await api.post('/postulantes', formData);
       setNuevoModalOpen(false);
+      setNuevoCv(null);
       // Evitar reload completo: limpiar formulario
       setNuevoForm({
         tipo_documento: 'DNI',
@@ -913,6 +924,21 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-slate-300 mb-1">
+              CV y DNI Digital (PDF o imagen) <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={(e) => setNuevoCv(e.target.files?.[0] || null)}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-xs file:font-bold hover:file:bg-blue-500"
+            />
+            <p className="text-[10px] text-slate-500 mt-1">
+              Queda registrado como versión 1 del expediente. Si luego hay observaciones, la subsanación se guarda como v2.
+            </p>
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">

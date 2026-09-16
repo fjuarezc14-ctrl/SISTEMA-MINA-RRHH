@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Postulante, RolUsuario, FaseOnboarding } from '../../types';
+import { Postulante, RolUsuario, FaseOnboarding, DocumentoDigital } from '../../types';
 import { api } from '../../services/api';
 import { 
   X, 
@@ -10,16 +10,15 @@ import {
   AlertTriangle, 
   Ban, 
   Lock, 
-  ZoomIn, 
-  ZoomOut, 
-  Download, 
-  User, 
+  ZoomIn,
+  ZoomOut,
+  Download,
+  User,
   History,
-  Building2,
-  Calendar,
   Clock,
   Award,
-  FileCheck
+  FileCheck,
+  ChevronDown
 } from 'lucide-react';
 
 interface DocumentSplitViewerProps {
@@ -53,7 +52,8 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
   userRole,
   onEvaluar,
 }) => {
-  const [selectedVersion, setSelectedVersion] = useState<number>(2); // Default to v2 if available
+  const [selectedVersion, setSelectedVersion] = useState<number | null>(null);
+  const [mostrarVersionesAnteriores, setMostrarVersionesAnteriores] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [observaciones, setObservaciones] = useState<string>('');
   const [notaExamen, setNotaExamen] = useState<number>(16);
@@ -66,7 +66,11 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
   const [activeTab, setActiveTab] = useState<'DOCUMENTO' | 'HISTORIAL_VB' | 'HISTORIAL_SEGUROS'>('DOCUMENTO');
   const [historialVB, setHistorialVB] = useState<any[]>([]);
   const [historialSeguros, setHistorialSeguros] = useState<any[]>([]);
+  const [documentosExpediente, setDocumentosExpediente] = useState<DocumentoDigital[]>([]);
   const [descargoContratista, setDescargoContratista] = useState<string>('');
+  const [archivoUrl, setArchivoUrl] = useState<string | null>(null);
+  const [archivoCargando, setArchivoCargando] = useState<boolean>(false);
+  const [archivoError, setArchivoError] = useState<string>('');
 
   // Reset de estado cada vez que cambia el postulante (Punto 1)
   useEffect(() => {
@@ -74,19 +78,24 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
       setObservaciones('');
       setDescargoContratista('');
       setArchivoActa(null);
+      setSelectedVersion(null);
+      setMostrarVersionesAnteriores(false);
+      setDocumentosExpediente([]);
       setFechaInicioSCTR(postulante.sctr_inicio || new Date().toISOString().split('T')[0]);
       setFechaVencSCTR(postulante.sctr_vencimiento || '2026-10-30');
     }
   }, [postulante?.id]);
 
-  // Cargar historial de V°B° y seguros
+  // Cargar expediente documental (versiones reales) e historial de V°B° y seguros
   useEffect(() => {
     if (isOpen && postulante?.id) {
-      // Cargar historial de auditoría
       api.get(`/postulantes/${postulante.id}/expediente`)
         .then((res) => {
-          if (res.data?.historialVistosBuenos) {
-            setHistorialVB(res.data.historialVistosBuenos);
+          if (Array.isArray(res.data?.historialAuditoria)) {
+            setHistorialVB(res.data.historialAuditoria);
+          }
+          if (Array.isArray(res.data?.documentos)) {
+            setDocumentosExpediente(res.data.documentos);
           }
         })
         .catch(() => {});
@@ -100,7 +109,58 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
     }
   }, [isOpen, postulante?.id]);
 
+  // Descargar el archivo real de la versión en pantalla usando el endpoint con control de rol
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const docsFase = documentosExpediente
+      .filter((d) => d.fase === fase)
+      .sort((a, b) => b.version - a.version);
+    const doc = selectedVersion != null
+      ? docsFase.find((d) => d.version === selectedVersion)
+      : docsFase[0];
+
+    if (!doc?.id || !doc.archivo_url) {
+      setArchivoUrl(null);
+      setArchivoError('');
+      return;
+    }
+
+    let objectUrl: string | null = null;
+    let cancelado = false;
+    setArchivoCargando(true);
+    setArchivoError('');
+
+    api.get(`/documentos/${doc.id}/stream`, { responseType: 'blob' })
+      .then((res) => {
+        if (cancelado) return;
+        objectUrl = URL.createObjectURL(res.data);
+        setArchivoUrl(objectUrl);
+      })
+      .catch(() => {
+        if (!cancelado) setArchivoError('No se pudo cargar el archivo adjunto de esta versión.');
+      })
+      .finally(() => {
+        if (!cancelado) setArchivoCargando(false);
+      });
+
+    return () => {
+      cancelado = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [isOpen, fase, selectedVersion, documentosExpediente]);
+
   if (!isOpen) return null;
+
+  // VERSIONES REALES DEL DOCUMENTO DE LA FASE ACTUAL (más reciente primero)
+  const documentosFase = documentosExpediente
+    .filter((d) => d.fase === fase)
+    .sort((a, b) => b.version - a.version);
+  const ultimaVersion = documentosFase[0] || null;
+  const versionEnVisor = selectedVersion ?? ultimaVersion?.version ?? 1;
+  const versionesAnteriores = documentosFase.slice(1);
+  const docEnVisor = documentosFase.find((d) => d.version === versionEnVisor) || null;
+  const esImagen = /\.(jpe?g|png)$/i.test(docEnVisor?.nombre_archivo || '');
 
   // REGLAS DE PRIVACIDAD / CONFIDENCIALIDAD
   const isConfidentialMedical = fase === 'FASE_2' && userRole !== 'MEDICO_OCUPACIONAL' && userRole !== 'SUPER_ADMIN';
@@ -123,6 +183,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
   const isBloqueadoSecuencial = faseVisualizandoNum > faseActualNum;
   const isListaNegra = postulante.estado_global === 'NO_APTO' || Boolean(postulante.en_lista_negra);
   const isObservado = postulante.estado_global === 'OBSERVADO';
+  const isSubsanadoPendiente = !isListaNegra && !isObservado && Boolean(postulante.subsanacion_pendiente);
 
   // Metadatos de la fase
   const faseInfo: Record<FaseOnboarding, { titulo: string; tipoDoc: string; area: string; archivo: string }> = {
@@ -262,27 +323,38 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
       <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-7xl h-[92vh] flex flex-col overflow-hidden shadow-2xl">
         
         {/* BARRA SUPERIOR DEL VISOR */}
-        <div className="bg-slate-950 border-b border-slate-800 px-6 py-4 flex justify-between items-center flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white tracking-tight">{currentFaseInfo.titulo}</h3>
-                <span className="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">
-                  {currentFaseInfo.tipoDoc}
-                </span>
+        <div className="bg-slate-950 border-b border-slate-800 px-6 py-4 flex-shrink-0 space-y-3">
+          {/* FILA 1: Título del expediente + Cerrar */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
+                <FileText className="w-5 h-5" />
               </div>
-              <p className="text-xs text-slate-400">
-                Área Responsable: <span className="text-blue-400 font-medium">{currentFaseInfo.area}</span>
-              </p>
+              <div className="min-w-0">
+                <h3 className="text-base font-bold text-white tracking-tight truncate">{currentFaseInfo.titulo}</h3>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
+                  <span className="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">
+                    {currentFaseInfo.tipoDoc}
+                  </span>
+                  <p className="text-xs text-slate-400">
+                    Área: <span className="text-blue-400 font-medium">{currentFaseInfo.area}</span>
+                  </p>
+                </div>
+              </div>
             </div>
+
+            <button
+              onClick={onClose}
+              className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors flex-shrink-0"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* FILA 2: Pestañas + Control de versión real del documento */}
+          <div className="flex flex-wrap items-center gap-2 justify-between">
             {/* SELECTOR DE PESTAÑAS (DOCUMENTO / HISTORIAL V°B° / SEGUROS) */}
-            <div className="flex items-center bg-slate-900 border border-slate-750 p-1 rounded-xl text-xs">
+            <div className="flex items-center bg-slate-900 border border-slate-750 p-1 rounded-xl text-xs flex-wrap">
               <button
                 onClick={() => setActiveTab('DOCUMENTO')}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
@@ -315,40 +387,74 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
               </button>
             </div>
 
-            {/* SELECTOR DE VERSIONES DEL DOCUMENTO */}
-            <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-750 p-1 rounded-xl text-xs">
-              <span className="text-slate-400 px-2 flex items-center gap-1">
-                <History className="w-3.5 h-3.5" /> Versión:
-              </span>
-              <button
-                onClick={() => setSelectedVersion(1)}
-                className={`px-3 py-1 rounded-lg font-bold transition-colors ${
-                  selectedVersion === 1
-                    ? 'bg-slate-700 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                v1 (Inicial)
-              </button>
-              <button
-                onClick={() => setSelectedVersion(2)}
-                className={`px-3 py-1 rounded-lg font-bold transition-colors ${
-                  selectedVersion === 2
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                v2 (Subsanada)
-              </button>
-            </div>
+            {/* CONTROL DE VERSIÓN: solo la última versión real + acceso a anteriores */}
+            <div className="relative">
+              <div className="flex items-center gap-2 bg-slate-900 border border-slate-750 px-3 py-1.5 rounded-xl text-xs">
+                <History className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                <span className="text-slate-400 whitespace-nowrap">
+                  Última versión: <span className="text-white font-bold">v{ultimaVersion?.version ?? 1}</span>
+                </span>
+                {ultimaVersion?.subido_en && (
+                  <span className="text-slate-500 hidden sm:inline whitespace-nowrap">
+                    ({new Date(ultimaVersion.subido_en).toLocaleDateString('es-PE')})
+                  </span>
+                )}
+                {versionesAnteriores.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setMostrarVersionesAnteriores((v) => !v)}
+                    className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-bold ml-1 pl-2 border-l border-slate-700 whitespace-nowrap"
+                  >
+                    Ver {versionesAnteriores.length} anterior{versionesAnteriores.length > 1 ? 'es' : ''}
+                    <ChevronDown className={`w-3 h-3 transition-transform ${mostrarVersionesAnteriores ? 'rotate-180' : ''}`} />
+                  </button>
+                )}
+              </div>
 
-            {/* CERRAR */}
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              {mostrarVersionesAnteriores && versionesAnteriores.length > 0 && (
+                <div className="absolute right-0 mt-1 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-20 p-2 space-y-1">
+                  {ultimaVersion && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedVersion(ultimaVersion.version);
+                        setMostrarVersionesAnteriores(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
+                        versionEnVisor === ultimaVersion.version
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      v{ultimaVersion.version} (Última)
+                      <span className="block text-[10px] opacity-70">
+                        {new Date(ultimaVersion.subido_en).toLocaleDateString('es-PE')} · {ultimaVersion.estado_documento}
+                      </span>
+                    </button>
+                  )}
+                  {versionesAnteriores.map((doc) => (
+                    <button
+                      type="button"
+                      key={doc.id}
+                      onClick={() => {
+                        setSelectedVersion(doc.version);
+                        setMostrarVersionesAnteriores(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
+                        versionEnVisor === doc.version
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      v{doc.version}
+                      <span className="block text-[10px] opacity-70">
+                        {new Date(doc.subido_en).toLocaleDateString('es-PE')} · {doc.estado_documento}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -422,7 +528,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                             : `"${vb.observaciones || 'Conforme'}"`}
                         </p>
                         <span className="text-[10px] text-slate-500 block pt-1 border-t border-slate-700/40">
-                          {new Date(vb.creado_en).toLocaleString('es-PE')}
+                          {new Date(vb.fecha_registro).toLocaleString('es-PE')}
                         </span>
                       </div>
                     ))}
@@ -473,8 +579,45 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                   Tu rol actual: <span className="text-blue-400 font-bold">{userRole}</span>
                 </div>
               </div>
+            ) : archivoCargando ? (
+              <div className="my-auto flex flex-col items-center gap-3 text-slate-400">
+                <FileText className="w-10 h-10 animate-pulse text-blue-400" />
+                <p className="text-sm font-medium">Cargando documento del expediente…</p>
+              </div>
+            ) : archivoUrl ? (
+              /* DOCUMENTO REAL SUBIDO POR LA CONTRATISTA */
+              <div
+                style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
+                className="w-full max-w-2xl transition-transform duration-150"
+              >
+                <div className="flex items-center justify-between mb-2 text-[11px] text-slate-400">
+                  <span className="font-mono truncate">{docEnVisor?.nombre_archivo}</span>
+                  <span className="font-bold text-blue-300 whitespace-nowrap ml-3">
+                    Versión {versionEnVisor}
+                    {docEnVisor?.subido_en && ` · ${new Date(docEnVisor.subido_en).toLocaleDateString('es-PE')}`}
+                  </span>
+                </div>
+                {esImagen ? (
+                  <img
+                    src={archivoUrl}
+                    alt={`Documento versión ${versionEnVisor}`}
+                    className="w-full rounded-xl shadow-2xl bg-white border border-slate-200"
+                  />
+                ) : (
+                  <iframe
+                    src={archivoUrl}
+                    title={`Documento versión ${versionEnVisor}`}
+                    className="w-full h-[70vh] rounded-xl shadow-2xl bg-white border-0"
+                  />
+                )}
+              </div>
+            ) : archivoError ? (
+              <div className="my-auto max-w-md w-full bg-slate-900 border border-amber-500/40 rounded-2xl p-6 text-center">
+                <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+                <p className="text-sm text-amber-200">{archivoError}</p>
+              </div>
             ) : (
-              /* CASO 2: VISUALIZADOR DEL DOCUMENTO OFICIAL MINERO */
+              /* CASO 2: FICHA RESUMEN (cuando la versión no tiene archivo adjunto) */
               <div 
                 style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
                 className="w-full max-w-2xl bg-white text-slate-900 rounded-xl shadow-2xl p-8 relative border border-slate-200 transition-transform duration-150"
@@ -499,10 +642,13 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">
-                      VERSIÓN {selectedVersion}.0
+                      VERSIÓN {versionEnVisor}.0
                     </span>
                     <p className="text-[10px] text-slate-500 mt-1 font-mono">
-                      Subido: {new Date().toLocaleDateString('es-PE')}
+                      Subido: {(() => {
+                        const doc = documentosFase.find((d) => d.version === versionEnVisor);
+                        return doc ? new Date(doc.subido_en).toLocaleDateString('es-PE') : new Date().toLocaleDateString('es-PE');
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -696,7 +842,12 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       <AlertTriangle className="w-3 h-3 text-amber-400" /> Observado
                     </span>
                   )}
-                  {!isListaNegra && !isObservado && (
+                  {isSubsanadoPendiente && (
+                    <span className="inline-flex items-center gap-1 bg-sky-950/80 border border-sky-500/50 text-sky-300 text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow">
+                      <CheckCircle2 className="w-3 h-3 text-sky-400" /> Subsanado
+                    </span>
+                  )}
+                  {!isListaNegra && !isObservado && !isSubsanadoPendiente && (
                     <span className="inline-flex items-center gap-1 bg-blue-950/60 border border-blue-500/30 text-blue-300 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
                       <Clock className="w-3 h-3 text-blue-400" /> Pendiente
                     </span>
@@ -704,7 +855,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                 </div>
               </div>
 
-              {/* BANNERS INFORMATIVOS DE ESTADO (OBSERVACIÓN Y LISTA NEGRA) */}
+              {/* BANNERS INFORMATIVOS DE ESTADO (OBSERVACIÓN, SUBSANACIÓN Y LISTA NEGRA) */}
               {isListaNegra && (
                 <div className="p-4 bg-rose-950/70 border-2 border-rose-500/60 rounded-xl flex items-start gap-3 shadow-lg shadow-rose-950/40">
                   <Ban className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
@@ -733,7 +884,28 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       Observación técnica previa: "{postulante.ultima_observacion || 'Documento observado con subsanación pendiente.'}"
                     </p>
                     <p className="text-[10px] text-amber-300/90 font-medium">
-                      * Revise la versión subsanada (v2) en el selector superior antes de emitir un nuevo dictamen.
+                      {ultimaVersion
+                        ? `* Revise la última versión subsanada (v${ultimaVersion.version}) antes de emitir un nuevo dictamen.`
+                        : '* Aún no se registra una versión subsanada para este expediente.'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {isSubsanadoPendiente && (
+                <div className="p-4 bg-sky-950/60 border-2 border-sky-500/50 rounded-xl flex items-start gap-3 shadow-lg shadow-sky-950/40">
+                  <CheckCircle2 className="w-5 h-5 text-sky-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h5 className="text-xs font-black text-sky-300 uppercase tracking-wider">
+                      DOCUMENTO SUBSANADO EN {currentFaseInfo.titulo.toUpperCase()}
+                    </h5>
+                    <p className="text-xs text-sky-100">
+                      La contratista ya remitió la versión corregida y está pendiente de una nueva revisión.
+                    </p>
+                    <p className="text-[10px] text-sky-300/90 font-medium">
+                      {ultimaVersion
+                        ? `* Revise la última versión (v${ultimaVersion.version}) antes de emitir el nuevo dictamen.`
+                        : '* Revise el expediente antes de emitir el nuevo dictamen.'}
                     </p>
                   </div>
                 </div>
