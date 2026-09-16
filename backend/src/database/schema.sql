@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS postulantes (
     vigencia_fin DATE,
     sctr_vencimiento DATE,
     emo_vencimiento DATE,
+    subsanacion_pendiente BOOLEAN DEFAULT FALSE,
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(tipo_documento, numero_documento)

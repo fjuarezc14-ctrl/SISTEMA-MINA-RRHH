@@ -149,8 +149,8 @@ export class FasesService {
         );
 
         await client.query(
-          `UPDATE postulantes 
-           SET estado_global = 'NO_APTO', actualizado_en = CURRENT_TIMESTAMP 
+          `UPDATE postulantes
+           SET estado_global = 'NO_APTO', subsanacion_pendiente = false, actualizado_en = CURRENT_TIMESTAMP
            WHERE id = $1`,
           [postulanteId]
         );
@@ -170,8 +170,8 @@ export class FasesService {
       // 3. CASO OBSERVADO (Subsanable por el contratista)
       if (decision === 'OBSERVAR') {
         await client.query(
-          `UPDATE postulantes 
-           SET estado_global = 'OBSERVADO', actualizado_en = CURRENT_TIMESTAMP 
+          `UPDATE postulantes
+           SET estado_global = 'OBSERVADO', subsanacion_pendiente = false, actualizado_en = CURRENT_TIMESTAMP
            WHERE id = $1`,
           [postulanteId]
         );
@@ -278,8 +278,8 @@ export class FasesService {
       }
 
       await client.query(
-        `UPDATE postulantes 
-         SET fase_actual = $1, estado_global = $2, actualizado_en = CURRENT_TIMESTAMP 
+        `UPDATE postulantes
+         SET fase_actual = $1, estado_global = $2, subsanacion_pendiente = false, actualizado_en = CURRENT_TIMESTAMP
          WHERE id = $3`,
         [siguienteFase, estadoGlobal, postulanteId]
       );

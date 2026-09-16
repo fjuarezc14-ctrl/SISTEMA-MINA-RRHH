@@ -30,6 +30,7 @@ export interface DocumentoDigital {
   tipo_documento: 'CV_Y_DNI' | 'FICHA_EMO_TOX' | 'ANTECEDENTES_PENALES' | 'INDUCCION_SSOMA' | 'POLIZA_SCTR';
   titulo: string;
   nombre_archivo: string;
+  archivo_url?: string | null;
   version: number;
   estado_documento: 'PENDIENTE' | 'VISTO_BUENO_APROBADO' | 'OBSERVADO' | 'RECHAZADO_CRITICO';
   observacion_actual?: string;
@@ -62,6 +63,7 @@ export interface Postulante {
   estado_global: EstadoGlobal;
   en_lista_negra?: boolean;
   motivo_lista_negra?: string;
+  subsanacion_pendiente?: boolean;
   tipo_pase?: 'PERMANENTE' | 'VISITA_TECNICA' | 'PROVEEDOR_LOGISTICO';
   vigencia_inicio?: string;
   vigencia_fin?: string;

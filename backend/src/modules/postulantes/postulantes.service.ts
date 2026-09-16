@@ -18,6 +18,7 @@ export class PostulantesService {
         p.sctr_vencimiento,
         p.emo_vencimiento,
         p.cv_url,
+        p.subsanacion_pendiente,
         e.razon_social as empresa_nombre,
         (
           SELECT ef.observaciones 
@@ -126,26 +127,75 @@ export class PostulantesService {
       ]
     );
 
-    return res.rows[0];
+    const postulanteCreado = res.rows[0];
+
+    // Registrar el CV inicial como versión 1 del expediente, para que
+    // una futura subsanación quede como v2, v3, etc. en vez de v1.
+    if (cvUrl) {
+      const nombreArchivo = cvUrl.split('/').pop() || cvUrl;
+      await query(
+        `INSERT INTO expediente_documentos
+           (postulante_id, fase, tipo_documento, nombre_archivo, archivo_url, version, estado_documento)
+         VALUES ($1, 'FASE_1', 'CV_Y_DNI', $2, $3, 1, 'PENDIENTE')`,
+        [postulanteCreado.id, nombreArchivo, cvUrl]
+      );
+    }
+
+    return postulanteCreado;
   }
 
   static async subsanar(id: string, nuevoArchivoUrl: string, notasSubsanacion?: string) {
+    const postRes = await query(`SELECT fase_actual FROM postulantes WHERE id = $1`, [id]);
+    if (postRes.rows.length === 0) {
+      throw new Error('Postulante no encontrado.');
+    }
+    const faseActual = postRes.rows[0].fase_actual;
+
+    const tipoDocumentoPorFase: Record<string, string> = {
+      FASE_1: 'CV_Y_DNI',
+      FASE_2: 'FICHA_EMO_TOX',
+      FASE_3: 'ANTECEDENTES_PENALES',
+      FASE_4: 'INDUCCION_SSOMA',
+      FASE_5: 'POLIZA_SCTR',
+    };
+    const tipoDocumento = tipoDocumentoPorFase[faseActual];
+
     await query(
-      `UPDATE postulantes 
-       SET estado_global = 'EN_PROCESO', actualizado_en = CURRENT_TIMESTAMP 
+      `UPDATE postulantes
+       SET estado_global = 'EN_PROCESO', subsanacion_pendiente = true, actualizado_en = CURRENT_TIMESTAMP
        WHERE id = $1`,
       [id]
     );
 
     // Marcar última observación como subsanada
     await query(
-      `UPDATE evaluaciones_fase 
+      `UPDATE evaluaciones_fase
        SET subsanado = true, archivo_adjunto_url = COALESCE($2, archivo_adjunto_url)
        WHERE id = (
          SELECT id FROM evaluaciones_fase WHERE postulante_id = $1 ORDER BY creado_en DESC LIMIT 1
        )`,
       [id, nuevoArchivoUrl]
     );
+
+    // Registrar la nueva versión del documento corregido en el expediente,
+    // para que el evaluador vea la subsanación real (no la primera versión).
+    if (tipoDocumento) {
+      const nombreArchivo = nuevoArchivoUrl.split('/').pop() || nuevoArchivoUrl;
+
+      const versionRes = await query(
+        `SELECT COALESCE(MAX(version), 0) + 1 AS siguiente_version
+         FROM expediente_documentos WHERE postulante_id = $1 AND fase = $2`,
+        [id, faseActual]
+      );
+      const siguienteVersion = versionRes.rows[0].siguiente_version;
+
+      await query(
+        `INSERT INTO expediente_documentos
+           (postulante_id, fase, tipo_documento, nombre_archivo, archivo_url, version, estado_documento, observacion_actual)
+         VALUES ($1, $2, $3, $4, $5, $6, 'PENDIENTE', $7)`,
+        [id, faseActual, tipoDocumento, nombreArchivo, nuevoArchivoUrl, siguienteVersion, notasSubsanacion || null]
+      );
+    }
 
     return { mensaje: 'Observación subsanada con éxito y enviada a revisión.' };
   }
