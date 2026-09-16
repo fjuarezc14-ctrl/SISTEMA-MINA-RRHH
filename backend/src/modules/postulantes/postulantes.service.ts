@@ -1,4 +1,4 @@
-import { query } from '../../config/db';
+import { query, pool } from '../../config/db';
 
 export class PostulantesService {
   static async getMisPostulantes(empresaId?: string | null) {
@@ -92,7 +92,7 @@ export class PostulantesService {
     tipo_pase?: string;
     vigencia_inicio?: string;
     vigencia_fin?: string;
-  }, cvUrl?: string) {
+  }, documentos: { fase: string; tipoDocumento: string; archivoUrl: string }[] = []) {
     // 1. Verificar si está en LISTA NEGRA
     const checkListaNegra = await query(
       `SELECT * FROM lista_negra WHERE numero_documento = $1`,
@@ -105,43 +105,54 @@ export class PostulantesService {
       );
     }
 
-    const res = await query(
-      `INSERT INTO postulantes 
-       (empresa_id, tipo_documento, numero_documento, nombres, apellidos, cargo, telefono, email, grupo_sanguineo, tipo_pase, vigencia_inicio, vigencia_fin, cv_url, fase_actual, estado_global)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'FASE_1', 'EN_PROCESO')
-       RETURNING *`,
-      [
-        empresaId,
-        data.tipo_documento || 'DNI',
-        data.numero_documento,
-        data.nombres,
-        data.apellidos,
-        data.cargo,
-        data.telefono || null,
-        data.email || null,
-        data.grupo_sanguineo || 'O+',
-        data.tipo_pase || 'PERMANENTE',
-        data.vigencia_inicio || null,
-        data.vigencia_fin || null,
-        cvUrl || null,
-      ]
-    );
+    const cvUrl = documentos.find((d) => d.fase === 'FASE_1')?.archivoUrl;
+    const client = await pool.connect();
 
-    const postulanteCreado = res.rows[0];
+    try {
+      await client.query('BEGIN');
 
-    // Registrar el CV inicial como versión 1 del expediente, para que
-    // una futura subsanación quede como v2, v3, etc. en vez de v1.
-    if (cvUrl) {
-      const nombreArchivo = cvUrl.split('/').pop() || cvUrl;
-      await query(
-        `INSERT INTO expediente_documentos
-           (postulante_id, fase, tipo_documento, nombre_archivo, archivo_url, version, estado_documento)
-         VALUES ($1, 'FASE_1', 'CV_Y_DNI', $2, $3, 1, 'PENDIENTE')`,
-        [postulanteCreado.id, nombreArchivo, cvUrl]
+      const res = await client.query(
+        `INSERT INTO postulantes
+         (empresa_id, tipo_documento, numero_documento, nombres, apellidos, cargo, telefono, email, grupo_sanguineo, tipo_pase, vigencia_inicio, vigencia_fin, cv_url, fase_actual, estado_global)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'FASE_1', 'EN_PROCESO')
+         RETURNING *`,
+        [
+          empresaId,
+          data.tipo_documento || 'DNI',
+          data.numero_documento,
+          data.nombres,
+          data.apellidos,
+          data.cargo,
+          data.telefono || null,
+          data.email || null,
+          data.grupo_sanguineo || 'O+',
+          data.tipo_pase || 'PERMANENTE',
+          data.vigencia_inicio || null,
+          data.vigencia_fin || null,
+          cvUrl || null,
+        ]
       );
-    }
 
-    return postulanteCreado;
+      const postulanteCreado = res.rows[0];
+
+      // Cada documento inicial es la versión 1 de su fase; las subsanaciones serán v2, v3...
+      for (const doc of documentos) {
+        await client.query(
+          `INSERT INTO expediente_documentos
+             (postulante_id, fase, tipo_documento, nombre_archivo, archivo_url, version, estado_documento)
+           VALUES ($1, $2, $3, $4, $5, 1, 'PENDIENTE')`,
+          [postulanteCreado.id, doc.fase, doc.tipoDocumento, doc.archivoUrl.split('/').pop(), doc.archivoUrl]
+        );
+      }
+
+      await client.query('COMMIT');
+      return postulanteCreado;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   static async subsanar(id: string, nuevoArchivoUrl: string, notasSubsanacion?: string) {

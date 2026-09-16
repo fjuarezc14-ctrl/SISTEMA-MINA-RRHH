@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PostulantesController } from './postulantes.controller';
+import { PostulantesController, DOCUMENTOS_INICIALES } from './postulantes.controller';
 import { DocumentosController } from '../documentos/documentos.controller';
 import { authenticateJWT, requireRoles } from '../../middlewares/auth.middleware';
 import { upload } from '../../middlewares/upload.middleware';
@@ -16,7 +16,7 @@ router.post(
   '/',
   authenticateJWT,
   requireRoles('CONTRATISTA', 'STAFF_RRHH', 'SUPER_ADMIN'),
-  upload.single('cv'),
+  upload.fields(DOCUMENTOS_INICIALES.map((d) => ({ name: d.campo, maxCount: 1 }))),
   PostulantesController.create
 );
 

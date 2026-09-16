@@ -45,6 +45,14 @@ const createPostulanteSchema = z.object({
   }
 });
 
+export const DOCUMENTOS_INICIALES = [
+  { campo: 'cv', fase: 'FASE_1', tipoDocumento: 'CV_Y_DNI' },
+  { campo: 'emo', fase: 'FASE_2', tipoDocumento: 'FICHA_EMO_TOX' },
+  { campo: 'antecedentes', fase: 'FASE_3', tipoDocumento: 'ANTECEDENTES_PENALES' },
+  { campo: 'induccion', fase: 'FASE_4', tipoDocumento: 'INDUCCION_SSOMA' },
+  { campo: 'sctr', fase: 'FASE_5', tipoDocumento: 'POLIZA_SCTR' },
+] as const;
+
 export class PostulantesController {
   static async getMisPostulantes(req: Request, res: Response, next: NextFunction) {
     try {
@@ -84,9 +92,21 @@ export class PostulantesController {
       }
 
       const parsed = createPostulanteSchema.parse(req.body);
-      const cvFileUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
 
-      const data = await PostulantesService.create(empresaId, parsed, cvFileUrl);
+      const archivos = (req.files || {}) as Record<string, Express.Multer.File[]>;
+      const documentos = DOCUMENTOS_INICIALES
+        .filter((d) => archivos[d.campo]?.[0])
+        .map((d) => ({
+          fase: d.fase,
+          tipoDocumento: d.tipoDocumento,
+          archivoUrl: `/uploads/${archivos[d.campo][0].filename}`,
+        }));
+
+      if (!documentos.some((d) => d.fase === 'FASE_1')) {
+        return res.status(400).json({ error: 'Debe adjuntar el CV y DNI digital para crear el expediente.' });
+      }
+
+      const data = await PostulantesService.create(empresaId, parsed, documentos);
       res.status(201).json(data);
     } catch (err) {
       next(err);
