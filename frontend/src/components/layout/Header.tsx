@@ -26,7 +26,6 @@ const titles: Record<ViewType, [string, string]> = {
   fase5: ['5. Administración de Contratos', 'Validación de vigencia de pólizas SCTR y visto bueno de aseguramiento'],
   fotocheck: ['Centro de Fotochecks y Garita', 'Emisión de credenciales con código QR para candidatos con 5 V°B°'],
   garita: ['Control de Accesos en Garita', 'Lector y scanner de credenciales QR en tiempo real para ingreso a mina'],
-  vehiculos: ['Pases Vehiculares y Maquinaria', 'Acreditación técnica, pólizas TREC/SOAT y checklist de seguridad minera'],
   metricas: ['SLAs y Rendimiento Operativo', 'Tiempos promedio de atención por área y tasa de cumplimiento de contratistas'],
 };
 

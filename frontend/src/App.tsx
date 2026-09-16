@@ -10,7 +10,6 @@ import { Fase4Capacitacion } from './views/Fase4Capacitacion';
 import { Fase5SCTR } from './views/Fase5SCTR';
 import { FotocheckView } from './views/FotocheckView';
 import { GaritaScannerView } from './views/GaritaScannerView';
-import { VehiculosView } from './views/VehiculosView';
 import { SlaMetricsView } from './views/SlaMetricsView';
 import { LoginView } from './views/LoginView';
 import { 
@@ -19,9 +18,8 @@ import {
   UsuarioSistema, 
   AuditoriaVistoBueno, 
   StatsDashboard, 
-  RolUsuario, 
-  VehiculoMaquinaria, 
-  Notificacion 
+  RolUsuario,
+  Notificacion
 } from './types';
 import { api } from './services/api';
 
@@ -221,57 +219,6 @@ const MOCK_POSTULANTES: Postulante[] = [
   },
 ];
 
-const INITIAL_VEHICULOS: VehiculoMaquinaria[] = [
-  {
-    id: 'e1111111-0000-0000-0000-000000000001',
-    empresa_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-    empresa_nombre: 'Servicios Mineros XYZ S.A.C.',
-    placa_codigo: 'V8X-921',
-    tipo_vehiculo: 'CAMIONETA_4X4',
-    marca: 'Toyota',
-    modelo: 'Hilux 4x4 SRV',
-    anio_fabricacion: 2024,
-    color: 'Blanco',
-    soat_vencimiento: '2026-12-31',
-    rev_tecnica_vencimiento: '2026-12-31',
-    poliza_trec_vencimiento: '2026-11-30',
-    estado_acreditacion: 'APTO_TRANSITO_MINA',
-    codigo_pase_qr: 'PASE-VEH-V8X921',
-  },
-  {
-    id: 'e2222222-0000-0000-0000-000000000002',
-    empresa_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-    empresa_nombre: 'Servicios Mineros XYZ S.A.C.',
-    placa_codigo: 'W3C-810',
-    tipo_vehiculo: 'VOLQUETE',
-    marca: 'Volvo',
-    modelo: 'FMX 8x4 480HP',
-    anio_fabricacion: 2023,
-    color: 'Amarillo Oruga',
-    soat_vencimiento: '2026-10-15',
-    rev_tecnica_vencimiento: '2026-11-20',
-    poliza_trec_vencimiento: '2026-10-30',
-    estado_acreditacion: 'APTO_TRANSITO_MINA',
-    codigo_pase_qr: 'PASE-VEH-W3C810',
-  },
-  {
-    id: 'e3333333-0000-0000-0000-000000000003',
-    empresa_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-    empresa_nombre: 'Servicios Mineros XYZ S.A.C.',
-    placa_codigo: 'T9K-442',
-    tipo_vehiculo: 'CISTERNA_COMBUSTIBLE',
-    marca: 'Mercedes-Benz',
-    modelo: 'Actros 3344',
-    anio_fabricacion: 2022,
-    color: 'Rojo / Blanco',
-    soat_vencimiento: '2026-09-01',
-    rev_tecnica_vencimiento: '2026-08-15',
-    estado_acreditacion: 'OBSERVADO',
-    codigo_pase_qr: 'PASE-VEH-T9K442',
-    observaciones: 'Revisión técnica vencida. Requiere certificado vigente.',
-  },
-];
-
 const INITIAL_NOTIFICACIONES: Notificacion[] = [
   {
     id: 'n1',
@@ -347,7 +294,6 @@ export const App: React.FC = () => {
   const [fotochecks, setFotochecks] = useState<Fotocheck[]>([]);
   const [usuarios, setUsuarios] = useState<UsuarioSistema[]>(INITIAL_USUARIOS);
   const [auditoria, setAuditoria] = useState<AuditoriaVistoBueno[]>(INITIAL_AUDITORIA);
-  const [vehiculos, setVehiculos] = useState<VehiculoMaquinaria[]>(INITIAL_VEHICULOS);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>(INITIAL_NOTIFICACIONES);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -389,13 +335,9 @@ export const App: React.FC = () => {
         const postulantesUrl = currentUser.rol === 'CONTRATISTA' && currentUser.empresa_id 
           ? `/postulantes?empresa_id=${currentUser.empresa_id}` 
           : '/postulantes';
-        const vehiculosUrl = currentUser.rol === 'CONTRATISTA' && currentUser.empresa_id 
-          ? `/vehiculos?empresa_id=${currentUser.empresa_id}` 
-          : '/vehiculos';
 
         const promises: Promise<any>[] = [
           api.get(postulantesUrl),
-          api.get(vehiculosUrl),
           api.get('/notificaciones'),
           api.get('/fotocheck/pendientes'),
         ];
@@ -403,13 +345,10 @@ export const App: React.FC = () => {
           promises.push(api.get('/admin/usuarios'));
         }
 
-        const [postRes, vehRes, notifRes, fotocheckRes, usersRes] = await Promise.allSettled(promises);
+        const [postRes, notifRes, fotocheckRes, usersRes] = await Promise.allSettled(promises);
 
         if (postRes?.status === 'fulfilled' && Array.isArray(postRes.value.data) && postRes.value.data.length > 0) {
           setPostulantes(postRes.value.data);
-        }
-        if (vehRes?.status === 'fulfilled' && Array.isArray(vehRes.value.data) && vehRes.value.data.length > 0) {
-          setVehiculos(vehRes.value.data);
         }
         if (notifRes?.status === 'fulfilled' && Array.isArray(notifRes.value.data) && notifRes.value.data.length > 0) {
           setNotificaciones(notifRes.value.data);
@@ -618,52 +557,6 @@ export const App: React.FC = () => {
     return res.data;
   };
 
-  const handleRegistrarVehiculo = async (data: any) => {
-    try {
-      const res = await api.post('/vehiculos', data);
-      setVehiculos((prev) => [res.data, ...prev]);
-    } catch (e) {
-      const nuevo: VehiculoMaquinaria = {
-        id: `veh-${Date.now()}`,
-        empresa_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-        empresa_nombre: 'Servicios Mineros XYZ S.A.C.',
-        placa_codigo: data.placaCodigo,
-        tipo_vehiculo: data.tipoVehiculo,
-        marca: data.marca,
-        modelo: data.modelo,
-        anio_fabricacion: data.anioFabricacion,
-        color: data.color,
-        soat_vencimiento: data.soatVencimiento,
-        rev_tecnica_vencimiento: data.revTecnicaVencimiento,
-        poliza_trec_vencimiento: data.polizaTrecVencimiento,
-        checklist_seguridad: data.checklistSeguridad,
-        estado_acreditacion: 'EN_REVISION',
-        codigo_pase_qr: `PASE-VEH-${data.placaCodigo.replace(/[^A-Z0-9]/g, '')}`,
-        observaciones: data.observaciones,
-      };
-      setVehiculos((prev) => [nuevo, ...prev]);
-    }
-  };
-
-  const handleEvaluarVehiculo = async (id: string, decision: 'APROBAR' | 'OBSERVAR', obs?: string) => {
-    try {
-      await api.patch(`/vehiculos/${id}/evaluar`, { decision, observaciones: obs });
-    } catch (e) {
-      // Local
-    }
-    setVehiculos((prev) =>
-      prev.map((v) =>
-        v.id === id
-          ? {
-              ...v,
-              estado_acreditacion: decision === 'APROBAR' ? 'APTO_TRANSITO_MINA' : 'OBSERVADO',
-              observaciones: obs || v.observaciones,
-            }
-          : v
-      )
-    );
-  };
-
   const [toastVencimiento, setToastVencimiento] = useState<string | null>(null);
 
   // Alerta flotante al login: consultar vencimientos en próximos 15/30 días (solo roles autorizados)
@@ -780,10 +673,7 @@ export const App: React.FC = () => {
             <PortalContratista 
               postulantes={postulantes} 
               userRole={currentUser.rol}
-              onSubsanar={handleSubsanar} 
-              vehiculos={vehiculos}
-              onRegistrarVehiculo={handleRegistrarVehiculo}
-              onEvaluarVehiculo={handleEvaluarVehiculo}
+              onSubsanar={handleSubsanar}
             />
           )}
 
@@ -807,10 +697,7 @@ export const App: React.FC = () => {
             <Fase3Antecedentes 
               postulantes={postulantes} 
               userRole={currentUser.rol}
-              onEvaluar={handleEvaluarFase} 
-              vehiculos={vehiculos}
-              onRegistrarVehiculo={handleRegistrarVehiculo}
-              onEvaluarVehiculo={handleEvaluarVehiculo}
+              onEvaluar={handleEvaluarFase}
             />
           )}
 
@@ -843,15 +730,6 @@ export const App: React.FC = () => {
               postulantes={postulantes} 
               fotochecks={fotochecks}
               onImprimirFotocheck={handleMarcarImpreso}
-            />
-          )}
-
-          {currentView === 'vehiculos' && (
-            <VehiculosView 
-              vehiculos={vehiculos}
-              userRole={currentUser.rol}
-              onRegistrarVehiculo={handleRegistrarVehiculo}
-              onEvaluarVehiculo={handleEvaluarVehiculo}
             />
           )}
 

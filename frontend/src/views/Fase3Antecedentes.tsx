@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Postulante, RolUsuario, VehiculoMaquinaria } from '../types';
-import { ShieldAlert, Ban, Eye, Lock, CheckCircle, Truck, Filter, User } from 'lucide-react';
+import { Postulante, RolUsuario } from '../types';
+import { ShieldAlert, Ban, Eye, Lock, CheckCircle, Filter, User } from 'lucide-react';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
 import { DocumentCardStatus, DocumentCardDetail, getDocumentCardBorderClass } from '../components/common/DocumentCardStatus';
-import { VehiculosView } from './VehiculosView';
 
 interface Fase3Props {
   postulantes: Postulante[];
@@ -14,20 +13,14 @@ interface Fase3Props {
     decision: 'APROBAR' | 'OBSERVAR' | 'NO_APTO', 
     detalles?: any
   ) => Promise<void>;
-  vehiculos?: VehiculoMaquinaria[];
-  onRegistrarVehiculo?: (data: any) => Promise<void>;
-  onEvaluarVehiculo?: (id: string, decision: 'APROBAR' | 'OBSERVAR', observaciones?: string) => Promise<void>;
 }
 
-export const Fase3Antecedentes: React.FC<Fase3Props> = ({ 
-  postulantes, 
-  userRole, 
+export const Fase3Antecedentes: React.FC<Fase3Props> = ({
+  postulantes,
+  userRole,
   onEvaluar,
-  vehiculos = [],
-  onRegistrarVehiculo,
-  onEvaluarVehiculo
 }) => {
-  const [tabActiva, setTabActiva] = useState<'antecedentes' | 'vehiculos' | 'lista_negra'>('antecedentes');
+  const [tabActiva, setTabActiva] = useState<'antecedentes' | 'lista_negra'>('antecedentes');
   const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTES' | 'OBSERVADOS' | 'LISTA_NEGRA'>('PENDIENTES');
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
   const [viewerPostulante, setViewerPostulante] = useState<Postulante | null>(null);
@@ -73,18 +66,6 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({
         </button>
 
         <button
-          onClick={() => setTabActiva('vehiculos')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-            tabActiva === 'vehiculos'
-              ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/30'
-              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
-          }`}
-        >
-          <Truck className="w-4 h-4" />
-          2. Inspección Vehicular ({vehiculos.length})
-        </button>
-
-        <button
           onClick={() => setTabActiva('lista_negra')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
             tabActiva === 'lista_negra'
@@ -93,18 +74,9 @@ export const Fase3Antecedentes: React.FC<Fase3Props> = ({
           }`}
         >
           <Ban className="w-4 h-4" />
-          3. Lista Negra ({candidatosListaNegra.length})
+          2. Lista Negra ({candidatosListaNegra.length})
         </button>
       </div>
-
-      {tabActiva === 'vehiculos' && (
-        <VehiculosView 
-          vehiculos={vehiculos}
-          userRole={userRole}
-          onRegistrarVehiculo={onRegistrarVehiculo || (async () => {})}
-          onEvaluarVehiculo={onEvaluarVehiculo || (async () => {})}
-        />
-      )}
 
       {tabActiva === 'lista_negra' && (
         <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">

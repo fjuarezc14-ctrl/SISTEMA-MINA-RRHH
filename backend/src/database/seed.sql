@@ -56,13 +56,6 @@ INSERT INTO fotochecks (postulante_id, codigo_credencial, codigo_qr, zona_autori
 VALUES ('c6666666-0000-0000-0000-000000000006', 'VT-2026-0892', 'QR-VT-46998877-20260892', 'Superficie y Rajo Abierto', CURRENT_DATE, CURRENT_DATE + INTERVAL '1 year', FALSE)
 ON CONFLICT (postulante_id) DO NOTHING;
 
--- Vehículos y Maquinaria Semilla
-INSERT INTO vehiculos_maquinaria (id, empresa_id, placa_codigo, tipo_vehiculo, marca, modelo, anio_fabricacion, color, soat_vencimiento, rev_tecnica_vencimiento, poliza_trec_vencimiento, checklist_seguridad, estado_acreditacion, codigo_pase_qr) VALUES
-('e1111111-0000-0000-0000-000000000001', 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'V8X-921', 'CAMIONETA_4X4', 'Toyota', 'Hilux 4x4 SRV', 2024, 'Blanco', CURRENT_DATE + INTERVAL '6 months', CURRENT_DATE + INTERVAL '8 months', CURRENT_DATE + INTERVAL '5 months', '{"jaula_antivuelco": true, "pertiga_led": true, "circulina": true, "extintor_pqs": true, "cinturones_3puntos": true, "traba_tuercas": true}', 'APTO_TRANSITO_MINA', 'PASE-VEH-V8X921'),
-('e2222222-0000-0000-0000-000000000002', 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'W3C-810', 'VOLQUETE', 'Volvo', 'FMX 8x4 480HP', 2023, 'Amarillo Oruga', CURRENT_DATE + INTERVAL '3 months', CURRENT_DATE + INTERVAL '4 months', CURRENT_DATE + INTERVAL '3 months', '{"jaula_antivuelco": true, "pertiga_led": true, "circulina": true, "extintor_pqs": true, "cinturones_3puntos": true, "traba_tuercas": true}', 'APTO_TRANSITO_MINA', 'PASE-VEH-W3C810'),
-('e3333333-0000-0000-0000-000000000003', 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'T9K-442', 'CISTERNA_COMBUSTIBLE', 'Mercedes-Benz', 'Actros 3344', 2022, 'Rojo / Blanco', CURRENT_DATE + INTERVAL '1 month', CURRENT_DATE - INTERVAL '3 days', CURRENT_DATE + INTERVAL '2 months', '{"jaula_antivuelco": true, "pertiga_led": false, "circulina": true, "extintor_pqs": true, "cinturones_3puntos": true, "traba_tuercas": false}', 'OBSERVADO', 'PASE-VEH-T9K442')
-ON CONFLICT (placa_codigo) DO NOTHING;
-
 -- Notificaciones Semilla
 INSERT INTO notificaciones (usuario_id, empresa_id, titulo, mensaje, tipo) VALUES
 ('b0000000-0000-0000-0000-000000000000', 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'Vencimiento Próximo de SCTR', 'El postulante Roberto Díaz tiene póliza SCTR con vigencia menor a 15 días.', 'VENCIMIENTO_SCTR'),

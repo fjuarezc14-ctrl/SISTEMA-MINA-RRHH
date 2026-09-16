@@ -1,30 +1,23 @@
 import React, { useState } from 'react';
-import { Postulante, RolUsuario, VehiculoMaquinaria } from '../types';
+import { Postulante, RolUsuario } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { DocumentSplitViewer } from '../components/common/DocumentSplitViewer';
-import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info, ChevronDown, ChevronUp, Users, Truck, FileCheck2 } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, Check, Clock, AlertTriangle, ShieldCheck, Eye, UserPlus, Calendar, Info, ChevronDown, ChevronUp, Users, FileCheck2 } from 'lucide-react';
 import { api } from '../services/api';
-import { VehiculosView } from './VehiculosView';
 
 interface PortalContratistaProps {
   postulantes: Postulante[];
   userRole: RolUsuario;
   onSubsanar: (id: string, file: File, notas?: string) => Promise<void>;
-  vehiculos?: VehiculoMaquinaria[];
-  onRegistrarVehiculo?: (data: any) => Promise<void>;
-  onEvaluarVehiculo?: (id: string, decision: 'APROBAR' | 'OBSERVAR', observaciones?: string) => Promise<void>;
 }
 
-export const PortalContratista: React.FC<PortalContratistaProps> = ({ 
-  postulantes, 
-  userRole, 
+export const PortalContratista: React.FC<PortalContratistaProps> = ({
+  postulantes,
+  userRole,
   onSubsanar,
-  vehiculos = [],
-  onRegistrarVehiculo,
-  onEvaluarVehiculo
 }) => {
-  const [tabActiva, setTabActiva] = useState<'personal' | 'vehiculos' | 'sctr'>('personal');
+  const [tabActiva, setTabActiva] = useState<'personal' | 'sctr'>('personal');
   const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
   const [subsanarModalOpen, setSubsanarModalOpen] = useState(false);
   const [splitViewerOpen, setSplitViewerOpen] = useState(false);
@@ -213,19 +206,6 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
 
         <button
           type="button"
-          onClick={() => setTabActiva('vehiculos')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-            tabActiva === 'vehiculos'
-              ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/30'
-              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
-          }`}
-        >
-          <Truck className="w-4 h-4" />
-          2. Flota Vehicular ({vehiculos.length})
-        </button>
-
-        <button
-          type="button"
           onClick={() => setTabActiva('sctr')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
             tabActiva === 'sctr'
@@ -234,18 +214,9 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
           }`}
         >
           <FileCheck2 className="w-4 h-4" />
-          3. Renovación Mensual SCTR
+          2. Renovación Mensual SCTR
         </button>
       </div>
-
-      {tabActiva === 'vehiculos' && (
-        <VehiculosView 
-          vehiculos={vehiculos}
-          userRole={userRole}
-          onRegistrarVehiculo={onRegistrarVehiculo || (async () => {})}
-          onEvaluarVehiculo={onEvaluarVehiculo || (async () => {})}
-        />
-      )}
 
       {tabActiva === 'sctr' && (
         <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">

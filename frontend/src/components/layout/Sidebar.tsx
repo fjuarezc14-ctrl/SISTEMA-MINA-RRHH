@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   Crown,
   QrCode,
-  Truck,
   BarChart3,
   ChevronLeft,
   ChevronRight
@@ -27,7 +26,6 @@ export type ViewType =
   | 'fase5'
   | 'fotocheck'
   | 'garita'
-  | 'vehiculos'
   | 'metricas';
 
 import { RolUsuario } from '../../types';
@@ -109,8 +107,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return userRole === 'CONTROL_ACCESOS';
       case 'garita':
         return userRole === 'CONTROL_ACCESOS';
-      case 'vehiculos':
-        return userRole === 'CONTRATISTA' || userRole === 'SEGURIDAD_PATRIMONIAL' || userRole === 'CONTROL_ACCESOS';
       case 'metricas':
         return userRole === 'STAFF_RRHH';
       default:
@@ -281,7 +277,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Operaciones de Garita y Campo */}
-        {(canSee('garita') || canSee('vehiculos') || canSee('metricas')) && (
+        {(canSee('garita') || canSee('metricas')) && (
           <div className="pt-2">
             {!isCollapsed ? (
               <p className="text-xs font-bold text-slate-500 mb-2 px-3 uppercase tracking-wider">
@@ -299,17 +295,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <QrCode className="w-5 h-5 text-emerald-400 shrink-0" />
                 {!isCollapsed && <span>Control Garita (QR)</span>}
-              </button>
-            )}
-
-            {canSee('vehiculos') && (
-              <button 
-                onClick={() => handleSelectView('vehiculos')} 
-                title="Pases Vehiculares"
-                className={getButtonClass('vehiculos')}
-              >
-                <Truck className="w-5 h-5 text-amber-400 shrink-0" />
-                {!isCollapsed && <span>Pases Vehiculares</span>}
               </button>
             )}
 

@@ -76,16 +76,7 @@ ALTER TABLE postulantes
   ADD CONSTRAINT chk_postulantes_sctr_fechas 
   CHECK (sctr_vencimiento IS NULL OR sctr_inicio IS NULL OR sctr_vencimiento >= sctr_inicio);
 
--- 4. RESTRICCIONES CHECK DE INTEGRIDAD PARA PARQUE AUTOMOTOR
-ALTER TABLE vehiculos_maquinaria 
-  DROP CONSTRAINT IF EXISTS chk_vehiculos_anio,
-  ADD CONSTRAINT chk_vehiculos_anio 
-  CHECK (anio_fabricacion IS NULL OR (anio_fabricacion >= 1990 AND anio_fabricacion <= EXTRACT(YEAR FROM CURRENT_DATE) + 1));
-
--- 5. ÍNDICES ESTRATÉGICOS DE RENDIMIENTO PARA AUDITORÍAS Y BÚSQUEDAS EN GARITA
+-- 4. ÍNDICES ESTRATÉGICOS DE RENDIMIENTO PARA AUDITORÍAS Y BÚSQUEDAS EN GARITA
 CREATE INDEX IF NOT EXISTS idx_postulantes_sctr_fechas ON postulantes(sctr_inicio, sctr_vencimiento);
 CREATE INDEX IF NOT EXISTS idx_postulantes_vigencia ON postulantes(vigencia_inicio, vigencia_fin);
 CREATE INDEX IF NOT EXISTS idx_fotochecks_vencimiento ON fotochecks(fecha_vencimiento);
-CREATE INDEX IF NOT EXISTS idx_vehiculos_soat_venc ON vehiculos_maquinaria(soat_vencimiento);
-CREATE INDEX IF NOT EXISTS idx_vehiculos_rev_tecnica ON vehiculos_maquinaria(rev_tecnica_vencimiento);
-CREATE INDEX IF NOT EXISTS idx_vehiculos_estado ON vehiculos_maquinaria(estado_acreditacion);

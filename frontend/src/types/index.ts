@@ -76,46 +76,14 @@ export interface Postulante {
   documentos?: DocumentoDigital[];
 }
 
-export interface VehiculoMaquinaria {
-  id: string;
-  empresa_id: string;
-  empresa_nombre?: string;
-  placa_codigo: string;
-  tipo_vehiculo: 'CAMIONETA_4X4' | 'VOLQUETE' | 'CISTERNA_COMBUSTIBLE' | 'SCOOP_MINERO' | 'RETROEXCAVADORA' | 'MINIBUS_PERSONAL';
-  marca: string;
-  modelo: string;
-  anio_fabricacion?: number;
-  color?: string;
-  soat_vencimiento: string;
-  rev_tecnica_vencimiento: string;
-  poliza_trec_vencimiento?: string;
-  checklist_seguridad?: {
-    jaula_antivuelco?: boolean;
-    pertiga_led?: boolean;
-    circulina?: boolean;
-    extintor_pqs?: boolean;
-    cinturones_3puntos?: boolean;
-    traba_tuercas?: boolean;
-  };
-  estado_acreditacion: 'EN_REVISION' | 'OBSERVADO' | 'APTO_TRANSITO_MINA' | 'SUSPENDIDO';
-  codigo_pase_qr: string;
-  observaciones?: string;
-  aprobado_por?: string;
-  creado_en?: string;
-}
-
 export interface AccesoGarita {
   id: string;
-  tipo_acceso: 'PEATONAL_TRABAJADOR' | 'VEHICULAR';
+  tipo_acceso: 'PEATONAL_TRABAJADOR';
   postulante_id?: string;
   postulante_nombres?: string;
   postulante_apellidos?: string;
   postulante_dni?: string;
   postulante_cargo?: string;
-  vehiculo_placa?: string;
-  vehiculo_marca?: string;
-  vehiculo_modelo?: string;
-  tipo_vehiculo?: string;
   resultado: 'AUTORIZADO' | 'DENEGADO';
   motivo_denegacion?: string;
   garita: string;

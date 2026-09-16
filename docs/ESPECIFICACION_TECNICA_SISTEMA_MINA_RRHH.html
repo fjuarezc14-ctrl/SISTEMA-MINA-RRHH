@@ -764,7 +764,7 @@
       <div class="sec-card">
         <div class="sec-card-title">🔍 Triple Validación en Garita</div>
         <div class="sec-card-desc">
-          Al escanear un fotocheck o pase vehicular, el sistema ejecuta tres validaciones simultáneas en menos de 0.8 segundos:
+          Al escanear un fotocheck, el sistema ejecuta tres validaciones simultáneas en menos de 0.8 segundos:
           <ol style="margin-left: 14px; margin-top: 5px;">
             <li><strong>Fotocheck Vigente:</strong> No expirado ni en Lista Negra.</li>
             <li><strong>SCTR Activo:</strong> Cobertura de salud y pensión vigente al día exacto de la entrada.</li>
@@ -786,43 +786,7 @@
       </div>
     </div>
 
-    <h2>4.1 Control de Vehículos y Maquinaria Pesada</h2>
-    <p>
-      El sistema no solo fiscaliza personas, sino también la flota de volquetes, camionetas de supervisión y maquinaria de línea amarilla:
-    </p>
-    <table class="tech-table">
-      <thead>
-        <tr>
-          <th>Elemento Vehicular</th>
-          <th>Documento / Requisito Exigido</th>
-          <th>Control Automatizado</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Pase Vehicular QR</strong></td>
-          <td>Código QR adherido en parabrisas</td>
-          <td>Lectura rápida de placa, empresa dueña y tipo de unidad.</td>
-        </tr>
-        <tr>
-          <td><strong>SOAT / Revisión Técnica</strong></td>
-          <td>Certificado de inspección técnica vehicular</td>
-          <td>Bloqueo automático en garita si la inspección técnica o SOAT ha expirado.</td>
-        </tr>
-        <tr>
-          <td><strong>Póliza TREC / Resp. Civil</strong></td>
-          <td>Seguro contra todo riesgo para equipos mina</td>
-          <td>Validación de suma asegurada para ingreso a interior mina o botadero.</td>
-        </tr>
-        <tr>
-          <td><strong>Conductor Asignado</strong></td>
-          <td>Licencia MTC + Licencia Interna de Manejo</td>
-          <td>Cruce con la base de conductores autorizados según categoría de vehículo.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>4.2 Protocolo de Baja de Emergencia y Veto Inmediato</h2>
+    <h2>4.1 Protocolo de Baja de Emergencia y Veto Inmediato</h2>
     <div class="callout callout-rose">
       <div class="callout-title">Botón de Baja Inmediata (Kill Switch Operativo)</div>
       Ante una falta crítica de seguridad (ej. ingresar a zona de voladura sin autorización o dar positivo en alcotest), el Superintendente o Seguridad Patrimonial activa la <strong>Baja de Emergencia</strong>. Esta acción invalida el fotocheck en tiempo real en todos los puntos de garita en menos de 1 segundo e inscribe al infractor en la Lista Negra con registro inmutable de auditoría.
@@ -1003,7 +967,7 @@
         </tr>
         <tr>
           <td><code>registros_garita</code></td>
-          <td><code>id, persona_id, vehiculo_id, tipo_movimiento, fecha_hora, resultado_alcotest, permitido, motivo_rechazo</code></td>
+          <td><code>id, persona_id, tipo_movimiento, fecha_hora, resultado_alcotest, permitido, motivo_rechazo</code></td>
           <td>Auditoría inmutable (solo INSERT), índices por fecha y documento para reportes OSINERGMIN.</td>
         </tr>
         <tr>

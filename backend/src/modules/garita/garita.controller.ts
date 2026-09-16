@@ -7,9 +7,7 @@ const validarSchema = z.object({
 });
 
 const registrarSchema = z.object({
-  tipoAcceso: z.enum(['PEATONAL_TRABAJADOR', 'VEHICULAR']),
   postulanteId: z.string().uuid().optional(),
-  vehiculoId: z.string().uuid().optional(),
   resultado: z.enum(['AUTORIZADO', 'DENEGADO']),
   motivoDenegacion: z.string().optional(),
   garita: z.string().optional(),

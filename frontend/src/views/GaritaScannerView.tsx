@@ -8,9 +8,8 @@ import {
   Clock, 
   AlertOctagon, 
   Camera, 
-  Search, 
-  Truck, 
-  CheckCircle2, 
+  Search,
+  CheckCircle2,
   XCircle,
   Building2,
   Calendar,
@@ -38,9 +37,7 @@ interface GaritaScannerViewProps {
 interface PadronOfflineLocal {
   fechaGeneracion?: string;
   totalTrabajadores?: number;
-  totalVehiculos?: number;
   trabajadores: any[];
-  vehiculos: any[];
   listaNegra: any[];
 }
 
@@ -54,11 +51,10 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
   const [loading, setLoading] = useState(false);
   const [historial, setHistorial] = useState<AccesoGarita[]>([]);
   const [ultimoResultado, setUltimoResultado] = useState<{
-    tipo: 'TRABAJADOR' | 'VEHICULO' | 'DESCONOCIDO';
+    tipo: 'TRABAJADOR' | 'DESCONOCIDO';
     autorizado: boolean;
     motivo: string;
     trabajador?: any;
-    vehiculo?: any;
   } | null>(null);
 
   const [garitaActual] = useState('Garita Principal - Control Mina');
@@ -179,7 +175,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       setPadronLocal(data);
       setMensajeNotificacion({
         tipo: 'success',
-        texto: `✅ Padrón offline descargado con éxito: ${data.totalTrabajadores} trabajadores y ${data.totalVehiculos} vehículos listos para operar sin red.`
+        texto: `✅ Padrón offline descargado con éxito: ${data.totalTrabajadores} trabajadores listos para operar sin red.`
       });
       setTimeout(() => setMensajeNotificacion(null), 6000);
     } catch (err: any) {
@@ -187,7 +183,6 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       const contingencia: PadronOfflineLocal = {
         fechaGeneracion: new Date().toISOString(),
         totalTrabajadores: postulantes.length,
-        totalVehiculos: 3,
         trabajadores: postulantes.map(p => ({
           id: p.id,
           numero_documento: p.numero_documento,
@@ -201,10 +196,6 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
           codigo_qr: `QR-VT-${p.numero_documento}`,
           codigo_credencial: `VT-2026-${p.numero_documento.slice(-4)}`
         })),
-        vehiculos: [
-          { placa_codigo: 'V8X-921', marca: 'Toyota', modelo: 'Hilux 4x4', estado_acreditacion: 'APTO_TRANSITO_MINA', soat_vencimiento: '2027-01-01', rev_tecnica_vencimiento: '2027-01-01' },
-          { placa_codigo: 'W3C-810', marca: 'Volvo', modelo: 'FMX 8x4', estado_acreditacion: 'APTO_TRANSITO_MINA', soat_vencimiento: '2027-01-01', rev_tecnica_vencimiento: '2027-01-01' },
-        ],
         listaNegra: []
       };
       localStorage.setItem('valetec_padron_offline', JSON.stringify(contingencia));
@@ -299,9 +290,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
 
         // Registrar ingreso en bitácora con alcotest Aprobado
         await api.post('/garita/registrar-ingreso', {
-          tipoAcceso: res.data.tipo === 'VEHICULO' ? 'VEHICULAR' : 'PEATONAL_TRABAJADOR',
           postulanteId: res.data.trabajador?.id,
-          vehiculoId: res.data.vehiculo?.id,
           resultado: res.data.autorizado ? 'AUTORIZADO' : 'DENEGADO',
           motivoDenegacion: res.data.autorizado ? undefined : res.data.motivo,
           garita: garitaActual,
@@ -364,7 +353,6 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
 
       // Guardar en cola offline
       const evento = {
-        tipoAcceso: 'PEATONAL_TRABAJADOR',
         postulanteId: trabajador.id,
         postulante_nombres: trabajador.nombres,
         postulante_apellidos: trabajador.apellidos,
@@ -373,58 +361,6 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
         postulante_tipo_pase: tipoPase,
         resultado: esApto ? 'AUTORIZADO' : 'DENEGADO',
         motivoDenegacion: esApto ? undefined : resOffline.motivo,
-        garita: garitaActual,
-        guardiaNombre: 'Oficial Garita (Offline)',
-        alcotestResultado: '0.00 g/L (Apto)',
-        sincronizado_offline: false,
-        timestamp: new Date().toISOString(),
-      };
-      guardarEnColaOffline(evento);
-      return;
-    }
-
-    // 2. Revisar en padrón local de vehículos
-    const vehiculos = padronLocal?.vehiculos || [
-      { placa_codigo: 'V8X-921', marca: 'Toyota', modelo: 'Hilux 4x4', estado_acreditacion: 'APTO_TRANSITO_MINA' },
-      { placa_codigo: 'W3C-810', marca: 'Volvo', modelo: 'FMX 8x4', estado_acreditacion: 'APTO_TRANSITO_MINA' },
-      { placa_codigo: 'T9K-442', marca: 'Mercedes-Benz', modelo: 'Actros', estado_acreditacion: 'OBSERVADO' }
-    ];
-
-    const vehiculo = vehiculos.find((v: any) => 
-      v.placa_codigo.toUpperCase() === cleanCod || 
-      (v.codigo_pase_qr && v.codigo_pase_qr.toUpperCase() === cleanCod)
-    );
-
-    if (vehiculo) {
-      const esApto = vehiculo.estado_acreditacion === 'APTO_TRANSITO_MINA';
-      const resOfflineVeh = {
-        tipo: 'VEHICULO' as const,
-        autorizado: esApto,
-        motivo: esApto 
-          ? 'PASE VEHICULAR VÁLIDO (OFFLINE) - Unidad Inspeccionada y Autorizada' 
-          : `ACCESO VEHICULAR DENEGADO: Estado [${vehiculo.estado_acreditacion}]`,
-        vehiculo: {
-          id: vehiculo.id || 'VEH_OFFLINE',
-          placa: vehiculo.placa_codigo,
-          tipo: 'VEHICULO_MINERO',
-          empresa: vehiculo.empresa_nombre || 'Contratista Mina',
-          marcaModelo: `${vehiculo.marca} ${vehiculo.modelo}`,
-          estado: vehiculo.estado_acreditacion,
-          soatVencimiento: 'Vigente (Caché Local)',
-          revTecnicaVencimiento: 'Vigente (Caché Local)',
-        }
-      };
-
-      setUltimoResultado(resOfflineVeh);
-
-      const evento = {
-        tipoAcceso: 'VEHICULAR',
-        vehiculo_placa: vehiculo.placa_codigo,
-        vehiculo_marca: vehiculo.marca,
-        vehiculo_modelo: vehiculo.modelo,
-        tipo_vehiculo: 'VEHICULO_MINERO',
-        resultado: esApto ? 'AUTORIZADO' : 'DENEGADO',
-        motivoDenegacion: esApto ? undefined : resOfflineVeh.motivo,
         garita: garitaActual,
         guardiaNombre: 'Oficial Garita (Offline)',
         alcotestResultado: '0.00 g/L (Apto)',
@@ -453,7 +389,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
     // Agregar también al historial en pantalla de inmediato
     const itemHistorial: AccesoGarita = {
       id: `offline-${Date.now()}`,
-      tipo_acceso: evento.tipoAcceso as any,
+      tipo_acceso: 'PEATONAL_TRABAJADOR',
       resultado: evento.resultado as any,
       motivo_denegacion: evento.motivoDenegacion,
       garita: evento.garita,
@@ -465,9 +401,6 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       postulante_dni: evento.postulante_dni,
       postulante_cargo: evento.postulante_cargo,
       postulante_tipo_pase: evento.postulante_tipo_pase,
-      vehiculo_placa: evento.vehiculo_placa,
-      vehiculo_marca: evento.vehiculo_marca,
-      vehiculo_modelo: evento.vehiculo_modelo,
       creado_en: evento.timestamp,
     };
     setHistorial((prev) => [itemHistorial, ...prev]);
@@ -506,7 +439,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
           }`}
         >
           <QrCode className="w-4 h-4" />
-          1. Escáner de Acceso (QR/Placa)
+          1. Escáner de Acceso (QR/DNI)
         </button>
 
         <button
@@ -687,7 +620,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
               Prueba de Alcoholemia en Garita (DS 024-2016-EM Art. 40)
             </span>
             <span className="text-[11px] text-slate-400">
-              Tolerancia Cero en Unidad Minera: Todo ingreso peatonal o vehicular requiere 0.00 g/L.
+              Tolerancia Cero en Unidad Minera: Todo ingreso de personal requiere 0.00 g/L.
             </span>
           </div>
         </div>
@@ -732,7 +665,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
               <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-emerald-400"></div>
             </div>
             <p className="text-xs text-slate-400 mt-4">
-              Cámara activa. Acerque el fotocheck o pase vehicular para escanear.
+              Cámara activa. Acerque el fotocheck para escanear.
             </p>
           </div>
         </div>
@@ -741,7 +674,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       {/* Input de Lectura Rápida / Pistola Óptica / Simulación */}
       <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-          Ingreso de Código QR / DNI / Placa Vehicular
+          Ingreso de Código QR / DNI
         </label>
         <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
           <div className="relative flex-1">
@@ -751,7 +684,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
               value={codigoInput}
               onChange={(e) => setCodigoInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleValidarCodigo(codigoInput)}
-              placeholder="Escanee con lector o ingrese DNI (ej. 46998877) o Placa (ej. V8X-921)..."
+              placeholder="Escanee con lector o ingrese DNI (ej. 46998877)..."
               className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition-colors font-mono"
             />
           </div>
@@ -799,17 +732,6 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
             >
               <AlertOctagon className="w-3.5 h-3.5 text-amber-400" />
               Roberto Díaz (En Fase 1)
-            </button>
-
-            <button
-              onClick={() => {
-                setCodigoInput('V8X-921');
-                handleValidarCodigo('V8X-921');
-              }}
-              className="bg-blue-950/60 border border-blue-600/40 text-blue-300 hover:bg-blue-900/60 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5"
-            >
-              <Truck className="w-3.5 h-3.5 text-blue-400" />
-              Hilux 4x4 (Pase Vehicular Apto)
             </button>
           </div>
         </div>
@@ -922,41 +844,6 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
               </div>
             </div>
           )}
-
-          {/* Detalles del Vehículo Autorizado / Denegado */}
-          {ultimoResultado.vehiculo && (
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                <span className="text-[11px] text-white/60 uppercase font-medium">Placa / Código</span>
-                <p className="text-xl font-black text-white font-mono mt-1">
-                  {ultimoResultado.vehiculo.placa}
-                </p>
-                <p className="text-xs text-white/70 mt-0.5">{ultimoResultado.vehiculo.tipo}</p>
-              </div>
-
-              <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                <span className="text-[11px] text-white/60 uppercase font-medium">Marca y Modelo</span>
-                <p className="text-base font-bold text-white mt-1">
-                  {ultimoResultado.vehiculo.marcaModelo}
-                </p>
-                <p className="text-xs text-white/70 mt-0.5">{ultimoResultado.vehiculo.empresa}</p>
-              </div>
-
-              <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                <span className="text-[11px] text-white/60 uppercase font-medium">SOAT Vigencia</span>
-                <p className="text-base font-bold text-white mt-1">
-                  {ultimoResultado.vehiculo.soatVencimiento || 'No Registrado'}
-                </p>
-              </div>
-
-              <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                <span className="text-[11px] text-white/60 uppercase font-medium">Revisión Técnica</span>
-                <p className="text-base font-bold text-white mt-1">
-                  {ultimoResultado.vehiculo.revTecnicaVencimiento || 'No Registrado'}
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -1015,41 +902,22 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
                       )}
                     </td>
                     <td className="p-3">
-                      {item.tipo_acceso === 'VEHICULAR' ? (
-                        <span className="flex items-center gap-1 text-amber-400 font-medium">
-                          <Truck className="w-3.5 h-3.5" /> Vehículo
+                      <span className="flex items-center gap-1 text-blue-400 font-medium">
+                        <UserCheck className="w-3.5 h-3.5" /> Trabajador
+                      </span>
+                      {item.postulante_tipo_pase && (
+                        <span className="text-[10px] text-slate-400 font-medium block">
+                          {item.postulante_tipo_pase}
                         </span>
-                      ) : (
-                        <div>
-                          <span className="flex items-center gap-1 text-blue-400 font-medium">
-                            <UserCheck className="w-3.5 h-3.5" /> Trabajador
-                          </span>
-                          {item.postulante_tipo_pase && (
-                            <span className="text-[10px] text-slate-400 font-medium block">
-                              {item.postulante_tipo_pase}
-                            </span>
-                          )}
-                        </div>
                       )}
                     </td>
                     <td className="p-3">
-                      {item.tipo_acceso === 'VEHICULAR' ? (
-                        <div>
-                          <strong className="text-white font-mono">{item.vehiculo_placa}</strong>
-                          <span className="text-slate-400 block text-[11px]">
-                            {item.vehiculo_marca} {item.vehiculo_modelo}
-                          </span>
-                        </div>
-                      ) : (
-                        <div>
-                          <strong className="text-white">
-                            {item.postulante_nombres} {item.postulante_apellidos}
-                          </strong>
-                          <span className="text-slate-400 block text-[11px] font-mono">
-                            DNI: {item.postulante_dni}
-                          </span>
-                        </div>
-                      )}
+                      <strong className="text-white">
+                        {item.postulante_nombres} {item.postulante_apellidos}
+                      </strong>
+                      <span className="text-slate-400 block text-[11px] font-mono">
+                        DNI: {item.postulante_dni}
+                      </span>
                     </td>
                     <td className="p-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold ${

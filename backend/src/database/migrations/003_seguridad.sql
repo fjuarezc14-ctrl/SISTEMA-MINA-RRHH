@@ -96,7 +96,6 @@ ALTER TABLE bajas_emergencia
 CREATE INDEX IF NOT EXISTS idx_evaluaciones_postulante ON evaluaciones_fase(postulante_id);
 CREATE INDEX IF NOT EXISTS idx_evaluaciones_evaluador ON evaluaciones_fase(evaluador_id);
 CREATE INDEX IF NOT EXISTS idx_accesos_postulante ON accesos_garita(postulante_id);
-CREATE INDEX IF NOT EXISTS idx_accesos_vehiculo ON accesos_garita(vehiculo_id);
 CREATE INDEX IF NOT EXISTS idx_fotochecks_qr ON fotochecks(codigo_qr);
 CREATE INDEX IF NOT EXISTS idx_postulantes_estado ON postulantes(estado_global);
 CREATE INDEX IF NOT EXISTS idx_postulantes_sctr_venc ON postulantes(sctr_vencimiento);

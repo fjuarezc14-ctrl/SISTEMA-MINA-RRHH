@@ -168,102 +168,15 @@ export class GaritaService {
       };
     }
 
-    // 2. Buscar si corresponde a un Vehículo o Maquinaria Pesada
-    const vehRes = await query(
-      `SELECT 
-         v.*,
-         e.razon_social as empresa_nombre
-       FROM vehiculos_maquinaria v
-       JOIN empresas_contratistas e ON v.empresa_id = e.id
-       WHERE UPPER(v.codigo_pase_qr) = $1 
-          OR UPPER(v.placa_codigo) = $1
-       LIMIT 1`,
-      [cleanCode]
-    );
-
-    if (vehRes.rows.length > 0) {
-      const v = vehRes.rows[0];
-      const hoy = new Date();
-
-      if (v.estado_acreditacion !== 'APTO_TRANSITO_MINA') {
-        return {
-          tipo: 'VEHICULO' as const,
-          autorizado: false,
-          motivo: `ACCESO VEHICULAR DENEGADO: Pase Vehicular no autorizado. Estado actual: [${v.estado_acreditacion}].`,
-          vehiculo: {
-            id: v.id,
-            placa: v.placa_codigo,
-            tipo: v.tipo_vehiculo,
-            empresa: v.empresa_nombre,
-            marcaModelo: `${v.marca} ${v.modelo}`,
-            estado: v.estado_acreditacion,
-          },
-        };
-      }
-
-      if (new Date(v.soat_vencimiento) < hoy) {
-        return {
-          tipo: 'VEHICULO' as const,
-          autorizado: false,
-          motivo: `ACCESO VEHICULAR DENEGADO: SOAT Vencido el ${new Date(v.soat_vencimiento).toLocaleDateString('es-PE')}.`,
-          vehiculo: {
-            id: v.id,
-            placa: v.placa_codigo,
-            tipo: v.tipo_vehiculo,
-            empresa: v.empresa_nombre,
-            marcaModelo: `${v.marca} ${v.modelo}`,
-            estado: 'SOAT_VENCIDO',
-          },
-        };
-      }
-
-      if (new Date(v.rev_tecnica_vencimiento) < hoy) {
-        return {
-          tipo: 'VEHICULO' as const,
-          autorizado: false,
-          motivo: `ACCESO VEHICULAR DENEGADO: Inspección / Revisión Técnica Vencida el ${new Date(v.rev_tecnica_vencimiento).toLocaleDateString('es-PE')}.`,
-          vehiculo: {
-            id: v.id,
-            placa: v.placa_codigo,
-            tipo: v.tipo_vehiculo,
-            empresa: v.empresa_nombre,
-            marcaModelo: `${v.marca} ${v.modelo}`,
-            estado: 'REV_TECNICA_VENCIDA',
-          },
-        };
-      }
-
-      return {
-        tipo: 'VEHICULO' as const,
-        autorizado: true,
-        motivo: 'PASE VEHICULAR VÁLIDO - Unidad Inspeccionada y Autorizada',
-        vehiculo: {
-          id: v.id,
-          placa: v.placa_codigo,
-          tipo: v.tipo_vehiculo,
-          empresa: v.empresa_nombre,
-          marcaModelo: `${v.marca} ${v.modelo}`,
-          color: v.color,
-          anio: v.anio_fabricacion,
-          soatVencimiento: new Date(v.soat_vencimiento).toLocaleDateString('es-PE'),
-          revTecnicaVencimiento: new Date(v.rev_tecnica_vencimiento).toLocaleDateString('es-PE'),
-          estado: 'APTO_TRANSITO_MINA',
-        },
-      };
-    }
-
-    // Código no encontrado en la base de datos
     return {
       tipo: 'DESCONOCIDO' as const,
       autorizado: false,
-      motivo: `CÓDIGO NO REGISTRADO: No se encontró ningún trabajador ni vehículo con el código [${cleanCode}] en la unidad minera.`,
+      motivo: `CÓDIGO NO REGISTRADO: No se encontró ningún trabajador con el código [${cleanCode}] en la unidad minera.`,
     };
   }
 
   static async registrarIngreso(params: {
-    tipoAcceso: 'PEATONAL_TRABAJADOR' | 'VEHICULAR';
     postulanteId?: string;
-    vehiculoId?: string;
     resultado: 'AUTORIZADO' | 'DENEGADO';
     motivoDenegacion?: string;
     garita?: string;
@@ -273,11 +186,9 @@ export class GaritaService {
     sincronizadoOffline?: boolean;
     creadoEn?: string;
   }) {
-    const { 
-      tipoAcceso, 
-      postulanteId, 
-      vehiculoId, 
-      resultado, 
+    const {
+      postulanteId,
+      resultado,
       motivoDenegacion, 
       garita, 
       guardiaNombre, 
@@ -319,14 +230,12 @@ export class GaritaService {
 
     const res = await query(
       `INSERT INTO accesos_garita 
-       (tipo_acceso, postulante_id, vehiculo_id, resultado, motivo_denegacion, garita, guardia_nombre, guardia_id, alcotest_resultado, sincronizado_offline, creado_en)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, CURRENT_TIMESTAMP))
+       (tipo_acceso, postulante_id, resultado, motivo_denegacion, garita, guardia_nombre, guardia_id, alcotest_resultado, sincronizado_offline, creado_en)
+       VALUES ('PEATONAL_TRABAJADOR', $1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, CURRENT_TIMESTAMP))
        RETURNING *`,
       [
-        tipoAcceso, 
-        postulanteId || null, 
-        vehiculoId || null, 
-        finalResultado, 
+        postulanteId || null,
+        finalResultado,
         finalMotivo || null, 
         garita || 'Garita Principal - Control Mina', 
         guardiaNombre || 'Guardia de Turno', 
@@ -365,26 +274,7 @@ export class GaritaService {
        WHERE p.estado_global IN ('APTO_PARA_TRABAJAR', 'APROBADO_TOTAL')`
     );
 
-    // 2. Vehículos aptos
-    const vehiculos = await query(
-      `SELECT 
-         v.id,
-         v.placa_codigo,
-         v.tipo_vehiculo,
-         v.marca,
-         v.modelo,
-         v.color,
-         v.codigo_pase_qr,
-         v.soat_vencimiento,
-         v.rev_tecnica_vencimiento,
-         v.estado_acreditacion,
-         e.razon_social as empresa_nombre
-       FROM vehiculos_maquinaria v
-       JOIN empresas_contratistas e ON v.empresa_id = e.id
-       WHERE v.estado_acreditacion = 'APTO_TRANSITO_MINA'`
-    );
-
-    // 3. Lista Negra
+    // 2. Lista Negra
     const listaNegra = await query(
       `SELECT numero_documento, tipo_falta, motivo FROM lista_negra`
     );
@@ -393,9 +283,7 @@ export class GaritaService {
       fechaGeneracion: new Date().toISOString(),
       unidadMinera: 'Unidad de Operaciones Mina Central - VALETEC',
       totalTrabajadores: trabajadores.rows.length,
-      totalVehiculos: vehiculos.rows.length,
       trabajadores: trabajadores.rows,
-      vehiculos: vehiculos.rows,
       listaNegra: listaNegra.rows,
     };
   }
@@ -444,13 +332,11 @@ export class GaritaService {
 
         const res = await client.query(
           `INSERT INTO accesos_garita 
-           (tipo_acceso, postulante_id, vehiculo_id, resultado, motivo_denegacion, garita, guardia_nombre, guardia_id, alcotest_resultado, sincronizado_offline, creado_en)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE, COALESCE($10, CURRENT_TIMESTAMP))
+           (tipo_acceso, postulante_id, resultado, motivo_denegacion, garita, guardia_nombre, guardia_id, alcotest_resultado, sincronizado_offline, creado_en)
+           VALUES ('PEATONAL_TRABAJADOR', $1, $2, $3, $4, $5, $6, $7, TRUE, COALESCE($8, CURRENT_TIMESTAMP))
            RETURNING *`,
           [
-            item.tipoAcceso || 'PEATONAL_TRABAJADOR',
             item.postulanteId || null,
-            item.vehiculoId || null,
             finalResultado,
             finalMotivo || null,
             item.garita || 'Garita Principal - Control Mina',
@@ -492,14 +378,9 @@ export class GaritaService {
          p.apellidos as postulante_apellidos,
          p.numero_documento as postulante_dni,
          p.cargo as postulante_cargo,
-         p.tipo_pase as postulante_tipo_pase,
-         v.placa_codigo as vehiculo_placa,
-         v.tipo_vehiculo,
-         v.marca as vehiculo_marca,
-         v.modelo as vehiculo_modelo
+         p.tipo_pase as postulante_tipo_pase
        FROM accesos_garita a
        LEFT JOIN postulantes p ON a.postulante_id = p.id
-       LEFT JOIN vehiculos_maquinaria v ON a.vehiculo_id = v.id
        ORDER BY a.creado_en DESC
        LIMIT $1`,
       [limit]

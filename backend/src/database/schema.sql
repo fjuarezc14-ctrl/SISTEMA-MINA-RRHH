@@ -143,33 +143,11 @@ CREATE TABLE IF NOT EXISTS fotochecks (
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 9. VEHÍCULOS Y MAQUINARIA PESADA DE CONTRATISTAS
-CREATE TABLE IF NOT EXISTS vehiculos_maquinaria (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    empresa_id UUID NOT NULL REFERENCES empresas_contratistas(id) ON DELETE CASCADE,
-    placa_codigo VARCHAR(30) UNIQUE NOT NULL,
-    tipo_vehiculo VARCHAR(50) NOT NULL CHECK (tipo_vehiculo IN ('CAMIONETA_4X4', 'VOLQUETE', 'CISTERNA_COMBUSTIBLE', 'SCOOP_MINERO', 'RETROEXCAVADORA', 'MINIBUS_PERSONAL')),
-    marca VARCHAR(50) NOT NULL,
-    modelo VARCHAR(50) NOT NULL,
-    anio_fabricacion INT,
-    color VARCHAR(30),
-    soat_vencimiento DATE NOT NULL,
-    rev_tecnica_vencimiento DATE NOT NULL,
-    poliza_trec_vencimiento DATE,
-    checklist_seguridad JSONB,
-    estado_acreditacion VARCHAR(30) DEFAULT 'EN_REVISION' CHECK (estado_acreditacion IN ('EN_REVISION', 'OBSERVADO', 'APTO_TRANSITO_MINA', 'SUSPENDIDO')),
-    codigo_pase_qr VARCHAR(100) UNIQUE,
-    observaciones TEXT,
-    aprobado_por UUID REFERENCES usuarios(id),
-    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- 10. BITÁCORA Y CONTROL DE ACCESOS EN GARITA
+-- 9. BITÁCORA Y CONTROL DE ACCESOS EN GARITA
 CREATE TABLE IF NOT EXISTS accesos_garita (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tipo_acceso VARCHAR(20) NOT NULL CHECK (tipo_acceso IN ('PEATONAL_TRABAJADOR', 'VEHICULAR')),
+    tipo_acceso VARCHAR(20) NOT NULL CHECK (tipo_acceso = 'PEATONAL_TRABAJADOR'),
     postulante_id UUID REFERENCES postulantes(id) ON DELETE SET NULL,
-    vehiculo_id UUID REFERENCES vehiculos_maquinaria(id) ON DELETE SET NULL,
     resultado VARCHAR(20) NOT NULL CHECK (resultado IN ('AUTORIZADO', 'DENEGADO')),
     motivo_denegacion TEXT,
     garita VARCHAR(100) DEFAULT 'Garita Principal - Control Mina',
@@ -180,7 +158,7 @@ CREATE TABLE IF NOT EXISTS accesos_garita (
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 11. CENTRO DE NOTIFICACIONES Y ALERTAS
+-- 10. CENTRO DE NOTIFICACIONES Y ALERTAS
 CREATE TABLE IF NOT EXISTS notificaciones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -198,6 +176,5 @@ CREATE INDEX IF NOT EXISTS idx_postulantes_fase ON postulantes(fase_actual);
 CREATE INDEX IF NOT EXISTS idx_postulantes_doc ON postulantes(numero_documento);
 CREATE INDEX IF NOT EXISTS idx_documentos_postulante ON expediente_documentos(postulante_id);
 CREATE INDEX IF NOT EXISTS idx_auditoria_postulante ON auditoria_vistos_buenos(postulante_id);
-CREATE INDEX IF NOT EXISTS idx_vehiculos_empresa ON vehiculos_maquinaria(empresa_id);
 CREATE INDEX IF NOT EXISTS idx_accesos_fecha ON accesos_garita(creado_en);
 CREATE INDEX IF NOT EXISTS idx_notificaciones_user ON notificaciones(usuario_id);
