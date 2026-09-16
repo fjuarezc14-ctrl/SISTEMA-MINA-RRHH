@@ -344,7 +344,7 @@ export const App: React.FC = () => {
   });
 
   const [postulantes, setPostulantes] = useState<Postulante[]>(MOCK_POSTULANTES);
-  const [fotochecks] = useState<Fotocheck[]>([]);
+  const [fotochecks, setFotochecks] = useState<Fotocheck[]>([]);
   const [usuarios, setUsuarios] = useState<UsuarioSistema[]>(INITIAL_USUARIOS);
   const [auditoria, setAuditoria] = useState<AuditoriaVistoBueno[]>(INITIAL_AUDITORIA);
   const [vehiculos, setVehiculos] = useState<VehiculoMaquinaria[]>(INITIAL_VEHICULOS);
@@ -397,12 +397,13 @@ export const App: React.FC = () => {
           api.get(postulantesUrl),
           api.get(vehiculosUrl),
           api.get('/notificaciones'),
+          api.get('/fotocheck/pendientes'),
         ];
         if (currentUser.rol === 'SUPER_ADMIN') {
           promises.push(api.get('/admin/usuarios'));
         }
 
-        const [postRes, vehRes, notifRes, usersRes] = await Promise.allSettled(promises);
+        const [postRes, vehRes, notifRes, fotocheckRes, usersRes] = await Promise.allSettled(promises);
 
         if (postRes?.status === 'fulfilled' && Array.isArray(postRes.value.data) && postRes.value.data.length > 0) {
           setPostulantes(postRes.value.data);
@@ -412,6 +413,9 @@ export const App: React.FC = () => {
         }
         if (notifRes?.status === 'fulfilled' && Array.isArray(notifRes.value.data) && notifRes.value.data.length > 0) {
           setNotificaciones(notifRes.value.data);
+        }
+        if (fotocheckRes?.status === 'fulfilled' && Array.isArray(fotocheckRes.value.data)) {
+          setFotochecks(fotocheckRes.value.data);
         }
         if (usersRes?.status === 'fulfilled' && Array.isArray(usersRes.value.data) && usersRes.value.data.length > 0) {
           setUsuarios(usersRes.value.data);
@@ -477,14 +481,10 @@ export const App: React.FC = () => {
 
   // Subsanar documento por el contratista
   const handleSubsanar = async (id: string, file: File, notas?: string) => {
-    try {
-      const formData = new FormData();
-      formData.append('archivo', file);
-      if (notas) formData.append('notas', notas);
-      await api.post(`/postulantes/${id}/subsanar`, formData);
-    } catch (e) {
-      // Fallback local
-    }
+    const formData = new FormData();
+    formData.append('archivo', file);
+    if (notas) formData.append('notas', notas);
+    await api.post(`/postulantes/${id}/subsanar`, formData);
 
     setPostulantes((prev) =>
       prev.map((p) =>
@@ -613,11 +613,9 @@ export const App: React.FC = () => {
   };
 
   const handleMarcarImpreso = async (postulanteId: string) => {
-    try {
-      await api.post(`/fotocheck/${postulanteId}/imprimir`);
-    } catch (e) {
-      // Local
-    }
+    const res = await api.post(`/fotocheck/${postulanteId}/imprimir`);
+    setFotochecks((prev) => prev.filter((f) => f.postulante_id !== postulanteId));
+    return res.data;
   };
 
   const handleRegistrarVehiculo = async (data: any) => {
