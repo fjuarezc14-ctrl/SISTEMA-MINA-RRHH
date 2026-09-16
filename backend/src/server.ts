@@ -1,12 +1,15 @@
 import { app } from './app';
 import { env } from './config/env';
 import { pool } from './config/db';
+import { runMigrations } from './database/migrate';
 
 const startServer = async () => {
   try {
     // Probar conexión a base de datos
     const dbTest = await pool.query('SELECT NOW()');
     console.log(' Conectado a PostgreSQL exitosamente:', dbTest.rows[0].now);
+
+    await runMigrations();
 
     app.listen(env.PORT, () => {
       console.log(` Servidor Backend de Onboarding Minero corriendo en http://localhost:${env.PORT}`);

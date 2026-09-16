@@ -11,6 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --only=production
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/src/database/migrations ./dist/database/migrations
 RUN mkdir -p uploads
 
 EXPOSE 4050
