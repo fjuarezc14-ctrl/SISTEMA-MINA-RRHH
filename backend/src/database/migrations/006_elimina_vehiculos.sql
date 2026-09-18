@@ -9,6 +9,8 @@ ALTER TABLE accesos_garita DROP COLUMN IF EXISTS vehiculo_id;
 
 DROP TABLE IF EXISTS vehiculos_maquinaria;
 
+DELETE FROM accesos_garita WHERE tipo_acceso <> 'PEATONAL_TRABAJADOR';
+
 ALTER TABLE accesos_garita
   DROP CONSTRAINT IF EXISTS accesos_garita_tipo_acceso_check,
   ADD CONSTRAINT accesos_garita_tipo_acceso_check
