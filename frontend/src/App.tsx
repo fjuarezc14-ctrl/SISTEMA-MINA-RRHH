@@ -83,6 +83,14 @@ const INITIAL_USUARIOS: UsuarioSistema[] = [
     activo: true,
   },
   {
+    id: 'u-sec',
+    nombre: 'Oficial de Seguridad Mina',
+    email: 'security@valetec.com',
+    rol: 'CONTROL_ACCESOS',
+    area_responsable: 'Control de Accesos y Seguridad Mina',
+    activo: true,
+  },
+  {
     id: 'u8',
     nombre: 'Carlos Mendoza (Contratista)',
     email: 'contratista@serviciosxyz.com',

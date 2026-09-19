@@ -15,7 +15,8 @@ INSERT INTO usuarios (id, empresa_id, nombre, email, password_hash, rol, colegia
 ('b4444444-4444-4444-4444-444444444444', NULL, 'Cmdte. Rivas (Seguridad Patrimonial)', 'seguridad@valetec.com', '$2a$10$MO.NB3/EqblCQPIRLrUAteLzZFc6z7soByeD0Fw3sWqQfExVYB0zu', 'SEGURIDAD_PATRIMONIAL', 'Reg. SUCAMEC 78412'),
 ('b5555555-5555-5555-5555-555555555555', NULL, 'Ing. Torres (SSOMA Inducción)', 'capacitacion@valetec.com', '$2a$10$MO.NB3/EqblCQPIRLrUAteLzZFc6z7soByeD0Fw3sWqQfExVYB0zu', 'INSTRUCTOR_SSOMA', 'CIP 198452 - Higiene y Seg.'),
 ('b6666666-6666-6666-6666-666666666666', NULL, 'Dra. Silva (SCTR / Contratos)', 'seguros@valetec.com', '$2a$10$MO.NB3/EqblCQPIRLrUAteLzZFc6z7soByeD0Fw3sWqQfExVYB0zu', 'ADMIN_CONTRATOS', 'Reg. SBS 41209'),
-('b7777777-7777-7777-7777-777777777777', NULL, 'Oficial Huamán (Garita / Fotocheck)', 'accesos@valetec.com', '$2a$10$MO.NB3/EqblCQPIRLrUAteLzZFc6z7soByeD0Fw3sWqQfExVYB0zu', 'CONTROL_ACCESOS', 'Oficial Garita Reg. MIN-882')
+('b7777777-7777-7777-7777-777777777777', NULL, 'Oficial Huamán (Garita / Fotocheck)', 'accesos@valetec.com', '$2a$10$MO.NB3/EqblCQPIRLrUAteLzZFc6z7soByeD0Fw3sWqQfExVYB0zu', 'CONTROL_ACCESOS', 'Oficial Garita Reg. MIN-882'),
+('b8888888-8888-8888-8888-888888888888', NULL, 'Oficial de Seguridad Mina', 'security@valetec.com', '$2a$10$MO.NB3/EqblCQPIRLrUAteLzZFc6z7soByeD0Fw3sWqQfExVYB0zu', 'CONTROL_ACCESOS', 'Oficial Garita Reg. MIN-883')
 ON CONFLICT (email) DO UPDATE SET colegiatura = EXCLUDED.colegiatura;
 
 -- Candidatos de la maqueta

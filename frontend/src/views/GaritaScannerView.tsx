@@ -23,7 +23,13 @@ import {
   BadgeCheck,
   LogOut,
   Ambulance,
-  CreditCard
+  CreditCard,
+  Siren,
+  Printer,
+  X,
+  HardHat,
+  Users,
+  FileWarning
 } from 'lucide-react';
 import { api } from '../services/api';
 import { FotocheckView } from './FotocheckView';
@@ -46,10 +52,38 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
   fotochecks = [],
   onImprimirFotocheck
 }) => {
-  const [tabActiva, setTabActiva] = useState<'escaner' | 'fotochecks' | 'bajas'>('escaner');
+  const [tabActiva, setTabActiva] = useState<'escaner' | 'aforo' | 'contratistas' | 'sctr' | 'fotochecks' | 'bajas'>('escaner');
   const [codigoInput, setCodigoInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [historial, setHistorial] = useState<AccesoGarita[]>([]);
+  const [musterListOpen, setMusterListOpen] = useState(false);
+  const [filtroMuster, setFiltroMuster] = useState<'TODOS' | 'SOCAVON' | 'SUPERFICIE'>('TODOS');
+  const [filtroContratista, setFiltroContratista] = useState('');
+
+  // Datos de monitoreo para interior de mina (Aforo y Muster List)
+  const personalEnMina = [
+    { id: '1', nombre: 'SANGAY MINCHAN, CRISTIAN', dni: '45891234', cargo: 'Perforista Socavón', empresa: 'Servicios Mineros ANDES S.A.C.', zona: 'Socavón - Nivel 450', ingreso: '06:15 AM', tiempo: '11h 45m', alerta: true },
+    { id: '2', nombre: 'MEJIA ZAMBRANO, FRANK', dni: '70123456', cargo: 'Operador Scoop', empresa: 'Perforaciones XYZ EIRL', zona: 'Socavón - Nivel 450', ingreso: '07:30 AM', tiempo: '10h 30m', alerta: false },
+    { id: '3', nombre: 'ALVAREZ, JORGE', dni: '46998877', cargo: 'Mecánico de Guardia', empresa: 'Servicios Mineros ANDES S.A.C.', zona: 'Superficie - Taller Mant.', ingreso: '08:00 AM', tiempo: '10h 00m', alerta: false },
+    { id: '4', nombre: 'GÓMEZ RUIZ, MARTÍN', dni: '42189012', cargo: 'Técnico de Ventilación', empresa: 'Transportes Cordillera S.A.', zona: 'Socavón - Rampa 3', ingreso: '07:10 AM', tiempo: '10h 50m', alerta: false },
+    { id: '5', nombre: 'QUISPE, MIGUEL', dni: '43112233', cargo: 'Operador Camión Dumper', empresa: 'Perforaciones XYZ EIRL', zona: 'Superficie - Planta Concen.', ingreso: '08:30 AM', tiempo: '09h 30m', alerta: false },
+    { id: '6', nombre: 'MENDOZA, GABRIELA', dni: '47890123', cargo: 'Prevencionista SSOMA', empresa: 'Servicios Mineros ANDES S.A.C.', zona: 'Superficie - Garita Sur', ingreso: '08:45 AM', tiempo: '09h 15m', alerta: false },
+  ];
+
+  // Directorio de contratistas homologadas (Solo Lectura)
+  const contratistasData = [
+    { ruc: '20556677881', razonSocial: 'Servicios Mineros ANDES S.A.C.', personalActivo: 142, personalApto: 138, cumplimiento: 97, estado: 'HABILITADO' },
+    { ruc: '20601234567', razonSocial: 'Perforaciones XYZ EIRL', personalActivo: 88, personalApto: 84, cumplimiento: 95, estado: 'HABILITADO' },
+    { ruc: '20498877665', razonSocial: 'Transportes Cordillera S.A.', personalActivo: 45, personalApto: 39, cumplimiento: 86, estado: 'OBSERVADO' },
+    { ruc: '20334455662', razonSocial: 'Mantenimiento Electromecánico del Sur', personalActivo: 28, personalApto: 28, cumplimiento: 100, estado: 'HABILITADO' },
+  ];
+
+  // Matriz de alertas SCTR y EMO (Solo Lectura)
+  const sctrAlertasData = [
+    { trabajador: 'Mendoza, Gabriela', dni: '47890123', empresa: 'Servicios Mineros ANDES S.A.C.', doc: 'EMO (Salud Ocupacional)', vencimiento: 'Vence Mañana', restriccion: 'Bloqueo en 24h', critico: true },
+    { trabajador: 'Juarez Chavez, Felix', dni: '46998811', empresa: 'Perforaciones XYZ EIRL', doc: 'SCTR Pensión Pacífico', vencimiento: 'En 4 Días', restriccion: 'Pase Vigente', critico: false },
+    { trabajador: 'García Paredes, Luis', dni: '43112233', empresa: 'Transportes Cordillera S.A.', doc: 'SCTR Salud Rímac', vencimiento: 'VENCIDO', restriccion: 'ACCESO DENEGADO', critico: true },
+  ];
   const [ultimoResultado, setUltimoResultado] = useState<{
     tipo: 'TRABAJADOR' | 'DESCONOCIDO';
     autorizado: boolean;
@@ -444,6 +478,45 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
 
         <button
           type="button"
+          onClick={() => setTabActiva('aforo')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            tabActiva === 'aforo'
+              ? 'bg-blue-700 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <HardHat className="w-4 h-4" />
+          2. Aforo y POB Socavón (342)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabActiva('contratistas')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            tabActiva === 'contratistas'
+              ? 'bg-blue-700 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          3. Directorio Contratistas (Solo Lectura)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTabActiva('sctr')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            tabActiva === 'sctr'
+              ? 'bg-blue-700 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <FileWarning className="w-4 h-4" />
+          4. Alertas SCTR y EMO
+        </button>
+
+        <button
+          type="button"
           onClick={() => setTabActiva('fotochecks')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
             tabActiva === 'fotochecks'
@@ -452,7 +525,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
           }`}
         >
           <CreditCard className="w-4 h-4" />
-          2. Impresión Fotochecks ({fotochecks.length || postulantes.filter(p => p.fase_actual === 'FOTOCHECK' || p.estado_global === 'APTO_PARA_TRABAJAR').length})
+          5. Impresión Fotochecks ({fotochecks.length || postulantes.filter(p => p.fase_actual === 'FOTOCHECK' || p.estado_global === 'APTO_PARA_TRABAJAR').length})
         </button>
 
         <button
@@ -465,9 +538,241 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
           }`}
         >
           <Ambulance className="w-4 h-4" />
-          3. Bajas y Desmovilización 14x7 ({emergenciasActivas.length})
+          6. Bajas y Desmovilización 14x7 ({emergenciasActivas.length})
         </button>
       </div>
+
+      {tabActiva === 'aforo' && (
+        <div className="space-y-6 animate-in fade-in duration-150">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Aforo Socavón (Nivel 450)</span>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
+                    342 <span className="text-xs text-slate-400 font-semibold">/ 400 máx</span>
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
+                  <HardHat className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
+                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '85.5%' }}></div>
+              </div>
+              <span className="text-[11px] text-slate-500 mt-1.5 block">85.5% capacidad autorizada</span>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">En Superficie / Talleres</span>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">903</div>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
+                  <Activity className="w-5 h-5" />
+                </div>
+              </div>
+              <p className="text-[11px] text-emerald-700 font-medium mt-3">Planta, Maestranza y Campamentos</p>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Alerta Fatiga Laboral</span>
+                  <div className="text-2xl sm:text-3xl font-black text-rose-700 mt-1">1</div>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+              </div>
+              <p className="text-[11px] text-rose-700 font-medium mt-3">Turno &gt; 11 horas (DS 024-2016-EM)</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-slate-200 flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-sm sm:text-base text-slate-900 flex items-center gap-2">
+                  <HardHat className="w-5 h-5 text-blue-700" /> Personal Activo en Interior Mina (POB en Vivo)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">Control de tiempos de permanencia bajo tierra</p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold">
+                    <th className="p-3.5">Trabajador / DNI</th>
+                    <th className="p-3.5">Empresa</th>
+                    <th className="p-3.5">Zona Asignada</th>
+                    <th className="p-3.5 text-center">Hora Ingreso</th>
+                    <th className="p-3.5 text-center">Tiempo en Mina</th>
+                    <th className="p-3.5 text-center">Estado Turno</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {personalEnMina.map((p) => (
+                    <tr key={p.id} className={`hover:bg-slate-50/80 transition-colors ${p.alerta ? 'bg-rose-50/40' : ''}`}>
+                      <td className="p-3.5">
+                        <strong className="text-slate-900 text-sm block">{p.nombre}</strong>
+                        <span className="text-slate-400 font-mono">DNI: {p.dni} • {p.cargo}</span>
+                      </td>
+                      <td className="p-3.5 text-slate-600 font-medium">{p.empresa}</td>
+                      <td className="p-3.5">
+                        <span className={`px-2.5 py-1 rounded-md font-bold text-xs ${
+                          p.zona.includes('Socavón') ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'
+                        }`}>
+                          {p.zona}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-center font-mono text-slate-600">{p.ingreso}</td>
+                      <td className="p-3.5 text-center font-mono font-bold text-slate-900">{p.tiempo}</td>
+                      <td className="p-3.5 text-center">
+                        {p.alerta ? (
+                          <span className="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-1 rounded-full font-bold text-xs flex items-center justify-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5" /> Exceso Jornada (&gt;11h)
+                          </span>
+                        ) : (
+                          <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1 rounded-full font-bold text-xs">
+                            Turno Normal
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tabActiva === 'contratistas' && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-150">
+          <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+              <h3 className="font-bold text-sm sm:text-base text-slate-900 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-blue-700" /> Directorio de Empresas Contratistas Autorizadas
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">Modo de consulta y supervisión de habilitación legal en Garita</p>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text"
+                placeholder="Buscar por RUC o Razón Social..."
+                value={filtroContratista}
+                onChange={(e) => setFiltroContratista(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-600 focus:bg-white"
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold">
+                  <th className="p-3.5">Empresa / RUC</th>
+                  <th className="p-3.5 text-center">Personal Registrado</th>
+                  <th className="p-3.5 text-center">Personal Habilitado</th>
+                  <th className="p-3.5">Nivel de Cumplimiento</th>
+                  <th className="p-3.5 text-center">Estado Garita</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {contratistasData
+                  .filter(c => c.razonSocial.toLowerCase().includes(filtroContratista.toLowerCase()) || c.ruc.includes(filtroContratista))
+                  .map((c) => (
+                    <tr key={c.ruc} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="p-3.5">
+                        <strong className="text-slate-900 text-sm block">{c.razonSocial}</strong>
+                        <span className="text-slate-400 font-mono">RUC: {c.ruc}</span>
+                      </td>
+                      <td className="p-3.5 text-center font-bold text-slate-700">{c.personalActivo}</td>
+                      <td className="p-3.5 text-center font-bold text-blue-700">{c.personalApto}</td>
+                      <td className="p-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                            <div 
+                              className={`h-2 rounded-full ${c.cumplimiento >= 90 ? 'bg-emerald-600' : 'bg-amber-500'}`} 
+                              style={{ width: `${c.cumplimiento}%` }}
+                            ></div>
+                          </div>
+                          <span className="font-bold text-slate-700 text-xs w-9 text-right">{c.cumplimiento}%</span>
+                        </div>
+                      </td>
+                      <td className="p-3.5 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                          c.estado === 'HABILITADO'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}>
+                          {c.estado}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tabActiva === 'sctr' && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-150">
+          <div className="p-4 sm:p-5 border-b border-slate-200">
+            <h3 className="font-bold text-sm sm:text-base text-slate-900 flex items-center gap-2">
+              <FileWarning className="w-5 h-5 text-amber-600" /> Matriz de Alertas de Vencimiento de Pólizas (SCTR y EMO)
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Supervisión de restricciones automáticas de pase peatonal en garita
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold">
+                  <th className="p-3.5">Trabajador / DNI</th>
+                  <th className="p-3.5">Empresa Contratista</th>
+                  <th className="p-3.5 text-center">Póliza / Documento</th>
+                  <th className="p-3.5 text-center">Vencimiento</th>
+                  <th className="p-3.5 text-center">Restricción Garita</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {sctrAlertasData.map((alerta, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="p-3.5">
+                      <strong className="text-slate-900 text-sm block">{alerta.trabajador}</strong>
+                      <span className="text-slate-400 font-mono">DNI: {alerta.dni}</span>
+                    </td>
+                    <td className="p-3.5 text-slate-600 font-medium">{alerta.empresa}</td>
+                    <td className="p-3.5 text-center">
+                      <span className="bg-blue-50 border border-blue-200 text-blue-700 px-2.5 py-1 rounded-md font-bold">
+                        {alerta.doc}
+                      </span>
+                    </td>
+                    <td className={`p-3.5 text-center font-bold ${alerta.critico ? 'text-rose-700' : 'text-amber-700'}`}>
+                      {alerta.vencimiento}
+                    </td>
+                    <td className="p-3.5 text-center">
+                      <span className={`px-2.5 py-0.5 rounded-full font-bold border ${
+                        alerta.vencimiento === 'VENCIDO'
+                          ? 'bg-rose-50 text-rose-700 border-rose-200'
+                          : alerta.critico
+                          ? 'bg-amber-50 text-amber-800 border-amber-200'
+                          : 'bg-slate-100 text-slate-700 border-slate-200'
+                      }`}>
+                        {alerta.restriccion}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {tabActiva === 'fotochecks' && (
         <FotocheckView 
@@ -583,6 +888,17 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
               Sincronizar {colaOffline.length} Offline
             </button>
           )}
+
+          {/* Botón MUSTER LIST (Evacuación de Emergencia) */}
+          <button
+            type="button"
+            onClick={() => setMusterListOpen(true)}
+            title="Padrón de evacuación en tiempo real (MUSTER LIST) para brigadistas de rescate"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-rose-700 hover:bg-rose-800 text-white px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all shadow-xs"
+          >
+            <Siren className="w-4 h-4" />
+            🚨 MUSTER LIST (Evacuación)
+          </button>
 
           {/* Botón Bajada Anticipada por Emergencia (Punto 6) */}
           <button
@@ -1076,6 +1392,114 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL EMERGENCIA: MUSTER LIST (EVACUACIÓN INMEDIATA) */}
+      {musterListOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white border border-rose-200 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+            <div className="bg-rose-700 text-white px-6 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Siren className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base tracking-wide">MUSTER LIST • REGISTRO DE EVACUACIÓN EN VIVO</h3>
+                  <p className="text-xs text-rose-100">
+                    D.S. 024-2016-EM • Padrón oficial de personas confirmadas en interior de mina
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setMusterListOpen(false)}
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFiltroMuster('TODOS')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    filtroMuster === 'TODOS'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  Todo el Personal ({personalEnMina.length})
+                </button>
+                <button
+                  onClick={() => setFiltroMuster('SOCAVON')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    filtroMuster === 'SOCAVON'
+                      ? 'bg-rose-700 text-white shadow-xs'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  En Socavón ({personalEnMina.filter(p => p.zona.includes('Socavón')).length})
+                </button>
+                <button
+                  onClick={() => setFiltroMuster('SUPERFICIE')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    filtroMuster === 'SUPERFICIE'
+                      ? 'bg-blue-700 text-white shadow-xs'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  En Superficie ({personalEnMina.filter(p => p.zona.includes('Superficie')).length})
+                </button>
+              </div>
+
+              <button
+                onClick={() => window.print()}
+                className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5" /> Imprimir Padrón para Brigadas
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto flex-1">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 uppercase font-semibold">
+                    <th className="p-3">Trabajador</th>
+                    <th className="p-3">DNI</th>
+                    <th className="p-3">Empresa Contratista</th>
+                    <th className="p-3">Ubicación / Zona</th>
+                    <th className="p-3 text-center">Hora Ingreso</th>
+                    <th className="p-3 text-center">Permanencia</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {personalEnMina
+                    .filter(p => {
+                      if (filtroMuster === 'SOCAVON') return p.zona.includes('Socavón');
+                      if (filtroMuster === 'SUPERFICIE') return p.zona.includes('Superficie');
+                      return true;
+                    })
+                    .map((p) => (
+                      <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3 font-bold text-slate-900">{p.nombre}</td>
+                        <td className="p-3 font-mono text-slate-600">{p.dni}</td>
+                        <td className="p-3 text-slate-600">{p.empresa}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-0.5 rounded-md font-bold text-xs ${
+                            p.zona.includes('Socavón') ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
+                          }`}>
+                            {p.zona}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center font-mono">{p.ingreso}</td>
+                        <td className="p-3 text-center font-mono font-bold text-slate-900">{p.tiempo}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
