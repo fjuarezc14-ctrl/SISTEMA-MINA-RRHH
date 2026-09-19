@@ -66,23 +66,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const getButtonClass = (view: ViewType, isSpecial = false) => {
     if (isCollapsed) {
       if (isSelected(view)) {
-        return 'w-full flex items-center justify-center p-3 rounded-xl font-bold bg-purple-600/20 text-purple-300 border border-purple-500/40 shadow-lg transition-all';
+        return 'w-full flex items-center justify-center p-3 rounded-xl font-bold bg-blue-50 text-blue-800 border border-blue-200 shadow-sm transition-all';
       }
-      return 'w-full flex items-center justify-center p-3 rounded-xl font-medium text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent transition-all';
+      return 'w-full flex items-center justify-center p-3 rounded-xl font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 border border-transparent transition-all';
     }
 
     if (isSelected(view)) {
       if (isSpecial) {
-        return 'w-full text-left flex items-center gap-3 bg-purple-600/20 text-purple-300 border border-purple-500/40 px-4 py-3 rounded-xl font-bold shadow-lg transition-colors';
+        return 'w-full text-left flex items-center gap-3 bg-purple-50 text-purple-800 border border-purple-200 px-4 py-3 rounded-xl font-bold shadow-sm transition-colors';
       }
-      return 'w-full text-left flex items-center gap-3 bg-blue-600/10 text-blue-400 border border-blue-500/20 px-4 py-3 rounded-xl font-medium transition-colors';
+      return 'w-full text-left flex items-center gap-3 bg-blue-50 text-blue-800 border-l-4 border-blue-700 px-4 py-3 rounded-xl font-bold shadow-sm transition-colors';
     }
     
     if (isSpecial) {
-      return 'w-full text-left flex items-center gap-3 hover:bg-purple-950/40 text-purple-400/80 border border-purple-900/30 px-4 py-3 rounded-xl font-medium transition-colors';
+      return 'w-full text-left flex items-center gap-3 hover:bg-purple-50 text-purple-700 border border-transparent px-4 py-3 rounded-xl font-medium transition-colors';
     }
 
-    return 'w-full text-left flex items-center gap-3 hover:bg-slate-800 text-slate-400 border border-transparent px-4 py-3 rounded-xl font-medium transition-colors';
+    return 'w-full text-left flex items-center gap-3 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-transparent px-4 py-3 rounded-xl font-medium transition-colors';
   };
 
   // Reglas de Visibilidad Estricta por Rol (RBAC)
@@ -117,12 +117,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const sidebarContent = (
     <div className="flex flex-col h-full select-none">
       {/* Cabecera del Menú con Botón Toggle */}
-      <div className={`p-4 border-b border-slate-800 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
+      <div className={`p-4 border-b border-slate-100 flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'}`}>
         {!isCollapsed ? (
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2 tracking-wide">
-              <span className="text-blue-500 flex items-center gap-1">
-                <HardHat className="w-6 h-6 sm:w-7 sm:h-7 text-blue-500" /> VT
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2 tracking-wide">
+              <span className="text-blue-700 flex items-center gap-1">
+                <HardHat className="w-6 h-6 sm:w-7 sm:h-7 text-blue-700" /> VT
               </span>
               ONBOARDING
             </h1>
@@ -130,8 +130,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center">
-            <HardHat className="w-7 h-7 text-blue-500" />
-            <span className="text-[10px] font-black text-white tracking-wider mt-0.5">VT</span>
+            <HardHat className="w-7 h-7 text-blue-700" />
+            <span className="text-[10px] font-black text-slate-900 tracking-wider mt-0.5">VT</span>
           </div>
         )}
 
@@ -140,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button 
               onClick={onToggleCollapse}
               title={isCollapsed ? "Expandir menú (260px)" : "Colapsar menú (64px)"}
-              className="hidden md:flex p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="hidden md:flex p-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm"
             >
               {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
@@ -148,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {onCloseMobile && (
             <button 
               onClick={onCloseMobile}
-              className="md:hidden p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="md:hidden p-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shadow-sm"
             >
               <X className="w-5 h-5" />
             </button>
@@ -161,8 +161,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {canSee('admin') && (
           <>
             {!isCollapsed && (
-              <p className="text-xs font-bold text-purple-400 mb-2 mt-1 px-3 uppercase tracking-wider flex items-center gap-1.5">
-                <Crown className="w-3.5 h-3.5 text-purple-400" /> Mando Central
+              <p className="text-xs font-bold text-purple-700 mb-2 mt-1 px-3 uppercase tracking-wider flex items-center gap-1.5">
+                <Crown className="w-3.5 h-3.5 text-purple-700" /> Mando Central
               </p>
             )}
             <button 
@@ -170,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               title="Panel Super Admin"
               className={getButtonClass('admin', true)}
             >
-              <ShieldCheck className="w-5 h-5 text-purple-400 shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-purple-700 shrink-0" />
               {!isCollapsed && <span>Panel Super Admin</span>}
             </button>
           </>
@@ -280,11 +280,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {(canSee('garita') || canSee('metricas')) && (
           <div className="pt-2">
             {!isCollapsed ? (
-              <p className="text-xs font-bold text-slate-500 mb-2 px-3 uppercase tracking-wider">
+              <p className="text-xs font-bold text-slate-400 mb-2 px-3 uppercase tracking-wider">
                 Operaciones de Mina
               </p>
             ) : (
-              <div className="my-2 border-t border-slate-800/60" />
+              <div className="my-2 border-t border-slate-100" />
             )}
 
             {canSee('garita') && (
@@ -293,7 +293,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 title="Control Garita (QR)"
                 className={getButtonClass('garita')}
               >
-                <QrCode className="w-5 h-5 text-emerald-400 shrink-0" />
+                <QrCode className="w-5 h-5 text-emerald-700 shrink-0" />
                 {!isCollapsed && <span>Control Garita (QR)</span>}
               </button>
             )}
@@ -304,7 +304,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 title="SLAs y Rendimiento"
                 className={getButtonClass('metricas')}
               >
-                <BarChart3 className="w-5 h-5 text-cyan-400 shrink-0" />
+                <BarChart3 className="w-5 h-5 text-blue-700 shrink-0" />
                 {!isCollapsed && <span>SLAs y Rendimiento</span>}
               </button>
             )}
@@ -313,16 +313,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Tarjeta de Perfil y Botón Cerrar Sesión */}
-      <div className={`border-t border-slate-800/80 bg-slate-950/90 ${isCollapsed ? 'p-2 flex flex-col items-center gap-2' : 'p-4 space-y-3'}`}>
+      <div className={`border-t border-slate-100 bg-slate-50/70 ${isCollapsed ? 'p-2 flex flex-col items-center gap-2' : 'p-4 space-y-3'}`}>
         {!isCollapsed ? (
           <>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 shrink-0 shadow-sm">
                 <User className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-white truncate">{userName}</p>
-                <span className="text-[10px] text-blue-400 block font-mono uppercase truncate">
+                <p className="text-xs font-bold text-slate-900 truncate">{userName}</p>
+                <span className="text-[10px] text-blue-700 block font-mono font-semibold uppercase truncate">
                   {userRole}
                 </span>
               </div>
@@ -330,9 +330,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               onClick={onLogout}
-              className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-rose-950/60 border border-slate-800 hover:border-rose-600/40 text-slate-400 hover:text-rose-300 py-2 rounded-xl text-xs font-bold transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-700 hover:text-rose-700 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-3.5 h-3.5 text-rose-600" />
               Cerrar Sesión
             </button>
           </>
@@ -340,16 +340,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <>
             <div 
               title={`${userName} (${userRole})`}
-              className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 cursor-pointer shadow-sm"
             >
               <User className="w-4 h-4" />
             </div>
             <button
               onClick={onLogout}
               title="Cerrar Sesión"
-              className="p-2 rounded-xl bg-slate-900 hover:bg-rose-950/60 border border-slate-800 hover:border-rose-600/40 text-slate-400 hover:text-rose-300 transition-colors"
+              className="p-2 rounded-xl bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-700 hover:text-rose-700 transition-colors shadow-sm"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 text-rose-600" />
             </button>
           </>
         )}
@@ -363,17 +363,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-200">
           <div 
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
             onClick={onCloseMobile}
           />
-          <aside className="relative w-72 max-w-[85vw] bg-slate-950 border-r border-slate-800 flex flex-col h-full z-10 shadow-2xl animate-in slide-in-from-left duration-200">
+          <aside className="relative w-72 max-w-[85vw] bg-white border-r border-slate-200 flex flex-col h-full z-10 shadow-2xl animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </aside>
         </div>
       )}
 
       {/* Sidebar Persistente de Escritorio (Expandido o Rail 64px) */}
-      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-slate-950 border-r border-slate-800 flex flex-col hidden md:flex h-screen select-none shrink-0 transition-all duration-300`}>
+      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-slate-200 flex flex-col hidden md:flex h-screen select-none shrink-0 transition-all duration-300 shadow-sm`}>
         {sidebarContent}
       </aside>
     </>

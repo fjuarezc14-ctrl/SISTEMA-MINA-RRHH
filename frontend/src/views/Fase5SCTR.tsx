@@ -9,7 +9,7 @@ interface Fase5Props {
   userRole: RolUsuario;
   onEvaluar: (
     postulanteId: string, 
-    fase: string,
+    fase: string, 
     decision: 'APROBAR' | 'OBSERVAR' | 'NO_APTO', 
     detalles?: any
   ) => Promise<void>;
@@ -43,28 +43,28 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 border-t-4 border-t-emerald-500 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-750">
-          <h3 className="font-bold text-lg flex items-center gap-2 text-emerald-400">
-            <ShieldCheck className="w-5 h-5" /> Fase 5: Validación SCTR y Pólizas de Alto Riesgo
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 border-t-4 border-t-emerald-600 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-200">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-slate-900">
+            <ShieldCheck className="w-5 h-5 text-emerald-600" /> Fase 5: Validación SCTR y Pólizas de Alto Riesgo
           </h3>
-          <span className="text-xs bg-blue-900/30 text-blue-300 border border-blue-500/20 px-3 py-1 rounded-lg font-medium">
+          <span className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg font-medium">
             Área Responsable: Administración de Contratos y Seguros
           </span>
         </div>
 
         {/* FILTROS DE ESTADO */}
         <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-          <span className="text-slate-400 font-semibold flex items-center gap-1 mr-1">
+          <span className="text-slate-600 font-semibold flex items-center gap-1 mr-1">
             <Filter className="w-3.5 h-3.5" /> Estado:
           </span>
           <button
             type="button"
             onClick={() => setFiltroEstado('PENDIENTES')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
               filtroEstado === 'PENDIENTES'
-                ? 'bg-slate-700 text-white shadow'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-700'
+                ? 'bg-slate-800 text-white shadow-sm'
+                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
             }`}
           >
             Pendientes ({conteoPendientes})
@@ -72,10 +72,10 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
           <button
             type="button"
             onClick={() => setFiltroEstado('OBSERVADOS')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
               filtroEstado === 'OBSERVADOS'
-                ? 'bg-amber-600 text-white shadow'
-                : 'bg-slate-900 text-amber-400/80 hover:text-amber-300 border border-slate-700'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'bg-white text-amber-700 hover:bg-amber-50 border border-amber-200'
             }`}
           >
             Observados ({conteoObs})
@@ -83,10 +83,10 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
           <button
             type="button"
             onClick={() => setFiltroEstado('LISTA_NEGRA')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
               filtroEstado === 'LISTA_NEGRA'
-                ? 'bg-rose-600 text-white shadow'
-                : 'bg-slate-900 text-rose-400/80 hover:text-rose-300 border border-slate-700'
+                ? 'bg-rose-600 text-white shadow-sm'
+                : 'bg-white text-rose-700 hover:bg-rose-50 border border-rose-200'
             }`}
           >
             Lista Negra ({conteoLN})
@@ -94,10 +94,10 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
           <button
             type="button"
             onClick={() => setFiltroEstado('TODOS')}
-            className={`px-3 py-1 rounded-lg font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
               filtroEstado === 'TODOS'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-700'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
             }`}
           >
             Todos ({candidatosFase5.length})
@@ -105,7 +105,7 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
         </div>
 
         {candidatosFiltrados.length === 0 ? (
-          <div className="p-8 text-center bg-slate-900/50 rounded-xl border border-slate-750 text-slate-400 text-sm">
+          <div className="p-8 text-center bg-slate-50 rounded-xl border border-slate-200 text-slate-500 text-sm">
             {filtroEstado === 'TODOS'
               ? 'No hay postulantes pendientes de validación SCTR en este momento.'
               : `No se encontraron postulantes con estado "${filtroEstado.replace('_', ' ')}".`}
@@ -121,38 +121,38 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div className="w-full flex-1 min-w-0">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0 mt-0.5">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 flex-shrink-0 mt-0.5">
                           <User className="w-5 h-5" />
                         </div>
                         <div className="flex flex-wrap items-center h-full gap-x-3 gap-y-1">
-                          <h4 className="font-bold text-white text-base whitespace-nowrap">
+                          <h4 className="font-bold text-slate-900 text-base whitespace-nowrap">
                             {candidato.apellidos}, {candidato.nombres}
                           </h4>
-                          <span className="text-sm text-slate-400 whitespace-nowrap">
-                            Cargo: <span className="text-slate-200 font-medium">{candidato.cargo}</span>
+                          <span className="text-sm text-slate-500 whitespace-nowrap">
+                            Cargo: <span className="text-slate-900 font-medium">{candidato.cargo}</span>
                           </span>
-                          <span className="text-sm text-slate-400 whitespace-nowrap">
-                            DNI: <span className="font-mono text-slate-300">{candidato.numero_documento}</span>
+                          <span className="text-sm text-slate-500 whitespace-nowrap">
+                            DNI: <span className="font-mono text-slate-800">{candidato.numero_documento}</span>
                           </span>
-                          <span className="text-sm text-slate-400 whitespace-nowrap">
-                            Empresa: <span className="text-slate-300">{candidato.empresa_nombre}</span>
+                          <span className="text-sm text-slate-500 whitespace-nowrap">
+                            Empresa: <span className="text-slate-800">{candidato.empresa_nombre}</span>
                           </span>
-                          <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
-                            <CheckCircle className="w-3.5 h-3.5" /> Fases 1, 2, 3 y 4 Confirmadas
+                          <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1 whitespace-nowrap">
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Fases 1, 2, 3 y 4 Confirmadas
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t border-slate-800/80 lg:border-t-0 shrink-0">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t border-slate-200 lg:border-t-0 shrink-0">
                       <DocumentCardStatus postulante={candidato} />
 
                       <button
                         type="button"
                         onClick={() => handleOpenSplitViewer(candidato)}
-                        className="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-750 text-blue-300 border border-blue-500/30 px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
+                        className="flex-1 sm:flex-initial bg-white hover:bg-slate-50 text-emerald-700 border border-emerald-200 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
                       >
-                        <Eye className="w-3.5 h-3.5 text-blue-400" /> Inspeccionar Póliza
+                        <Eye className="w-3.5 h-3.5 text-emerald-600" /> Inspeccionar Póliza
                       </button>
                     </div>
                   </div>
@@ -166,19 +166,19 @@ export const Fase5SCTR: React.FC<Fase5Props> = ({ postulantes, userRole, onEvalu
 
         {/* CANDIDATOS BLOQUEADOS POR HARD GATING */}
         {candidatosBloqueados.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-slate-750">
-            <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Lock className="w-3.5 h-3.5 text-slate-500" /> Postulantes Bloqueados (Esperando Fases Anteriores)
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-slate-400" /> Postulantes Bloqueados (Esperando Fases Anteriores)
             </h5>
-            <div className="space-y-2 opacity-60">
+            <div className="space-y-2 opacity-75">
               {candidatosBloqueados.map((p) => (
-                <div key={p.id} className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
+                <div key={p.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs">
                   <div>
-                    <span className="font-bold text-slate-300">{p.apellidos}, {p.nombres}</span>
+                    <span className="font-bold text-slate-800">{p.apellidos}, {p.nombres}</span>
                     <span className="text-slate-500 ml-2">({p.cargo})</span>
                   </div>
-                  <span className="text-amber-400 font-mono text-[11px] flex items-center gap-1">
-                    <Lock className="w-3 h-3" /> Requiere V°B° en {p.fase_actual}
+                  <span className="text-amber-700 font-mono text-[11px] flex items-center gap-1 font-semibold">
+                    <Lock className="w-3 h-3 text-amber-600" /> Requiere V°B° en {p.fase_actual}
                   </span>
                 </div>
               ))}

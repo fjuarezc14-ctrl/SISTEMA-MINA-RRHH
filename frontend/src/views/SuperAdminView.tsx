@@ -133,60 +133,60 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
     <div className="space-y-6">
       {/* TARJETAS KPI DE LA UNIDAD MINERA */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Cuadrilla</span>
-            <Users className="w-5 h-5 text-blue-400" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Cuadrilla</span>
+            <Users className="w-5 h-5 text-blue-700" />
           </div>
-          <p className="text-3xl font-black text-white mt-2">{stats.total}</p>
-          <span className="text-[11px] text-slate-400">Postulantes registrados</span>
+          <p className="text-3xl font-black text-slate-900 mt-2">{stats.total}</p>
+          <span className="text-[11px] text-slate-500">Postulantes registrados</span>
         </div>
 
-        <div className="bg-slate-800 border border-emerald-500/30 bg-emerald-950/10 rounded-2xl p-5 shadow-lg">
+        <div className="bg-emerald-50/50 border border-emerald-200 rounded-2xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Aptos para Trabajar</span>
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Aptos para Trabajar</span>
+            <ShieldCheck className="w-5 h-5 text-emerald-700" />
           </div>
-          <p className="text-3xl font-black text-emerald-400 mt-2">{stats.aptosParaTrabajar}</p>
-          <span className="text-[11px] text-emerald-300 font-medium">5 Vistos Buenos completados</span>
+          <p className="text-3xl font-black text-emerald-800 mt-2">{stats.aptosParaTrabajar}</p>
+          <span className="text-[11px] text-emerald-700 font-medium">5 Vistos Buenos completados</span>
         </div>
 
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">En Evaluación</span>
-            <Activity className="w-5 h-5 text-blue-400" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">En Evaluación</span>
+            <Activity className="w-5 h-5 text-blue-700" />
           </div>
-          <p className="text-3xl font-black text-white mt-2">{stats.enProceso}</p>
-          <span className="text-[11px] text-slate-400">Avanzando compuertas</span>
+          <p className="text-3xl font-black text-slate-900 mt-2">{stats.enProceso}</p>
+          <span className="text-[11px] text-slate-500">Avanzando compuertas</span>
         </div>
 
-        <div className="bg-slate-800 border border-amber-500/30 bg-amber-950/10 rounded-2xl p-5 shadow-lg">
+        <div className="bg-amber-50/50 border border-amber-200 rounded-2xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Observados</span>
-            <AlertTriangle className="w-5 h-5 text-amber-400" />
+            <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">Observados</span>
+            <AlertTriangle className="w-5 h-5 text-amber-700" />
           </div>
-          <p className="text-3xl font-black text-amber-400 mt-2">{stats.observados}</p>
-          <span className="text-[11px] text-amber-300">Pendiente subsanar</span>
+          <p className="text-3xl font-black text-amber-800 mt-2">{stats.observados}</p>
+          <span className="text-[11px] text-amber-700">Pendiente subsanar</span>
         </div>
 
-        <div className="bg-slate-800 border border-rose-500/30 bg-rose-950/10 rounded-2xl p-5 shadow-lg">
+        <div className="bg-rose-50/50 border border-rose-200 rounded-2xl p-5 shadow-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-rose-400 uppercase tracking-wider">Lista Negra</span>
-            <Ban className="w-5 h-5 text-rose-400" />
+            <span className="text-xs font-bold text-rose-800 uppercase tracking-wider">Lista Negra</span>
+            <Ban className="w-5 h-5 text-rose-700" />
           </div>
-          <p className="text-3xl font-black text-rose-400 mt-2">{stats.bloqueadosListaNegra}</p>
-          <span className="text-[11px] text-rose-300">Bloqueados en mina</span>
+          <p className="text-3xl font-black text-rose-800 mt-2">{stats.bloqueadosListaNegra}</p>
+          <span className="text-[11px] text-rose-700">Bloqueados en mina</span>
         </div>
       </div>
 
       {/* PESTAÑAS DE NAVEGACIÓN SUPER ADMIN */}
-      <div className="flex border-b border-slate-800 gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex border-b border-slate-200 gap-2 overflow-x-auto pb-1 scrollbar-none">
         <button
           onClick={() => setActiveTab('usuarios')}
           className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'usuarios'
-              ? 'bg-slate-800 text-blue-400 border-t-2 border-blue-500'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              ? 'bg-white text-blue-700 border-t-2 border-blue-700 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
           <UserPlus className="w-4 h-4" /> Gestión de Accesos
@@ -196,8 +196,8 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
           onClick={() => setActiveTab('auditoria')}
           className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'auditoria'
-              ? 'bg-slate-800 text-blue-400 border-t-2 border-blue-500'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              ? 'bg-white text-blue-700 border-t-2 border-blue-700 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
           <History className="w-4 h-4" /> Auditoría V°B°
@@ -210,11 +210,11 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
           }}
           className={`shrink-0 px-3.5 sm:px-5 py-2.5 sm:py-3 font-bold text-xs sm:text-sm rounded-t-xl transition-colors flex items-center gap-2 ${
             activeTab === 'vencimientos'
-              ? 'bg-slate-800 text-rose-400 border-t-2 border-rose-500'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+              ? 'bg-white text-rose-700 border-t-2 border-rose-700 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <AlertTriangle className="w-4 h-4 text-rose-400" /> Semáforo Vencimientos SCTR
+          <AlertTriangle className="w-4 h-4 text-rose-600" /> Semáforo Vencimientos SCTR
         </button>
       </div>
 
@@ -222,45 +222,45 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
       {activeTab === 'usuarios' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* FORMULARIO CREACIÓN DE ACCESO POR ÁREA */}
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl h-fit">
-            <h3 className="font-bold text-lg text-white mb-1 flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-blue-400" /> Crear Acceso de Evaluador
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm h-fit">
+            <h3 className="font-bold text-lg text-slate-900 mb-1 flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-blue-700" /> Crear Acceso de Evaluador
             </h3>
-            <p className="text-xs text-slate-400 mb-5">
+            <p className="text-xs text-slate-500 mb-5">
               Otorga credenciales a los responsables de área para que dictaminen Vistos Buenos.
             </p>
 
             <form onSubmit={handleCrearUsuarioSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Nombre Completo y Cargo</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Nombre Completo y Cargo</label>
                 <input
                   type="text"
                   required
                   placeholder="Ej: Dr. Manuel Arévalo (Médico Ocupacional)"
                   value={nuevoNombre}
                   onChange={(e) => setNuevoNombre(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-700 font-medium transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Correo Corporativo</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Correo Corporativo</label>
                 <input
                   type="email"
                   required
                   placeholder="usuario@valetec.com"
                   value={nuevoEmail}
                   onChange={(e) => setNuevoEmail(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 font-medium"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-700 font-medium transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Área y Rol Responsable</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Área y Rol Responsable</label>
                 <select
                   value={nuevoRol}
                   onChange={(e) => handleRolChange(e.target.value as RolUsuario)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-700 font-medium cursor-pointer transition-colors"
                 >
                   <option value="STAFF_RRHH">Fase 1: RRHH / Validación CV y Perfil</option>
                   <option value="MEDICO_OCUPACIONAL">Fase 2: Médico Ocupacional (EMO / Tox)</option>
@@ -274,18 +274,18 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Nombre del Área / Dependencia</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Nombre del Área / Dependencia</label>
                 <input
                   type="text"
                   required
                   value={nuevaArea}
                   onChange={(e) => setNuevaArea(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-300 focus:outline-none font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 focus:outline-none focus:bg-white focus:border-blue-700 font-mono transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Colegiatura / Registro Legal (CMP / CIP / Reg. Oficial)
                 </label>
                 <input
@@ -293,31 +293,31 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                   value={nuevaColegiatura}
                   onChange={(e) => setNuevaColegiatura(e.target.value)}
                   placeholder="Ej. CMP 48921 / CIP 198452"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-amber-300 focus:outline-none font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-amber-800 focus:outline-none focus:bg-white focus:border-blue-700 font-mono transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Contraseña Provisoria</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Contraseña Provisoria</label>
                 <input
                   type="text"
                   required
                   value={nuevoPassword}
                   onChange={(e) => setNuevoPassword(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-700 font-mono transition-colors"
                 />
               </div>
 
               {createSuccess && (
-                <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs rounded-xl flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" /> Acceso creado y asignado al flujo exitosamente.
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl flex items-center gap-2 shadow-sm">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Acceso creado y asignado al flujo exitosamente.
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={loadingCreate}
-                className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
+                className="w-full bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2"
               >
                 <UserPlus className="w-4 h-4" /> {loadingCreate ? 'Guardando...' : 'Habilitar Acceso con Visto Bueno'}
               </button>
@@ -325,20 +325,20 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
           </div>
 
           {/* TABLA DE USUARIOS Y ROLES DEL SISTEMA */}
-          <div className="lg:col-span-2 bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
-            <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
               <div>
-                <h3 className="font-bold text-lg text-white">Directorio de Responsables por Flujo</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Usuarios autorizados para emitir Vistos Buenos y dictámenes</p>
+                <h3 className="font-bold text-lg text-slate-900">Directorio de Responsables por Flujo</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Usuarios autorizados para emitir Vistos Buenos y dictámenes</p>
               </div>
-              <span className="text-xs font-semibold px-3 py-1 bg-slate-700 text-slate-300 rounded-lg">
+              <span className="text-xs font-semibold px-3 py-1 bg-slate-100 text-slate-700 rounded-lg border border-slate-200">
                 {usuarios.length} Cuentas Activas
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-900/90 text-slate-400 border-b border-slate-700">
+                <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
                   <tr>
                     <th className="p-4 font-semibold">Responsable</th>
                     <th className="p-4 font-semibold">Área Asignada</th>
@@ -346,36 +346,36 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                     <th className="p-4 font-semibold text-center">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/50">
+                <tbody className="divide-y divide-slate-100">
                   {usuarios.map((u) => (
-                    <tr key={u.id} className="hover:bg-slate-750/50 transition-colors">
+                    <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="p-4">
-                        <div className="font-bold text-white">{u.nombre}</div>
-                        <div className="text-xs text-slate-400">{u.email}</div>
+                        <div className="font-bold text-slate-900">{u.nombre}</div>
+                        <div className="text-xs text-slate-500">{u.email}</div>
                         {u.colegiatura && (
-                          <div className="text-[11px] text-amber-300 font-mono font-medium mt-0.5">
+                          <div className="text-[11px] text-amber-800 font-mono font-medium mt-0.5">
                             ⚖️ {u.colegiatura}
                           </div>
                         )}
                       </td>
 
                       <td className="p-4">
-                        <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-900/40 text-blue-300 border border-blue-500/20">
+                        <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-50 text-blue-800 border border-blue-200">
                           {u.area_responsable || u.rol}
                         </span>
                       </td>
 
                       <td className="p-4 text-center">
                         {u.bloqueado_definitivo || (u.intentos_fallidos !== undefined && u.intentos_fallidos >= 3) ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-950/80 text-rose-300 border border-rose-500/50 animate-pulse">
-                            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-800 border border-rose-200">
+                            <ShieldAlert className="w-3.5 h-3.5 text-rose-700" />
                             BLOQUEADO (3 FALLOS)
                           </span>
                         ) : (
                           <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
                             u.activo 
-                              ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' 
-                              : 'bg-rose-950/60 text-rose-400 border border-rose-500/30'
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                              : 'bg-rose-50 text-rose-800 border border-rose-200'
                           }`}>
                             {u.activo ? 'ACTIVO' : 'SUSPENDIDO'}
                           </span>
@@ -386,7 +386,7 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                         {u.bloqueado_definitivo || (u.intentos_fallidos !== undefined && u.intentos_fallidos >= 3) ? (
                           <button
                             onClick={() => onToggleEstadoUsuario(u.id, true)}
-                            className="text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30"
+                            className="text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white shadow-sm"
                           >
                             <Unlock className="w-3.5 h-3.5" />
                             Desbloquear
@@ -396,8 +396,8 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                             onClick={() => onToggleEstadoUsuario(u.id, !u.activo)}
                             className={`text-xs px-3 py-1.5 rounded-lg font-bold transition-colors inline-flex items-center gap-1.5 ${
                               u.activo 
-                                ? 'bg-rose-900/40 hover:bg-rose-900/70 text-rose-300 border border-rose-500/30' 
-                                : 'bg-emerald-900/40 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-500/30'
+                                ? 'bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200' 
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
                             }`}
                           >
                             {u.activo ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -416,24 +416,24 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
 
       {/* PESTAÑA 2: AUDITORÍA DE VISTOS BUENOS (ESTÁNDAR WEBCONTROL) */}
       {activeTab === 'auditoria' && (
-        <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
-          <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
             <div>
-              <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                <FileCheck2 className="w-5 h-5 text-emerald-400" /> Registro Inmutable de Vistos Buenos Mineros
+              <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                <FileCheck2 className="w-5 h-5 text-emerald-700" /> Registro Inmutable de Vistos Buenos Mineros
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Trazabilidad legal con fecha, hora, responsable y sustento técnico ante auditorías de SUNAFIL y OSINERGMIN
               </p>
             </div>
-            <span className="text-xs font-semibold px-3 py-1 bg-emerald-900/30 text-emerald-400 border border-emerald-500/20 rounded-lg">
+            <span className="text-xs font-semibold px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg">
               Auditoría Blindada
             </span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-900/90 text-slate-400 border-b border-slate-700">
+              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
                 <tr>
                   <th className="p-4 font-semibold">Fecha y Hora</th>
                   <th className="p-4 font-semibold">Postulante</th>
@@ -442,27 +442,27 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
                   <th className="p-4 font-semibold">Observaciones / Sustento</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className="divide-y divide-slate-100">
                 {auditoria.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-750/50 transition-colors">
-                    <td className="p-4 font-mono text-xs text-slate-400">
+                  <tr key={log.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="p-4 font-mono text-xs text-slate-500">
                       {new Date(log.fecha_registro).toLocaleString('es-PE')}
                     </td>
 
                     <td className="p-4">
-                      <div className="font-bold text-white">
+                      <div className="font-bold text-slate-900">
                         {log.postulante_apellidos}, {log.postulante_nombres}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-500">
                         {log.postulante_cargo} • DNI: {log.postulante_dni}
                       </div>
                     </td>
 
                     <td className="p-4">
-                      <div className="text-sm font-semibold text-blue-400">{log.area_evaluadora}</div>
-                      <div className="text-xs text-slate-200 font-medium">{log.evaluador_nombre}</div>
+                      <div className="text-sm font-semibold text-blue-700">{log.area_evaluadora}</div>
+                      <div className="text-xs text-slate-700 font-medium">{log.evaluador_nombre}</div>
                       {log.evaluador_colegiatura && (
-                        <div className="text-[11px] text-amber-300 font-mono mt-0.5">
+                        <div className="text-[11px] text-amber-800 font-mono mt-0.5">
                           ⚖️ {log.evaluador_colegiatura}
                         </div>
                       )}
@@ -470,23 +470,23 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
 
                     <td className="p-4 text-center">
                       {log.decision === 'VISTO_BUENO' && (
-                        <span className="bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> VISTO BUENO
+                        <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 shadow-sm">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" /> VISTO BUENO
                         </span>
                       )}
                       {log.decision === 'OBSERVADO' && (
-                        <span className="bg-amber-900/50 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1">
-                          <AlertTriangle className="w-3.5 h-3.5" /> OBSERVADO
+                        <span className="bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 shadow-sm">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-700" /> OBSERVADO
                         </span>
                       )}
                       {log.decision === 'NO_APTO_LISTA_NEGRA' && (
-                        <span className="bg-rose-900/60 text-rose-300 border border-rose-500/40 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1">
-                          <Ban className="w-3.5 h-3.5" /> LISTA NEGRA
+                        <span className="bg-rose-50 text-rose-800 border border-rose-200 px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 shadow-sm">
+                          <Ban className="w-3.5 h-3.5 text-rose-700" /> LISTA NEGRA
                         </span>
                       )}
                     </td>
 
-                    <td className="p-4 text-xs text-slate-300 italic">
+                    <td className="p-4 text-xs text-slate-600 italic">
                       "{log.observaciones || 'Aprobado sin observaciones adicionales.'}"
                     </td>
                   </tr>
@@ -500,13 +500,13 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
       {/* PESTAÑA 3: SEMÁFORO DE VENCIMIENTOS SCTR Y EMOS */}
       {activeTab === 'vencimientos' && (
         <div className="space-y-6">
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h4 className="font-bold text-lg text-white flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-rose-400" />
+              <h4 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-rose-600" />
                 Control y Semáforo de Vencimientos SCTR
               </h4>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Monitoreo automático de pólizas con bloqueo en garita para personal con vigencia expirada
               </p>
             </div>
@@ -514,7 +514,7 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
             <button
               onClick={handleEjecutarRevisionVencimientos}
               disabled={loadingVenc}
-              className="bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-colors shadow-lg"
+              className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-colors shadow-sm"
             >
               {loadingVenc ? 'Verificando...' : 'Ejecutar Revisión y Suspender Vencidos'}
             </button>
@@ -522,94 +522,94 @@ export const SuperAdminView: React.FC<SuperAdminViewProps> = ({
 
           {/* Tarjetas Semáforo */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-emerald-950/40 border border-emerald-500/40 rounded-2xl p-5">
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">
+            <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-5 shadow-sm">
+              <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
                 🟢 Vigentes (&gt; 15 días)
               </span>
-              <p className="text-3xl font-black text-emerald-400 mt-2">
+              <p className="text-3xl font-black text-emerald-800 mt-2">
                 {vencimientosData?.vigentes ?? 4}
               </p>
-              <span className="text-[11px] text-emerald-300">Póliza y EMO autorizados</span>
+              <span className="text-[11px] text-emerald-700 font-medium">Póliza y EMO autorizados</span>
             </div>
 
-            <div className="bg-amber-950/40 border border-amber-500/40 rounded-2xl p-5">
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
+            <div className="bg-amber-50/60 border border-amber-200 rounded-2xl p-5 shadow-sm">
+              <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">
                 🟡 Por Vencer (≤ 15 días)
               </span>
-              <p className="text-3xl font-black text-amber-400 mt-2">
+              <p className="text-3xl font-black text-amber-800 mt-2">
                 {vencimientosData?.porVencer ?? 1}
               </p>
-              <span className="text-[11px] text-amber-300">Requiere renovar adenda</span>
+              <span className="text-[11px] text-amber-700 font-medium">Requiere renovar adenda</span>
             </div>
 
-            <div className="bg-rose-950/40 border border-rose-500/40 rounded-2xl p-5">
-              <span className="text-xs font-bold text-rose-400 uppercase tracking-wider block">
+            <div className="bg-rose-50/60 border border-rose-200 rounded-2xl p-5 shadow-sm">
+              <span className="text-xs font-bold text-rose-800 uppercase tracking-wider block">
                 🔴 Vencidos (Expirados)
               </span>
-              <p className="text-3xl font-black text-rose-400 mt-2">
+              <p className="text-3xl font-black text-rose-800 mt-2">
                 {vencimientosData?.vencidos ?? 1}
               </p>
-              <span className="text-[11px] text-rose-300">Acceso a mina suspendido</span>
+              <span className="text-[11px] text-rose-700 font-medium">Acceso a mina suspendido</span>
             </div>
           </div>
 
           {/* Tabla de Vencimientos */}
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-700 bg-slate-900/50 text-slate-400 uppercase tracking-wider">
-                    <th className="p-3.5">Trabajador</th>
-                    <th className="p-3.5">Empresa</th>
-                    <th className="p-3.5">Fase / Cargo</th>
-                    <th className="p-3.5">Vencimiento SCTR</th>
-                    <th className="p-3.5">Días Restantes</th>
-                    <th className="p-3.5">Semáforo</th>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase tracking-wider">
+                    <th className="p-3.5 font-semibold">Trabajador</th>
+                    <th className="p-3.5 font-semibold">Empresa</th>
+                    <th className="p-3.5 font-semibold">Fase / Cargo</th>
+                    <th className="p-3.5 font-semibold">Vencimiento SCTR</th>
+                    <th className="p-3.5 font-semibold">Días Restantes</th>
+                    <th className="p-3.5 font-semibold">Semáforo</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/60">
+                <tbody className="divide-y divide-slate-100">
                   {vencimientosData?.detalle ? (
                     vencimientosData.detalle.map((d: any) => (
-                      <tr key={d.id} className="hover:bg-slate-700/30 transition-colors">
+                      <tr key={d.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="p-3.5">
-                          <strong className="text-white block">{d.nombres} {d.apellidos}</strong>
-                          <span className="text-slate-400 text-[11px] font-mono">DNI: {d.numero_documento}</span>
+                          <strong className="text-slate-900 block">{d.nombres} {d.apellidos}</strong>
+                          <span className="text-slate-500 text-[11px] font-mono">DNI: {d.numero_documento}</span>
                         </td>
-                        <td className="p-3.5 text-slate-300">{d.empresa_nombre}</td>
+                        <td className="p-3.5 text-slate-700">{d.empresa_nombre}</td>
                         <td className="p-3.5">
-                          <span className="text-slate-200 block font-medium">{d.cargo}</span>
+                          <span className="text-slate-900 block font-medium">{d.cargo}</span>
                           <span className="text-slate-500 text-[11px]">{d.fase_actual}</span>
                         </td>
-                        <td className="p-3.5 font-mono text-slate-300 font-bold">
+                        <td className="p-3.5 font-mono text-slate-800 font-bold">
                           {d.sctr_vencimiento || 'No registrado'}
                         </td>
                         <td className="p-3.5">
                           {d.dias_restantes !== null ? (
-                            <span className={d.dias_restantes <= 0 ? 'text-rose-400 font-bold' : d.dias_restantes <= 15 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}>
+                            <span className={d.dias_restantes <= 0 ? 'text-rose-700 font-bold' : d.dias_restantes <= 15 ? 'text-amber-700 font-bold' : 'text-emerald-700 font-bold'}>
                               {d.dias_restantes <= 0 ? `Venció hace ${Math.abs(d.dias_restantes)} días` : `${d.dias_restantes} días`}
                             </span>
                           ) : (
-                            <span className="text-slate-500">Pendiente</span>
+                            <span className="text-slate-400">Pendiente</span>
                           )}
                         </td>
                         <td className="p-3.5">
                           {d.semaforo === 'VERDE' && (
-                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full font-bold text-[11px] shadow-sm">
                               🟢 VIGENTE
                             </span>
                           )}
                           {d.semaforo === 'AMBAR' && (
-                            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                            <span className="bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full font-bold text-[11px] shadow-sm">
                               🟡 POR VENCER
                             </span>
                           )}
                           {d.semaforo === 'ROJO' && (
-                            <span className="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                            <span className="bg-rose-50 text-rose-800 border border-rose-200 px-2.5 py-1 rounded-full font-bold text-[11px] shadow-sm">
                               🔴 VENCIDO
                             </span>
                           )}
                           {d.semaforo === 'SIN_FECHA' && (
-                            <span className="text-slate-500">Sin Póliza</span>
+                            <span className="text-slate-400">Sin Póliza</span>
                           )}
                         </td>
                       </tr>

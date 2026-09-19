@@ -246,14 +246,14 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
   return (
     <div className="space-y-6">
       {/* TABS DE PORTAL CONTRATISTA */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-750 pb-3">
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
         <button
           type="button"
           onClick={() => setTabActiva('personal')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
             tabActiva === 'personal'
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+              ? 'bg-blue-700 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -265,8 +265,8 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
           onClick={() => setTabActiva('sctr')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
             tabActiva === 'sctr'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
-              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+              ? 'bg-blue-700 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200'
           }`}
         >
           <FileCheck2 className="w-4 h-4" />
@@ -275,26 +275,26 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
       </div>
 
       {tabActiva === 'sctr' && (
-        <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-700 mb-4">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200 mb-4">
             <div>
-              <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2">
-                <FileCheck2 className="w-5 h-5" /> Monitoreo y Renovación de SCTR Colectivo
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <FileCheck2 className="w-5 h-5 text-emerald-600" /> Monitoreo y Renovación de SCTR Colectivo
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Pólizas SCTR Salud y Pensión para habilitación legal en operaciones mineras
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-bold rounded-xl">
+              <span className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl">
                 {postulantes.filter(p => p.fase_actual === 'FOTOCHECK' || p.estado_global === 'APTO_PARA_TRABAJAR').length} Asegurados Activos
               </span>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-900/80 text-slate-400 uppercase font-mono text-[11px] border-b border-slate-700">
+            <table className="w-full text-left text-xs text-slate-700">
+              <thead className="bg-slate-50 text-slate-600 uppercase font-mono text-[11px] border-b border-slate-200">
                 <tr>
                   <th className="p-3">Trabajador</th>
                   <th className="p-3">DNI</th>
@@ -304,33 +304,33 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                   <th className="p-3">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/60">
+              <tbody className="divide-y divide-slate-100">
                 {postulantes.map((p) => {
                   const tieneSctr = p.fase_actual === 'FOTOCHECK' || p.estado_global === 'APTO_PARA_TRABAJAR';
                   const sctrObs = p.fase_actual === 'FASE_5' && p.estado_global === 'OBSERVADO';
 
                   return (
-                    <tr key={p.id} className="hover:bg-slate-750 transition-colors">
-                      <td className="p-3 font-bold text-white">{p.apellidos}, {p.nombres}</td>
-                      <td className="p-3 font-mono">{p.numero_documento}</td>
-                      <td className="p-3 text-slate-400">{p.cargo}</td>
+                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-3 font-bold text-slate-900">{p.apellidos}, {p.nombres}</td>
+                      <td className="p-3 font-mono text-slate-800">{p.numero_documento}</td>
+                      <td className="p-3 text-slate-600">{p.cargo}</td>
                       <td className="p-3">
-                        <span className="bg-slate-900 border border-slate-700 text-slate-300 text-[10px] font-mono px-2 py-0.5 rounded">
+                        <span className="bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-mono px-2 py-0.5 rounded">
                           {p.tipo_pase || 'PERMANENTE'}
                         </span>
                       </td>
                       <td className="p-3">
                         {tieneSctr ? (
-                          <span className="bg-emerald-950 border border-emerald-600/40 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 w-fit">
-                            <CheckCircle className="w-3 h-3" /> VIGENTE
+                          <span className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 w-fit">
+                            <CheckCircle className="w-3 h-3 text-emerald-600" /> VIGENTE
                           </span>
                         ) : sctrObs ? (
-                          <span className="bg-amber-950 border border-amber-600/40 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 w-fit animate-pulse">
-                            <AlertTriangle className="w-3 h-3" /> OBSERVADO
+                          <span className="bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 w-fit animate-pulse">
+                            <AlertTriangle className="w-3 h-3 text-amber-600" /> OBSERVADO
                           </span>
                         ) : (
-                          <span className="bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 w-fit">
-                            <Clock className="w-3 h-3" /> PENDIENTE FASE 5
+                          <span className="bg-slate-100 border border-slate-200 text-slate-600 text-[10px] px-2.5 py-0.5 rounded-full flex items-center gap-1 w-fit">
+                            <Clock className="w-3 h-3 text-slate-500" /> PENDIENTE FASE 5
                           </span>
                         )}
                       </td>
@@ -339,7 +339,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                           <button
                             type="button"
                             onClick={() => handleOpenSubsanar(p)}
-                            className="text-amber-400 hover:text-amber-300 font-bold underline"
+                            className="text-amber-700 hover:text-amber-800 font-bold underline"
                           >
                             Subsanar SCTR
                           </button>
@@ -347,7 +347,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                           <button
                             type="button"
                             onClick={() => handleOpenSplitViewer(p)}
-                            className="text-blue-400 hover:text-blue-300 font-medium"
+                            className="text-blue-700 hover:text-blue-800 font-medium"
                           >
                             Ver Póliza
                           </button>
@@ -363,16 +363,16 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
       )}
 
       {tabActiva === 'personal' && (
-        <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
-          <div className="p-6 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-800/80">
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
             <div>
-              <h3 className="font-bold text-lg text-white">Mis Postulantes (Servicios Mineros XYZ S.A.C.)</h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Semáforo de cumplimiento: Vistos Buenos requeridos para estar <span className="text-emerald-400 font-bold">APTO PARA TRABAJAR</span>
+              <h3 className="font-bold text-lg text-slate-900">Mis Postulantes (Servicios Mineros XYZ S.A.C.)</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Semáforo de cumplimiento: Vistos Buenos requeridos para estar <span className="text-emerald-700 font-bold">APTO PARA TRABAJAR</span>
               </p>
             </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold px-3 py-1 bg-slate-700/60 text-slate-300 rounded-lg">
+            <span className="text-xs font-semibold px-3 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg shadow-sm">
               {postulantes.length} Registrados
             </span>
             <button
@@ -380,7 +380,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                 setNuevoError('');
                 setNuevoModalOpen(true);
               }}
-              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition-colors"
+              className="flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition-colors"
             >
               <UserPlus className="w-4 h-4" />
               Nuevo Personal / Pase
@@ -391,7 +391,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
         {/* VISTA DESKTOP: TABLA HTML (hidden en mobile y tablet, visible solo en lg:block) */}
         <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-900/90 text-slate-400 border-b border-slate-700/80">
+            <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
               <tr>
                 <th className="p-4 font-semibold">Candidato / Cargo</th>
                 <th className="p-4 font-semibold text-center">Semáforo de Vistos Buenos (5 Áreas)</th>
@@ -399,33 +399,33 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                 <th className="p-4 font-semibold">Observaciones / Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/60">
+            <tbody className="divide-y divide-slate-100">
               {postulantes.map((postulante) => {
                 const isObservado = postulante.estado_global === 'OBSERVADO';
                 const isAptoTotal = postulante.estado_global === 'APTO_PARA_TRABAJAR' || postulante.fase_actual === 'FOTOCHECK';
 
                 return (
-                  <tr key={postulante.id} className="hover:bg-slate-750/50 transition-colors">
+                  <tr key={postulante.id} className="hover:bg-slate-50/70 transition-colors">
                     {/* CANDIDATO */}
                     <td className="p-4">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-white">
+                        <span className="font-semibold text-slate-900">
                           {postulante.apellidos}, {postulante.nombres}
                         </span>
                         {postulante.tipo_pase && (
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border ${
                             postulante.tipo_pase === 'VISITA_TECNICA'
-                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
                               : postulante.tipo_pase === 'PROVEEDOR_LOGISTICO'
-                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                              : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                              ? 'bg-purple-50 text-purple-800 border-purple-200'
+                              : 'bg-blue-50 text-blue-800 border-blue-200'
                           }`}>
                             {postulante.tipo_pase.replace('_', ' ')}
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-slate-400 mt-0.5">
-                        {postulante.cargo} • Doc: <span className="font-mono text-slate-300">{postulante.numero_documento}</span>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        {postulante.cargo} • Doc: <span className="font-mono text-slate-700">{postulante.numero_documento}</span>
                       </div>
                     </td>
                     
@@ -441,18 +441,18 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                         ].map(({ num, label }) => {
                           const st = getFaseStatus(postulante, num);
 
-                          let bg = 'bg-slate-800 text-slate-500 border-slate-700';
+                          let bg = 'bg-slate-100 text-slate-500 border-slate-200';
                           let icon = <Clock className="w-3 h-3" />;
 
                           if (st === 'APROBADO') {
-                            bg = 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40 font-bold';
-                            icon = <Check className="w-3 h-3 text-emerald-400" />;
+                            bg = 'bg-emerald-50 text-emerald-800 border-emerald-200 font-bold';
+                            icon = <Check className="w-3 h-3 text-emerald-600" />;
                           } else if (st === 'OBSERVADO') {
-                            bg = 'bg-amber-950/70 text-amber-300 border-amber-500/40 animate-pulse font-bold';
-                            icon = <AlertTriangle className="w-3 h-3 text-amber-400" />;
+                            bg = 'bg-amber-50 text-amber-800 border-amber-200 animate-pulse font-bold';
+                            icon = <AlertTriangle className="w-3 h-3 text-amber-600" />;
                           } else if (st === 'EN_PROCESO') {
-                            bg = 'bg-blue-950/70 text-blue-300 border-blue-500/40 font-bold';
-                            icon = <Clock className="w-3 h-3 text-blue-400 animate-spin" />;
+                            bg = 'bg-blue-50 text-blue-800 border-blue-200 font-bold';
+                            icon = <Clock className="w-3 h-3 text-blue-600 animate-spin" />;
                           }
 
                           return (
@@ -483,30 +483,30 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                         <button
                           type="button"
                           onClick={() => handleOpenSplitViewer(postulante)}
-                          className="inline-flex items-center gap-1 text-xs text-blue-300 bg-slate-700/80 hover:bg-slate-750 px-2.5 py-1.5 rounded-lg border border-slate-600 font-medium transition-colors"
+                          className="inline-flex items-center gap-1 text-xs text-slate-700 bg-white hover:bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 font-semibold transition-colors shadow-sm"
                         >
-                          <Eye className="w-3.5 h-3.5 text-blue-400" /> Ver Expediente
+                          <Eye className="w-3.5 h-3.5 text-blue-700" /> Ver Expediente
                         </button>
 
                         {isObservado && (
                           <button 
                             type="button"
                             onClick={() => handleOpenSubsanar(postulante)}
-                            className="inline-flex items-center gap-1 text-xs text-white bg-amber-600 hover:bg-amber-500 font-bold px-3 py-1.5 rounded-lg shadow transition-colors"
+                            className="inline-flex items-center gap-1 text-xs text-white bg-amber-600 hover:bg-amber-700 font-bold px-3 py-1.5 rounded-lg shadow-sm transition-colors"
                           >
                             <UploadCloud className="w-3.5 h-3.5" /> Subsanar v2
                           </button>
                         )}
 
                         {isAptoTotal && (
-                          <span className="text-emerald-400 font-semibold text-xs inline-flex items-center gap-1">
+                          <span className="text-emerald-700 font-semibold text-xs inline-flex items-center gap-1">
                             <ShieldCheck className="w-3.5 h-3.5" /> Apto para Mina
                           </span>
                         )}
                       </div>
 
                       {isObservado && (
-                        <p className="text-amber-300 text-[11px] font-medium italic mt-1">
+                        <p className="text-amber-800 text-[11px] font-medium italic mt-1">
                           "{postulante.ultima_observacion || 'Documento observado por el evaluador de área.'}"
                         </p>
                       )}
@@ -519,14 +519,14 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
         </div>
 
         {/* VISTA MÓVIL Y TABLET: TARJETAS ACORDEÓN (lg:hidden) - CERO SCROLL HORIZONTAL */}
-        <div className="block lg:hidden divide-y divide-slate-800">
+        <div className="block lg:hidden divide-y divide-slate-200">
           {postulantes.map((postulante) => {
             const isObservado = postulante.estado_global === 'OBSERVADO';
             const isAptoTotal = postulante.estado_global === 'APTO_PARA_TRABAJAR' || postulante.fase_actual === 'FOTOCHECK';
             const isExpanded = expandedId === postulante.id;
 
             return (
-              <div key={postulante.id} className="p-4 bg-slate-850/40 hover:bg-slate-800/40 transition-colors">
+              <div key={postulante.id} className="p-4 bg-white hover:bg-slate-50 transition-colors">
                 {/* CABECERA DE LA TARJETA (TAPABLE) */}
                 <div 
                   onClick={() => toggleAccordion(postulante.id)}
@@ -534,17 +534,17 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-white text-sm">
+                      <span className="font-bold text-slate-900 text-sm">
                         {postulante.apellidos}, {postulante.nombres}
                       </span>
                       {postulante.tipo_pase && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-50 text-blue-800 border border-blue-200">
                           {postulante.tipo_pase.replace('_', ' ')}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5 truncate">
-                      {postulante.cargo} • Doc: <span className="font-mono text-slate-300">{postulante.numero_documento}</span>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      {postulante.cargo} • Doc: <span className="font-mono text-slate-700">{postulante.numero_documento}</span>
                     </p>
                   </div>
 
@@ -553,7 +553,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                       estado={postulante.estado_global} 
                       fase={isAptoTotal ? undefined : postulante.fase_actual}
                     />
-                    <div className="p-1.5 text-slate-400 rounded-lg hover:bg-slate-700">
+                    <div className="p-1.5 text-slate-400 rounded-lg hover:bg-slate-100">
                       {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </div>
                   </div>
@@ -561,10 +561,10 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
 
                 {/* CONTENIDO DESPLEGABLE (ACORDEÓN) */}
                 {isExpanded && (
-                  <div className="mt-4 pt-3 border-t border-slate-750/70 space-y-3 animate-fade-in">
+                  <div className="mt-4 pt-3 border-t border-slate-200 space-y-3 animate-fade-in">
                     {/* SEMÁFORO VERTICAL DE LAS 5 FASES */}
                     <div>
-                      <span className="text-[11px] font-semibold text-slate-400 block mb-1.5">
+                      <span className="text-[11px] font-semibold text-slate-500 block mb-1.5">
                         Estado de Fases y Vistos Buenos:
                       </span>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -577,18 +577,18 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                         ].map(({ num, label }) => {
                           const st = getFaseStatus(postulante, num);
 
-                          let bg = 'bg-slate-800 text-slate-400 border-slate-700';
+                          let bg = 'bg-slate-100 text-slate-500 border-slate-200';
                           let icon = <Clock className="w-3 h-3" />;
 
                           if (st === 'APROBADO') {
-                            bg = 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40 font-bold';
-                            icon = <Check className="w-3 h-3 text-emerald-400" />;
+                            bg = 'bg-emerald-50 text-emerald-800 border-emerald-200 font-bold';
+                            icon = <Check className="w-3 h-3 text-emerald-600" />;
                           } else if (st === 'OBSERVADO') {
-                            bg = 'bg-amber-950/70 text-amber-300 border-amber-500/40 font-bold';
-                            icon = <AlertTriangle className="w-3 h-3 text-amber-400" />;
+                            bg = 'bg-amber-50 text-amber-800 border-amber-200 font-bold';
+                            icon = <AlertTriangle className="w-3 h-3 text-amber-600" />;
                           } else if (st === 'EN_PROCESO') {
-                            bg = 'bg-blue-950/70 text-blue-300 border-blue-500/40 font-bold';
-                            icon = <Clock className="w-3 h-3 text-blue-400" />;
+                            bg = 'bg-blue-50 text-blue-800 border-blue-200 font-bold';
+                            icon = <Clock className="w-3 h-3 text-blue-600" />;
                           }
 
                           return (
@@ -603,9 +603,9 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
 
                     {/* OBSERVACIÓN SI EXISTE */}
                     {isObservado && (
-                      <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-xl">
-                        <span className="text-[10px] font-bold text-amber-400 uppercase block">Observación Emitida:</span>
-                        <p className="text-xs text-amber-200 italic mt-0.5">
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                        <span className="text-[10px] font-bold text-amber-800 uppercase block">Observación Emitida:</span>
+                        <p className="text-xs text-amber-900 italic mt-0.5">
                           "{postulante.ultima_observacion || 'Documento observado por el evaluador de área.'}"
                         </p>
                       </div>
@@ -619,9 +619,9 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                           e.stopPropagation();
                           handleOpenSplitViewer(postulante);
                         }}
-                        className="flex-1 bg-slate-750 hover:bg-slate-700 text-blue-300 border border-blue-500/30 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                        className="flex-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                       >
-                        <Eye className="w-4 h-4 text-blue-400" /> Ver Expediente
+                        <Eye className="w-4 h-4 text-blue-700" /> Ver Expediente
                       </button>
 
                       {isObservado && (
@@ -631,15 +631,15 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                             e.stopPropagation();
                             handleOpenSubsanar(postulante);
                           }}
-                          className="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-colors"
+                          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors"
                         >
                           <UploadCloud className="w-4 h-4" /> Subsanar v2
                         </button>
                       )}
 
                       {isAptoTotal && (
-                        <div className="flex-1 bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
-                          <ShieldCheck className="w-4 h-4 text-emerald-400" /> Habilitado Mina
+                        <div className="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-800 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+                          <ShieldCheck className="w-4 h-4 text-emerald-600" /> Habilitado Mina
                         </div>
                       )}
                     </div>
@@ -677,18 +677,18 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
         title={`Actualizar Documento - ${selectedPostulante?.nombres} ${selectedPostulante?.apellidos}`}
       >
         <form onSubmit={handleSubsanarSubmit} className="space-y-4">
-          <div className="bg-amber-950/40 border border-amber-500/30 p-3 rounded-xl">
-            <p className="text-xs font-semibold text-amber-300">Observación emitida por el área responsable:</p>
-            <p className="text-sm text-amber-100 mt-1 italic">
+          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl">
+            <p className="text-xs font-semibold text-amber-800">Observación emitida por el área responsable:</p>
+            <p className="text-sm text-amber-900 mt-1 italic">
               "{selectedPostulante?.ultima_observacion || 'Corrija el archivo solicitado.'}"
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-2">
+            <label className="block text-xs font-medium text-slate-700 mb-2">
               Subir nueva versión corregida (PDF, JPG, PNG)
             </label>
-            <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-4 text-center cursor-pointer transition-colors bg-slate-800/50">
+            <div className="border-2 border-dashed border-slate-300 hover:border-blue-600 rounded-xl p-4 text-center cursor-pointer transition-colors bg-slate-50">
               <input 
                 type="file" 
                 accept=".pdf,.png,.jpg,.jpeg"
@@ -698,8 +698,8 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                 required
               />
               <label htmlFor="file-subsanar" className="cursor-pointer flex flex-col items-center">
-                <FileText className="w-8 h-8 text-blue-400 mb-2" />
-                <span className="text-sm font-medium text-white">
+                <FileText className="w-8 h-8 text-blue-700 mb-2" />
+                <span className="text-sm font-medium text-slate-900">
                   {selectedFile ? selectedFile.name : 'Haz clic para seleccionar el documento v2'}
                 </span>
                 <span className="text-xs text-slate-500 mt-1">Máximo 15 MB • Formato oficial</span>
@@ -708,21 +708,21 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">
+            <label className="block text-xs font-medium text-slate-700 mb-1">
               Notas de descargo / Sustento para el evaluador:
             </label>
             <textarea 
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
               placeholder="Explica qué corrección se aplicó a la póliza o certificado..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               rows={2}
             />
           </div>
 
           {successMsg && (
-            <div className="flex items-center gap-2 p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 rounded-xl text-xs font-medium">
-              <CheckCircle className="w-4 h-4" /> {successMsg}
+            <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium">
+              <CheckCircle className="w-4 h-4 text-emerald-600" /> {successMsg}
             </div>
           )}
 
@@ -730,14 +730,14 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
             <button 
               type="button"
               onClick={() => setSubsanarModalOpen(false)}
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white rounded-lg"
+              className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
             >
               Cancelar
             </button>
             <button 
               type="submit"
               disabled={loading || !selectedFile}
-              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl text-sm transition-colors flex items-center gap-2"
+              className="bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl text-sm transition-colors flex items-center gap-2 shadow-sm"
             >
               {loading ? 'Subiendo...' : 'Enviar Documento Actualizado'}
             </button>
@@ -754,7 +754,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
       >
         <form onSubmit={handleCrearSubmit} className="space-y-5">
           {nuevoError && (
-            <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/50 text-rose-300 text-xs font-medium">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
               {nuevoError}
             </div>
           )}
@@ -763,7 +763,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
             <div className="space-y-4 min-w-0">
               {/* Selector de Tipo de Pase */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                   Tipo de Pase / Categoría de Acceso Minero:
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -772,12 +772,12 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                     onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'PERMANENTE' })}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       nuevoForm.tipo_pase === 'PERMANENTE'
-                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-md'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                        ? 'bg-blue-50 border-blue-600 text-blue-900 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <div className="font-bold text-xs">Permanente</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Roster 14x7 / Planta / Mina (5/5 V°B°)</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Roster 14x7 / Planta / Mina (5/5 V°B°)</div>
                   </button>
 
                   <button
@@ -785,12 +785,12 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                     onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'VISITA_TECNICA' })}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       nuevoForm.tipo_pase === 'VISITA_TECNICA'
-                        ? 'bg-amber-600/20 border-amber-500 text-white shadow-md'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                        ? 'bg-amber-50 border-amber-600 text-amber-900 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <div className="font-bold text-xs text-amber-300">Visita Técnica</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">1 a 7 días • Con Acompañante</div>
+                    <div className="font-bold text-xs text-amber-800">Visita Técnica</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">1 a 7 días • Con Acompañante</div>
                   </button>
 
                   <button
@@ -798,35 +798,35 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                     onClick={() => setNuevoForm({ ...nuevoForm, tipo_pase: 'PROVEEDOR_LOGISTICO' })}
                     className={`p-3 rounded-xl border text-left transition-all ${
                       nuevoForm.tipo_pase === 'PROVEEDOR_LOGISTICO'
-                        ? 'bg-purple-600/20 border-purple-500 text-white shadow-md'
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                        ? 'bg-purple-50 border-purple-600 text-purple-900 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <div className="font-bold text-xs text-purple-300">Proveedor Logístico</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Solo Almacén / Patio Superficie</div>
+                    <div className="font-bold text-xs text-purple-800">Proveedor Logístico</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Solo Almacén / Patio Superficie</div>
                   </button>
                 </div>
               </div>
 
               {/* Fechas de vigencia para pases temporales */}
               {nuevoForm.tipo_pase !== 'PERMANENTE' && (
-                <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Fecha de Ingreso / Inicio:</label>
+                    <label className="block text-[11px] text-slate-600 mb-1">Fecha de Ingreso / Inicio:</label>
                     <input
                       type="date"
                       value={nuevoForm.vigencia_inicio}
                       onChange={(e) => setNuevoForm({ ...nuevoForm, vigencia_inicio: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                      className="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Fecha de Salida / Término:</label>
+                    <label className="block text-[11px] text-slate-600 mb-1">Fecha de Salida / Término:</label>
                     <input
                       type="date"
                       value={nuevoForm.vigencia_fin}
                       onChange={(e) => setNuevoForm({ ...nuevoForm, vigencia_fin: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                      className="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-900"
                     />
                   </div>
                 </div>
@@ -834,11 +834,11 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Tipo de Documento:</label>
+                  <label className="block text-xs text-slate-700 mb-1">Tipo de Documento:</label>
                   <select
                     value={nuevoForm.tipo_documento}
                     onChange={(e) => setNuevoForm({ ...nuevoForm, tipo_documento: e.target.value, numero_documento: '' })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900"
                   >
                     <option value="DNI">DNI (8 dígitos)</option>
                     <option value="CARNET_EXTRANJERIA">Carnet de Extranjería (9 car.)</option>
@@ -846,7 +846,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">
+                  <label className="block text-xs text-slate-700 mb-1">
                     Número de {nuevoForm.tipo_documento === 'DNI' ? 'DNI' : nuevoForm.tipo_documento === 'CARNET_EXTRANJERIA' ? 'C.E.' : 'Pasaporte'}:
                   </label>
                   <input
@@ -862,14 +862,14 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                       setNuevoForm({ ...nuevoForm, numero_documento: val });
                     }}
                     placeholder={nuevoForm.tipo_documento === 'DNI' ? 'Ej. 45891234' : 'Ej. 001234567'}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono uppercase"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 font-mono uppercase"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Nombres:</label>
+                  <label className="block text-xs text-slate-700 mb-1">Nombres:</label>
                   <input
                     type="text"
                     required
@@ -879,11 +879,11 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                       setNuevoForm({ ...nuevoForm, nombres: val });
                     }}
                     placeholder="Ej. Carlos Eduardo"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Apellidos:</label>
+                  <label className="block text-xs text-slate-700 mb-1">Apellidos:</label>
                   <input
                     type="text"
                     required
@@ -893,29 +893,29 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                       setNuevoForm({ ...nuevoForm, apellidos: val });
                     }}
                     placeholder="Ej. Quispe Morales"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Cargo / Puesto Minero:</label>
+                  <label className="block text-xs text-slate-700 mb-1">Cargo / Puesto Minero:</label>
                   <input
                     type="text"
                     required
                     value={nuevoForm.cargo}
                     onChange={(e) => setNuevoForm({ ...nuevoForm, cargo: e.target.value })}
                     placeholder="Ej. Técnico Electricista / Conductor"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Grupo Sanguíneo y Factor RH:</label>
+                  <label className="block text-xs text-slate-700 mb-1">Grupo Sanguíneo y Factor RH:</label>
                   <select
                     value={nuevoForm.grupo_sanguineo}
                     onChange={(e) => setNuevoForm({ ...nuevoForm, grupo_sanguineo: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 font-mono"
                   >
                     <option value="O+">O+ (O Positivo)</option>
                     <option value="O-">O- (O Negativo)</option>
@@ -931,7 +931,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Teléfono Móvil (9 dígitos, inicia en 9):</label>
+                  <label className="block text-xs text-slate-700 mb-1">Teléfono Móvil (9 dígitos, inicia en 9):</label>
                   <input
                     type="text"
                     maxLength={9}
@@ -941,17 +941,17 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                       setNuevoForm({ ...nuevoForm, telefono: val });
                     }}
                     placeholder="Ej. 987654321"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Email Corporativo (Opcional):</label>
+                  <label className="block text-xs text-slate-700 mb-1">Email Corporativo (Opcional):</label>
                   <input
                     type="email"
                     value={nuevoForm.email}
                     onChange={(e) => setNuevoForm({ ...nuevoForm, email: e.target.value.trim() })}
                     placeholder="trabajador@empresa.com"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900"
                   />
                 </div>
               </div>
@@ -963,35 +963,35 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
               // Evita que el navegador abra el archivo si se suelta fuera de una fila
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => e.preventDefault()}
-              className="min-w-0 lg:self-start lg:border-l lg:border-slate-800 lg:pl-6"
+              className="min-w-0 lg:self-start lg:border-l lg:border-slate-200 lg:pl-6"
             >
               <div className="flex items-baseline justify-between gap-3">
-                <h4 className="text-sm font-semibold text-white">Documentos</h4>
-                <span className="text-xs text-slate-400 tabular-nums">
+                <h4 className="text-sm font-semibold text-slate-900">Documentos</h4>
+                <span className="text-xs text-slate-500 tabular-nums font-medium">
                   {Object.keys(nuevosDocumentos).length} de {DOCUMENTOS_EXPEDIENTE.length}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">Haz clic o arrastra un archivo · PDF, JPG o PNG</p>
 
-              <div className="mt-3 h-1 rounded-full bg-slate-800 overflow-hidden">
+              <div className="mt-3 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 transition-all duration-300"
+                  className="h-full bg-emerald-600 transition-all duration-300"
                   style={{ width: `${(Object.keys(nuevosDocumentos).length / DOCUMENTOS_EXPEDIENTE.length) * 100}%` }}
                 />
               </div>
 
-              <ul className="mt-2 divide-y divide-slate-800">
+              <ul className="mt-2 divide-y divide-slate-100">
                 {DOCUMENTOS_EXPEDIENTE.map(({ campo, area, titulo, obligatorio }, indice) => {
                   const archivo = nuevosDocumentos[campo];
 
                   if (archivo) {
                     return (
                       <li key={campo} className="flex items-center gap-3 py-3">
-                        <span className="w-7 h-7 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                        <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
                           <Check className="w-4 h-4" />
                         </span>
                         <span className="flex-1 min-w-0">
-                          <span className="block text-sm text-slate-200 truncate">{titulo}</span>
+                          <span className="block text-sm text-slate-900 font-medium truncate">{titulo}</span>
                           <span className="block text-xs text-slate-500 truncate">
                             {archivo.name} · {formatearTamano(archivo.size)}
                           </span>
@@ -999,7 +999,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                         <button
                           type="button"
                           onClick={() => quitarDocumento(campo)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition-colors shrink-0"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
                           title="Quitar documento"
                           aria-label={`Quitar ${titulo}`}
                         >
@@ -1025,20 +1025,20 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                           asignarDocumento(campo, e.dataTransfer.files[0]);
                         }}
                         className={`group flex items-center gap-3 py-3 -mx-2 px-2 rounded-lg cursor-pointer transition-colors ${
-                          campoArrastre === campo ? 'bg-blue-500/10' : 'hover:bg-slate-800/50'
+                          campoArrastre === campo ? 'bg-blue-50' : 'hover:bg-slate-50'
                         }`}
                       >
-                        <span className="w-7 h-7 rounded-full border border-slate-700 text-xs text-slate-500 flex items-center justify-center shrink-0 group-hover:border-blue-500 group-hover:text-blue-400 transition-colors">
+                        <span className="w-7 h-7 rounded-full border border-slate-300 text-xs text-slate-600 flex items-center justify-center shrink-0 group-hover:border-blue-600 group-hover:text-blue-700 transition-colors">
                           {indice + 1}
                         </span>
                         <span className="flex-1 min-w-0">
-                          <span className="block text-sm text-slate-200 truncate">
+                          <span className="block text-sm text-slate-800 font-medium truncate">
                             {titulo}
-                            {obligatorio && <span className="text-rose-400"> *</span>}
+                            {obligatorio && <span className="text-rose-600"> *</span>}
                           </span>
                           <span className="block text-xs text-slate-500">{area}</span>
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-slate-400 group-hover:text-blue-400 transition-colors shrink-0">
+                        <span className="flex items-center gap-1 text-xs text-slate-500 group-hover:text-blue-700 transition-colors shrink-0 font-medium">
                           <UploadCloud className="w-4 h-4" /> Subir
                         </span>
                         <input
@@ -1060,7 +1060,7 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
                 type="button"
                 onClick={handleUsarDocumentosPrueba}
                 disabled={cargandoPrueba}
-                className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-slate-700 text-xs text-slate-400 hover:text-amber-300 hover:border-amber-500/50 disabled:opacity-50 transition-colors"
+                className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-slate-300 text-xs text-slate-600 hover:text-blue-700 hover:border-blue-400 hover:bg-blue-50/50 disabled:opacity-50 transition-colors"
               >
                 <FlaskConical className="w-3.5 h-3.5" />
                 {cargandoPrueba ? 'Cargando documentos…' : 'Usar documentos de prueba'}
@@ -1068,18 +1068,18 @@ export const PortalContratista: React.FC<PortalContratistaProps> = ({
             </aside>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setNuevoModalOpen(false)}
-              className="px-4 py-2 text-xs text-slate-400 hover:text-white rounded-lg"
+              className="px-4 py-2 text-xs text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={nuevoLoading}
-              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl text-xs transition-colors flex items-center gap-2 shadow-lg"
+              className="bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl text-xs transition-colors flex items-center gap-2 shadow-sm"
             >
               {nuevoLoading ? 'Creando...' : 'Registrar y Crear Expediente'}
             </button>

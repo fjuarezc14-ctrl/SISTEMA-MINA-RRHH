@@ -12,38 +12,38 @@ const resolverEstado = (postulante: Postulante): EstadoTarjeta => {
 };
 
 const PILL_BASE =
-  'inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full font-black tracking-wider whitespace-nowrap flex-shrink-0 shadow-sm';
+  'inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full font-bold tracking-wider whitespace-nowrap flex-shrink-0 shadow-sm';
 
 export const DocumentCardStatus: React.FC<{ postulante: Postulante }> = ({ postulante }) => {
   switch (resolverEstado(postulante)) {
     case 'LISTA_NEGRA':
       return (
-        <span className={`${PILL_BASE} bg-rose-950/80 border border-rose-500/50 text-rose-300 shadow-rose-900/40`}>
-          <Ban className="w-3.5 h-3.5 text-rose-400 animate-pulse flex-shrink-0" />
+        <span className={`${PILL_BASE} bg-rose-50 border border-rose-200 text-rose-800`}>
+          <Ban className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
           LISTA NEGRA / VETADO
         </span>
       );
 
     case 'OBSERVADO':
       return (
-        <span className={`${PILL_BASE} bg-amber-950/80 border border-amber-500/50 text-amber-300 shadow-amber-900/40`}>
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+        <span className={`${PILL_BASE} bg-amber-50 border border-amber-200 text-amber-800`}>
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
           DOCUMENTO OBSERVADO
         </span>
       );
 
     case 'SUBSANADO':
       return (
-        <span className={`${PILL_BASE} bg-sky-950/80 border border-sky-500/50 text-sky-300 shadow-sky-900/40`}>
-          <CheckCheck className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
+        <span className={`${PILL_BASE} bg-sky-50 border border-sky-200 text-sky-800`}>
+          <CheckCheck className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
           SUBSANADO · POR REVISAR
         </span>
       );
 
     default:
       return (
-        <span className={`${PILL_BASE} bg-blue-950/50 border border-blue-500/30 text-blue-300 font-bold`}>
-          <Clock className="w-3 h-3 text-blue-400 flex-shrink-0" />
+        <span className={`${PILL_BASE} bg-slate-100 border border-slate-200 text-slate-700`}>
+          <Clock className="w-3 h-3 text-slate-500 flex-shrink-0" />
           PENDIENTE DE REVISIÓN
         </span>
       );
@@ -58,18 +58,18 @@ export const DocumentCardDetail: React.FC<{ postulante: Postulante }> = ({ postu
 
   if (estado === 'LISTA_NEGRA') {
     return (
-      <div className="mt-4 p-3 bg-rose-950/50 border border-rose-500/40 rounded-xl text-xs text-rose-200 flex items-start gap-2.5 shadow-md shadow-rose-950/30">
-        <ShieldAlert className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+      <div className="mt-4 p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900 flex items-start gap-2.5 shadow-sm">
+        <ShieldAlert className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
         <div className="space-y-1 min-w-0 flex-1">
           <div>
-            <span className="font-bold text-rose-300">Causal de Inclusión en Lista Negra: </span>
-            <span className="text-rose-100">
+            <span className="font-bold text-rose-900">Causal de Inclusión en Lista Negra: </span>
+            <span className="text-rose-800">
               {postulante.motivo_lista_negra ||
                 postulante.ultima_observacion ||
                 'Bloqueo definitivo por falta médica crítica o antecedentes disciplinarios/legales.'}
             </span>
           </div>
-          <p className="text-[10px] text-rose-300/80 font-bold uppercase tracking-wider">
+          <p className="text-[10px] text-rose-700 font-bold uppercase tracking-wider">
             * ACCESO RESTRINGIDO - Prohibido otorgar Visto Bueno o emitir pase
           </p>
         </div>
@@ -79,17 +79,17 @@ export const DocumentCardDetail: React.FC<{ postulante: Postulante }> = ({ postu
 
   if (estado === 'OBSERVADO') {
     return (
-      <div className="mt-4 p-3 bg-amber-950/50 border border-amber-500/40 rounded-xl text-xs text-amber-200 flex items-start gap-2.5 shadow-md shadow-amber-950/30">
-        <FileWarning className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+      <div className="mt-4 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5 shadow-sm">
+        <FileWarning className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
         <div className="space-y-1 min-w-0 flex-1">
           <div>
-            <span className="font-bold text-amber-300">Observación técnica de la fase: </span>
-            <span className="text-amber-100">
+            <span className="font-bold text-amber-900">Observación técnica de la fase: </span>
+            <span className="text-amber-800">
               "{postulante.ultima_observacion ||
                 'Documento con observaciones pendientes de subsanación o descargo por la contratista.'}"
             </span>
           </div>
-          <p className="text-[10px] text-amber-300/80 font-medium">
+          <p className="text-[10px] text-amber-700 font-medium">
             * El contratista debe remitir la versión corregida antes de reevaluar.
           </p>
         </div>
@@ -98,10 +98,10 @@ export const DocumentCardDetail: React.FC<{ postulante: Postulante }> = ({ postu
   }
 
   return (
-    <div className="mt-4 p-3 bg-sky-950/50 border border-sky-500/40 rounded-xl text-xs text-sky-200 flex items-start gap-2.5 shadow-md shadow-sky-950/30">
-      <CheckCheck className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+    <div className="mt-4 p-3.5 bg-sky-50 border border-sky-200 rounded-xl text-xs text-sky-900 flex items-start gap-2.5 shadow-sm">
+      <CheckCheck className="w-4 h-4 text-sky-600 flex-shrink-0 mt-0.5" />
       <div className="space-y-1 min-w-0 flex-1">
-        <p className="text-sky-100">
+        <p className="text-sky-800">
           La contratista ya remitió la versión corregida del documento. Está a la espera de una nueva revisión del
           evaluador de área.
         </p>
@@ -113,12 +113,12 @@ export const DocumentCardDetail: React.FC<{ postulante: Postulante }> = ({ postu
 export const getDocumentCardBorderClass = (postulante: Postulante): string => {
   switch (resolverEstado(postulante)) {
     case 'LISTA_NEGRA':
-      return 'border-rose-500/60 bg-gradient-to-br from-slate-900 via-rose-950/25 to-slate-900 hover:border-rose-400 shadow-lg shadow-rose-950/20';
+      return 'border-rose-200 bg-rose-50/30 hover:border-rose-300 shadow-sm';
     case 'OBSERVADO':
-      return 'border-amber-500/50 bg-gradient-to-br from-slate-900 via-amber-950/20 to-slate-900 hover:border-amber-400 shadow-lg shadow-amber-950/20';
+      return 'border-amber-200 bg-amber-50/30 hover:border-amber-300 shadow-sm';
     case 'SUBSANADO':
-      return 'border-sky-500/50 bg-gradient-to-br from-slate-900 via-sky-950/20 to-slate-900 hover:border-sky-400 shadow-lg shadow-sky-950/20';
+      return 'border-sky-200 bg-sky-50/30 hover:border-sky-300 shadow-sm';
     default:
-      return 'border-slate-700 bg-slate-900 hover:border-slate-600';
+      return 'border-slate-200 bg-white hover:border-slate-300 shadow-sm';
   }
 };

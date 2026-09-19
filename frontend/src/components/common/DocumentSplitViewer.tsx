@@ -319,25 +319,25 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-7xl h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-7xl h-[92vh] flex flex-col overflow-hidden shadow-2xl">
         
         {/* BARRA SUPERIOR DEL VISOR */}
-        <div className="bg-slate-950 border-b border-slate-800 px-6 py-4 flex-shrink-0 space-y-3">
+        <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex-shrink-0 space-y-3">
           {/* FILA 1: Título del expediente + Cerrar */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 flex-shrink-0">
                 <FileText className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-base font-bold text-white tracking-tight truncate">{currentFaseInfo.titulo}</h3>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight truncate">{currentFaseInfo.titulo}</h3>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
-                  <span className="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">
+                  <span className="text-[11px] bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono">
                     {currentFaseInfo.tipoDoc}
                   </span>
-                  <p className="text-xs text-slate-400">
-                    Área: <span className="text-blue-400 font-medium">{currentFaseInfo.area}</span>
+                  <p className="text-xs text-slate-500">
+                    Área: <span className="text-blue-700 font-semibold">{currentFaseInfo.area}</span>
                   </p>
                 </div>
               </div>
@@ -345,7 +345,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
 
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors flex-shrink-0"
+              className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-200 transition-colors flex-shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
@@ -354,13 +354,13 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
           {/* FILA 2: Pestañas + Control de versión real del documento */}
           <div className="flex flex-wrap items-center gap-2 justify-between">
             {/* SELECTOR DE PESTAÑAS (DOCUMENTO / HISTORIAL V°B° / SEGUROS) */}
-            <div className="flex items-center bg-slate-900 border border-slate-750 p-1 rounded-xl text-xs flex-wrap">
+            <div className="flex items-center bg-white border border-slate-200 p-1 rounded-xl text-xs flex-wrap shadow-sm">
               <button
                 onClick={() => setActiveTab('DOCUMENTO')}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
                   activeTab === 'DOCUMENTO'
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-blue-700 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" /> Expediente
@@ -369,8 +369,8 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                 onClick={() => setActiveTab('HISTORIAL_VB')}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
                   activeTab === 'HISTORIAL_VB'
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-blue-700 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 <Award className="w-3.5 h-3.5" /> Historial V°B° ({historialVB.length})
@@ -379,8 +379,8 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                 onClick={() => setActiveTab('HISTORIAL_SEGUROS')}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
                   activeTab === 'HISTORIAL_SEGUROS'
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-blue-700 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 <FileCheck className="w-3.5 h-3.5" /> Pólizas Anteriores ({historialSeguros.length})
@@ -389,13 +389,13 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
 
             {/* CONTROL DE VERSIÓN: solo la última versión real + acceso a anteriores */}
             <div className="relative">
-              <div className="flex items-center gap-2 bg-slate-900 border border-slate-750 px-3 py-1.5 rounded-xl text-xs">
-                <History className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                <span className="text-slate-400 whitespace-nowrap">
-                  Última versión: <span className="text-white font-bold">v{ultimaVersion?.version ?? 1}</span>
+              <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs shadow-sm">
+                <History className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                <span className="text-slate-600 whitespace-nowrap">
+                  Última versión: <span className="text-slate-900 font-bold">v{ultimaVersion?.version ?? 1}</span>
                 </span>
                 {ultimaVersion?.subido_en && (
-                  <span className="text-slate-500 hidden sm:inline whitespace-nowrap">
+                  <span className="text-slate-400 hidden sm:inline whitespace-nowrap">
                     ({new Date(ultimaVersion.subido_en).toLocaleDateString('es-PE')})
                   </span>
                 )}
@@ -403,7 +403,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                   <button
                     type="button"
                     onClick={() => setMostrarVersionesAnteriores((v) => !v)}
-                    className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-bold ml-1 pl-2 border-l border-slate-700 whitespace-nowrap"
+                    className="flex items-center gap-1 text-blue-700 hover:text-blue-800 font-bold ml-1 pl-2 border-l border-slate-200 whitespace-nowrap"
                   >
                     Ver {versionesAnteriores.length} anterior{versionesAnteriores.length > 1 ? 'es' : ''}
                     <ChevronDown className={`w-3 h-3 transition-transform ${mostrarVersionesAnteriores ? 'rotate-180' : ''}`} />
@@ -412,7 +412,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
               </div>
 
               {mostrarVersionesAnteriores && versionesAnteriores.length > 0 && (
-                <div className="absolute right-0 mt-1 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-20 p-2 space-y-1">
+                <div className="absolute right-0 mt-1 w-72 bg-white border border-slate-200 rounded-xl shadow-xl z-20 p-2 space-y-1">
                   {ultimaVersion && (
                     <button
                       type="button"
@@ -422,12 +422,12 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
                         versionEnVisor === ultimaVersion.version
-                          ? 'bg-blue-600 text-white'
-                          : 'text-slate-300 hover:bg-slate-800'
+                          ? 'bg-blue-700 text-white'
+                          : 'text-slate-700 hover:bg-slate-50'
                       }`}
                     >
                       v{ultimaVersion.version} (Última)
-                      <span className="block text-[10px] opacity-70">
+                      <span className="block text-[10px] opacity-75">
                         {new Date(ultimaVersion.subido_en).toLocaleDateString('es-PE')} · {ultimaVersion.estado_documento}
                       </span>
                     </button>
@@ -442,12 +442,12 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${
                         versionEnVisor === doc.version
-                          ? 'bg-blue-600 text-white'
-                          : 'text-slate-300 hover:bg-slate-800'
+                          ? 'bg-blue-700 text-white'
+                          : 'text-slate-700 hover:bg-slate-50'
                       }`}
                     >
                       v{doc.version}
-                      <span className="block text-[10px] opacity-70">
+                      <span className="block text-[10px] opacity-75">
                         {new Date(doc.subido_en).toLocaleDateString('es-PE')} · {doc.estado_documento}
                       </span>
                     </button>
@@ -462,27 +462,27 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           
           {/* PANEL IZQUIERDO: VISOR DOCUMENTAL (60%) */}
-          <div className="flex-1 lg:flex-[1.4] bg-slate-950/60 p-6 overflow-y-auto border-r border-slate-800 flex flex-col items-center justify-start relative">
+          <div className="flex-1 lg:flex-[1.4] bg-slate-50 p-6 overflow-y-auto border-r border-slate-200 flex flex-col items-center justify-start relative">
             
             {/* BARRA DE HERRAMIENTAS DE ZOOM */}
-            <div className="sticky top-0 z-10 self-end mb-4 flex items-center gap-2 bg-slate-900/90 border border-slate-750 px-3 py-1.5 rounded-xl text-xs backdrop-blur shadow-lg">
+            <div className="sticky top-0 z-10 self-end mb-4 flex items-center gap-2 bg-white/95 border border-slate-200 px-3 py-1.5 rounded-xl text-xs backdrop-blur shadow-sm text-slate-700">
               <button 
                 onClick={() => setZoomLevel((prev) => Math.max(70, prev - 10))}
-                className="p-1 text-slate-300 hover:text-white rounded hover:bg-slate-800"
+                className="p-1 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-100"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
-              <span className="font-mono text-slate-400 min-w-10 text-center">{zoomLevel}%</span>
+              <span className="font-mono text-slate-700 min-w-10 text-center font-bold">{zoomLevel}%</span>
               <button 
                 onClick={() => setZoomLevel((prev) => Math.min(140, prev + 10))}
-                className="p-1 text-slate-300 hover:text-white rounded hover:bg-slate-800"
+                className="p-1 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-100"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>
-              <span className="w-px h-3 bg-slate-700 mx-1" />
+              <span className="w-px h-3 bg-slate-200 mx-1" />
               <button 
                 onClick={() => alert('Descarga de archivo con marca de agua autorizada.')}
-                className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-medium"
+                className="flex items-center gap-1 text-blue-700 hover:text-blue-800 font-semibold"
               >
                 <Download className="w-3.5 h-3.5" /> Descargar
               </button>
@@ -490,44 +490,44 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
 
             {/* RENDERIZADO SEGÚN PESTAÑA SELECCIONADA */}
             {activeTab === 'HISTORIAL_VB' ? (
-              <div className="w-full max-w-2xl bg-slate-900 border border-slate-750 rounded-2xl p-6 space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-                  <Award className="w-5 h-5 text-blue-400" />
-                  <h4 className="font-bold text-white text-sm">Historial y Trazabilidad de Vistos Buenos</h4>
+              <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <Award className="w-5 h-5 text-blue-700" />
+                  <h4 className="font-bold text-slate-900 text-sm">Historial y Trazabilidad de Vistos Buenos</h4>
                 </div>
                 {historialVB.length === 0 ? (
                   <p className="text-xs text-slate-400 text-center py-8">No hay registros de visto bueno previos aún para este candidato.</p>
                 ) : (
                   <div className="space-y-3">
                     {historialVB.map((vb, idx) => (
-                      <div key={idx} className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3.5 text-xs space-y-1.5">
+                      <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs space-y-1.5">
                         <div className="flex justify-between items-center">
-                          <span className="font-bold text-blue-300">Paso {idx + 1}: {vb.area_evaluadora || vb.fase}</span>
-                          <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
-                            vb.decision === 'VISTO_BUENO' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                          <span className="font-bold text-blue-800">Paso {idx + 1}: {vb.area_evaluadora || vb.fase}</span>
+                          <span className={`px-2 py-0.5 rounded font-bold text-[10px] border ${
+                            vb.decision === 'VISTO_BUENO' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'
                           }`}>
                             {vb.decision}
                           </span>
                         </div>
-                        <p className="text-slate-300">
-                          Evaluador: <strong className="text-white">{vb.evaluador_nombre || 'Especialista'}</strong>
+                        <p className="text-slate-700">
+                          Evaluador: <strong className="text-slate-900">{vb.evaluador_nombre || 'Especialista'}</strong>
                           {vb.evaluador_colegiatura && (
-                            <span className="text-blue-400 font-mono ml-1 font-semibold">({vb.evaluador_colegiatura})</span>
+                            <span className="text-blue-700 font-mono ml-1 font-semibold">({vb.evaluador_colegiatura})</span>
                           )}
                         </p>
                         {vb.metadatos?.nota !== undefined && (
-                          <p className="text-emerald-400 font-semibold">
+                          <p className="text-emerald-700 font-semibold">
                             Nota de Examen SSOMA: {String(vb.metadatos.nota).padStart(2, '0')}/20
                           </p>
                         )}
-                        <p className="text-slate-400 italic">
+                        <p className="text-slate-500 italic">
                           {((vb.fase === 'FASE_2' || vb.area_evaluadora?.includes('Médic') || vb.area_evaluadora?.includes('Salud')) && isConfidentialMedical)
                             ? '[Observación clínica reservada por Secreto Médico Ocupacional - Ley N° 29733]'
                             : ((vb.fase === 'FASE_3' || vb.area_evaluadora?.includes('Patrimonial') || vb.area_evaluadora?.includes('Legal')) && isConfidentialLegal)
                             ? '[Observación reservada por Seguridad Patrimonial]'
                             : `"${vb.observaciones || 'Conforme'}"`}
                         </p>
-                        <span className="text-[10px] text-slate-500 block pt-1 border-t border-slate-700/40">
+                        <span className="text-[10px] text-slate-400 block pt-1 border-t border-slate-200">
                           {new Date(vb.fecha_registro).toLocaleString('es-PE')}
                         </span>
                       </div>
@@ -536,23 +536,23 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                 )}
               </div>
             ) : activeTab === 'HISTORIAL_SEGUROS' ? (
-              <div className="w-full max-w-2xl bg-slate-900 border border-slate-750 rounded-2xl p-6 space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-                  <FileCheck className="w-5 h-5 text-emerald-400" />
-                  <h4 className="font-bold text-white text-sm">Histórico de Pólizas y Exámenes de Clínicas Autorizadas</h4>
+              <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <FileCheck className="w-5 h-5 text-emerald-600" />
+                  <h4 className="font-bold text-slate-900 text-sm">Histórico de Pólizas y Exámenes de Clínicas Autorizadas</h4>
                 </div>
                 {historialSeguros.length === 0 ? (
                   <p className="text-xs text-slate-400 text-center py-8">No hay pólizas previas registradas en el histórico.</p>
                 ) : (
                   <div className="space-y-3">
                     {historialSeguros.map((item, idx) => (
-                      <div key={idx} className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3.5 text-xs space-y-1.5">
+                      <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs space-y-1.5">
                         <div className="flex justify-between items-center">
-                          <span className="font-bold text-emerald-300">{item.tipo_seguro}</span>
-                          <span className="text-slate-400 font-mono">{item.numero_poliza || 'S/N'}</span>
+                          <span className="font-bold text-emerald-800">{item.tipo_seguro}</span>
+                          <span className="text-slate-600 font-mono">{item.numero_poliza || 'S/N'}</span>
                         </div>
-                        <p className="text-white font-medium">Clínica: {item.clinica_origen}</p>
-                        <div className="flex gap-4 text-slate-400 text-[11px]">
+                        <p className="text-slate-900 font-medium">Clínica: {item.clinica_origen}</p>
+                        <div className="flex gap-4 text-slate-500 text-[11px]">
                           <span>Inicio: {item.fecha_inicio ? new Date(item.fecha_inicio).toLocaleDateString('es-PE') : 'N/A'}</span>
                           <span>Vencimiento: {item.fecha_vencimiento ? new Date(item.fecha_vencimiento).toLocaleDateString('es-PE') : 'N/A'}</span>
                         </div>
@@ -562,21 +562,21 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                 )}
               </div>
             ) : hasAccessRestricted ? (
-              <div className="my-auto max-w-md w-full bg-slate-900 border-2 border-rose-500/40 rounded-2xl p-8 text-center shadow-2xl">
-                <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4 text-rose-400">
+              <div className="my-auto max-w-md w-full bg-white border-2 border-rose-200 rounded-2xl p-8 text-center shadow-lg">
+                <div className="w-16 h-16 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-center mx-auto mb-4 text-rose-600">
                   <ShieldAlert className="w-8 h-8" />
                 </div>
-                <h4 className="text-lg font-black text-white">DOCUMENTO CONFIDENCIAL</h4>
-                <span className="inline-block mt-1 px-3 py-1 bg-rose-950/80 border border-rose-500/30 text-rose-300 rounded-full text-xs font-bold uppercase tracking-wider">
+                <h4 className="text-lg font-black text-slate-900">DOCUMENTO CONFIDENCIAL</h4>
+                <span className="inline-block mt-1 px-3 py-1 bg-rose-50 border border-rose-200 text-rose-800 rounded-full text-xs font-bold uppercase tracking-wider">
                   {isConfidentialMedical ? 'Secreto Médico Ocupacional' : 'Reserva Legal y Patrimonial'}
                 </span>
-                <p className="text-xs text-slate-400 mt-4 leading-relaxed">
+                <p className="text-xs text-slate-600 mt-4 leading-relaxed">
                   {isConfidentialMedical
                     ? 'Este expediente contiene diagnósticos clínicos protegidos por la Ley General de Salud y la Ley de Protección de Datos Personales N° 29733. El contenido del EMO solo es accesible para el Médico Ocupacional y Super Admin.'
                     : 'Este documento contiene información judicial y policial clasificada. Su acceso está reservado exclusivamente para el Área de Seguridad Patrimonial.'}
                 </p>
-                <div className="mt-6 pt-4 border-t border-slate-800 text-[11px] text-slate-500">
-                  Tu rol actual: <span className="text-blue-400 font-bold">{userRole}</span>
+                <div className="mt-6 pt-4 border-t border-slate-200 text-[11px] text-slate-500">
+                  Tu rol actual: <span className="text-blue-700 font-bold">{userRole}</span>
                 </div>
               </div>
             ) : archivoCargando ? (
@@ -810,22 +810,22 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
           </div>
 
           {/* PANEL DERECHO: FORMULARIO DE DICTAMEN O PANEL DE CONTRATISTA (40%) */}
-          <div className="flex-1 lg:flex-[1] bg-slate-900 p-6 overflow-y-auto flex flex-col justify-between">
+          <div className="flex-1 lg:flex-[1] bg-white p-6 overflow-y-auto flex flex-col justify-between border-l border-slate-200">
             <div className="space-y-5">
               
               {/* FICHA RESUMEN DEL POSTULANTE */}
-              <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex items-center justify-between gap-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-slate-700 border border-slate-600 flex items-center justify-center text-slate-300 flex-shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 flex-shrink-0">
                     <User className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white leading-tight">
+                    <h4 className="text-sm font-bold text-slate-900 leading-tight">
                       {postulante.apellidos}, {postulante.nombres}
                     </h4>
-                    <p className="text-xs text-blue-400 font-semibold">{postulante.cargo}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Doc: <span className="font-mono text-slate-300">{postulante.numero_documento}</span> • {postulante.empresa_nombre}
+                    <p className="text-xs text-blue-700 font-semibold">{postulante.cargo}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Doc: <span className="font-mono text-slate-700">{postulante.numero_documento}</span> • {postulante.empresa_nombre}
                     </p>
                   </div>
                 </div>
@@ -833,23 +833,23 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                 {/* BADGE DE ESTADO DEL EXPEDIENTE */}
                 <div>
                   {isListaNegra && (
-                    <span className="inline-flex items-center gap-1 bg-rose-950/80 border border-rose-500/50 text-rose-300 text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow">
-                      <Ban className="w-3 h-3 text-rose-400" /> Lista Negra
+                    <span className="inline-flex items-center gap-1 bg-rose-50 border border-rose-200 text-rose-800 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm">
+                      <Ban className="w-3 h-3 text-rose-600" /> Lista Negra
                     </span>
                   )}
                   {isObservado && (
-                    <span className="inline-flex items-center gap-1 bg-amber-950/80 border border-amber-500/50 text-amber-300 text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow">
-                      <AlertTriangle className="w-3 h-3 text-amber-400" /> Observado
+                    <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm">
+                      <AlertTriangle className="w-3 h-3 text-amber-600" /> Observado
                     </span>
                   )}
                   {isSubsanadoPendiente && (
-                    <span className="inline-flex items-center gap-1 bg-sky-950/80 border border-sky-500/50 text-sky-300 text-[10px] px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow">
-                      <CheckCircle2 className="w-3 h-3 text-sky-400" /> Subsanado
+                    <span className="inline-flex items-center gap-1 bg-sky-50 border border-sky-200 text-sky-800 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm">
+                      <CheckCircle2 className="w-3 h-3 text-sky-600" /> Subsanado
                     </span>
                   )}
                   {!isListaNegra && !isObservado && !isSubsanadoPendiente && (
-                    <span className="inline-flex items-center gap-1 bg-blue-950/60 border border-blue-500/30 text-blue-300 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
-                      <Clock className="w-3 h-3 text-blue-400" /> Pendiente
+                    <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-700 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
+                      <Clock className="w-3 h-3 text-slate-500" /> Pendiente
                     </span>
                   )}
                 </div>
@@ -857,16 +857,16 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
 
               {/* BANNERS INFORMATIVOS DE ESTADO (OBSERVACIÓN, SUBSANACIÓN Y LISTA NEGRA) */}
               {isListaNegra && (
-                <div className="p-4 bg-rose-950/70 border-2 border-rose-500/60 rounded-xl flex items-start gap-3 shadow-lg shadow-rose-950/40">
-                  <Ban className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
+                <div className="p-4 bg-rose-50 border-2 border-rose-200 rounded-xl flex items-start gap-3 shadow-sm text-rose-900">
+                  <Ban className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <h5 className="text-xs font-black text-rose-300 uppercase tracking-wider">
+                    <h5 className="text-xs font-bold text-rose-900 uppercase tracking-wider">
                       POSTULANTE EN LISTA NEGRA (VETADO EN MINA)
                     </h5>
-                    <p className="text-xs text-rose-100">
+                    <p className="text-xs text-rose-800">
                       Causal: {postulante.motivo_lista_negra || postulante.ultima_observacion || 'Inclusión permanente en Lista Negra por dictamen médico crítico o antecedentes disciplinarios/penales.'}
                     </p>
-                    <p className="text-[10px] text-rose-300 font-bold uppercase tracking-wider">
+                    <p className="text-[10px] text-rose-700 font-bold uppercase tracking-wider">
                       * Prohibido emitir Visto Bueno o habilitar accesos para este expediente
                     </p>
                   </div>
@@ -874,16 +874,16 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
               )}
 
               {isObservado && !isListaNegra && (
-                <div className="p-4 bg-amber-950/60 border-2 border-amber-500/50 rounded-xl flex items-start gap-3 shadow-lg shadow-amber-950/40">
-                  <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-xl flex items-start gap-3 shadow-sm text-amber-900">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <h5 className="text-xs font-black text-amber-300 uppercase tracking-wider">
+                    <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">
                       EXPEDIENTE OBSERVADO EN {currentFaseInfo.titulo.toUpperCase()}
                     </h5>
-                    <p className="text-xs text-amber-100">
+                    <p className="text-xs text-amber-800">
                       Observación técnica previa: "{postulante.ultima_observacion || 'Documento observado con subsanación pendiente.'}"
                     </p>
-                    <p className="text-[10px] text-amber-300/90 font-medium">
+                    <p className="text-[10px] text-amber-700 font-medium">
                       {ultimaVersion
                         ? `* Revise la última versión subsanada (v${ultimaVersion.version}) antes de emitir un nuevo dictamen.`
                         : '* Aún no se registra una versión subsanada para este expediente.'}
@@ -893,16 +893,16 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
               )}
 
               {isSubsanadoPendiente && (
-                <div className="p-4 bg-sky-950/60 border-2 border-sky-500/50 rounded-xl flex items-start gap-3 shadow-lg shadow-sky-950/40">
-                  <CheckCircle2 className="w-5 h-5 text-sky-400 flex-shrink-0 mt-0.5" />
+                <div className="p-4 bg-sky-50 border-2 border-sky-200 rounded-xl flex items-start gap-3 shadow-sm text-sky-900">
+                  <CheckCircle2 className="w-5 h-5 text-sky-600 flex-shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <h5 className="text-xs font-black text-sky-300 uppercase tracking-wider">
+                    <h5 className="text-xs font-bold text-sky-900 uppercase tracking-wider">
                       DOCUMENTO SUBSANADO EN {currentFaseInfo.titulo.toUpperCase()}
                     </h5>
-                    <p className="text-xs text-sky-100">
+                    <p className="text-xs text-sky-800">
                       La contratista ya remitió la versión corregida y está pendiente de una nueva revisión.
                     </p>
-                    <p className="text-[10px] text-sky-300/90 font-medium">
+                    <p className="text-[10px] text-sky-700 font-medium">
                       {ultimaVersion
                         ? `* Revise la última versión (v${ultimaVersion.version}) antes de emitir el nuevo dictamen.`
                         : '* Revise el expediente antes de emitir el nuevo dictamen.'}
@@ -914,11 +914,11 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
               {/* AISLAMIENTO DE ROL: SI ES CONTRATISTA */}
               {userRole === 'CONTRATISTA' ? (
                 <div className="space-y-4">
-                  <div className="bg-amber-950/30 border border-amber-500/30 rounded-xl p-4 space-y-2">
-                    <h5 className="text-xs font-bold text-amber-300 uppercase flex items-center gap-1.5">
-                      <AlertTriangle className="w-4 h-4" /> Observación del Evaluador de Mina
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+                    <h5 className="text-xs font-bold text-amber-800 uppercase flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-600" /> Observación del Evaluador de Mina
                     </h5>
-                    <p className="text-xs text-amber-100 italic bg-amber-950/50 p-3 rounded-lg border border-amber-500/20">
+                    <p className="text-xs text-amber-900 italic bg-white p-3 rounded-lg border border-amber-200">
                       {hasAccessRestricted 
                         ? '[Detalle de observación reservado por Secreto Médico o Seguridad Patrimonial. Comuníquese directamente con el área evaluadora.]'
                         : `"${postulante.ultima_observacion || 'Sin observaciones pendientes emitidas para este expediente.'}"`}
@@ -926,7 +926,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Respuesta / Descargo del Contratista:
                     </label>
                     <textarea
@@ -934,11 +934,11 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       value={descargoContratista}
                       onChange={(e) => setDescargoContratista(e.target.value)}
                       placeholder="Escriba aquí los descargos o precisiones para el evaluador de mina..."
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     />
                   </div>
 
-                  <p className="text-[11px] text-slate-400 italic">
+                  <p className="text-[11px] text-slate-500 italic">
                     * Como empresa contratista, tus facultades están restringidas a la revisión y remisión de descargos/subsanaciones. Los dictámenes oficiales de aprobación y observación son potestad exclusiva de los evaluadores de mina.
                   </p>
                 </div>
@@ -947,18 +947,18 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                 <>
                   {/* CANDADO DE HARD GATING / PRERREQUISITO */}
                   {isBloqueadoSecuencial ? (
-                    <div className="p-4 bg-amber-950/40 border border-amber-500/40 rounded-xl flex items-start gap-3">
-                      <Lock className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                      <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                       <div>
-                        <h5 className="text-xs font-bold text-amber-300 uppercase">Fase Bloqueada por Secuencia</h5>
-                        <p className="text-xs text-amber-200 mt-0.5">
+                        <h5 className="text-xs font-bold text-amber-800 uppercase">Fase Bloqueada por Secuencia</h5>
+                        <p className="text-xs text-amber-700 mt-0.5">
                           El trabajador aún no ha completado la fase anterior. Por normativa de seguridad minera, cada fase debe confirmarse en estricto orden secuencial.
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-2 text-xs text-emerald-300">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-xs text-emerald-800">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       <span>Fase previa confirmada. Expediente habilitado para evaluación.</span>
                     </div>
                   )}
@@ -967,7 +967,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                   {fase === 'FASE_4' && (
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                           Nota del Examen de Inducción (Mínimo aprobatorio 14/20):
                         </label>
                         <input
@@ -977,18 +977,18 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                           value={notaExamen}
                           onChange={(e) => setNotaExamen(Math.min(20, Math.max(0, Number(e.target.value))))}
                           disabled={isBloqueadoSecuencial}
-                          className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white font-bold focus:outline-none focus:border-blue-500"
+                          className="w-full bg-white border border-slate-300 rounded-xl p-3 text-sm text-slate-900 font-bold focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                           Acta de Examen SSOMA (evidencia):
                         </label>
                         <label className={`text-xs border px-3 py-2.5 rounded-xl flex items-center gap-1.5 transition-colors ${
                           isBloqueadoSecuencial
-                            ? 'bg-slate-800/40 text-slate-500 border-slate-750 cursor-not-allowed'
-                            : 'bg-slate-800 hover:bg-slate-750 border-slate-700 text-blue-400 cursor-pointer'
+                            ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                            : 'bg-white hover:bg-slate-50 border-slate-300 text-blue-700 cursor-pointer shadow-sm'
                         }`}>
                           <FileCheck className="w-3.5 h-3.5" />
                           <span>{archivoActa ? archivoActa.name : 'Subir Acta_Examen.pdf'}</span>
@@ -1007,14 +1007,14 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                   {fase === 'FASE_5' && (
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                           Clínica Autorizada de Cajamarca:
                         </label>
                         <select
                           value={clinicaOrigen}
                           onChange={(e) => setClinicaOrigen(e.target.value)}
                           disabled={isBloqueadoSecuencial}
-                          className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+                          className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 font-medium"
                         >
                           <option value="Clínica Limatambo Cajamarca">Clínica Limatambo Cajamarca</option>
                           <option value="Policlínico San Antonio Cajamarca">Policlínico San Antonio Cajamarca</option>
@@ -1026,7 +1026,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
 
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">
                             Fecha Inicio Póliza:
                           </label>
                           <input
@@ -1034,11 +1034,11 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                             value={fechaInicioSCTR}
                             onChange={(e) => setFechaInicioSCTR(e.target.value)}
                             disabled={isBloqueadoSecuencial}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                            className="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-600"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">
                             Fecha Vencimiento:
                           </label>
                           <input
@@ -1046,7 +1046,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                             value={fechaVencSCTR}
                             onChange={(e) => setFechaVencSCTR(e.target.value)}
                             disabled={isBloqueadoSecuencial}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                            className="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-600"
                           />
                         </div>
                       </div>
@@ -1055,7 +1055,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
 
                   {/* OBSERVACIONES TÉCNICAS */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Observaciones / Sustento Técnico del Dictamen:
                     </label>
                     <textarea
@@ -1068,7 +1068,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                           ? 'Bloqueado hasta que concluya la fase previa...'
                           : 'Detalla el sustento para el Visto Bueno o el motivo exacto de la observación para la contratista...'
                       }
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                     />
                   </div>
                 </>
@@ -1076,12 +1076,12 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
             </div>
 
             {/* BOTONERA DE ACCIÓN */}
-            <div className="pt-6 border-t border-slate-800 space-y-2">
+            <div className="pt-6 border-t border-slate-200 space-y-2">
               {userRole === 'CONTRATISTA' ? (
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl text-sm transition-all"
+                  className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-3.5 rounded-xl text-sm transition-all shadow-sm"
                 >
                   Cerrar Expediente
                 </button>
@@ -1092,15 +1092,15 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                     onClick={handleAprobar}
                     disabled={loading || isBloqueadoSecuencial || isListaNegra}
                     title={isListaNegra ? 'Postulante en Lista Negra - Prohibido emitir Visto Bueno' : undefined}
-                    className={`w-full font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 ${
+                    className={`w-full font-bold py-3.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2 ${
                       isListaNegra
-                        ? 'bg-slate-800 text-slate-500 border border-slate-750 cursor-not-allowed opacity-50 shadow-none'
-                        : 'bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-emerald-600/30'
+                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50 shadow-none'
+                        : 'bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white'
                     }`}
                   >
                     {isListaNegra ? (
                       <>
-                        <Ban className="w-4 h-4 text-rose-400" />
+                        <Ban className="w-4 h-4 text-rose-600" />
                         Visto Bueno Bloqueado (Lista Negra)
                       </>
                     ) : (
@@ -1117,9 +1117,9 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                       onClick={handleObservar}
                       disabled={loading || isBloqueadoSecuencial || isListaNegra}
                       title={isListaNegra ? 'No disponible para postulantes en Lista Negra' : undefined}
-                      className="flex-1 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed text-amber-400 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 bg-white hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed text-amber-800 border border-amber-200 font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                     >
-                      <AlertTriangle className="w-3.5 h-3.5" /> Observar Documento
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> Observar Documento
                     </button>
 
                     {(fase === 'FASE_2' || fase === 'FASE_3') && (
@@ -1127,7 +1127,7 @@ export const DocumentSplitViewer: React.FC<DocumentSplitViewerProps> = ({
                         type="button"
                         onClick={handleListaNegra}
                         disabled={loading || isBloqueadoSecuencial || isListaNegra}
-                        className="flex-1 bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20"
+                        className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                       >
                         <Ban className="w-3.5 h-3.5" /> {isListaNegra ? 'Vetado en Lista Negra' : 'NO APTO (Lista Negra)'}
                       </button>

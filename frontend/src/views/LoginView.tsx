@@ -114,54 +114,48 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 selection:bg-blue-600 selection:text-white relative overflow-hidden">
-      {/* Background radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/25 via-slate-950/90 to-slate-950 -z-10" />
-
-      {/* Decorative subtle background grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0a_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0a_1px,transparent_1px)] bg-[size:3rem_3rem] -z-10" />
-
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center items-center p-4 sm:p-6 selection:bg-blue-600 selection:text-white relative overflow-hidden">
       <div className="w-full max-w-md my-auto">
         {/* Encabezado Institucional */}
         <div className="text-center mb-8">
-          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-700 to-blue-500 items-center justify-center text-white shadow-xl shadow-blue-600/30 mb-4 ring-4 ring-blue-500/10">
+          <div className="inline-flex w-16 h-16 rounded-2xl bg-blue-700 items-center justify-center text-white shadow-lg mb-4 ring-4 ring-blue-100">
             <HardHat className="w-9 h-9" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-wider text-white flex items-center justify-center gap-2">
-            VALETEC <span className="text-blue-500 font-bold text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-md bg-blue-950/80 border border-blue-800/60">Mina</span>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-wider text-slate-900 flex items-center justify-center gap-2">
+            VALETEC <span className="text-blue-700 font-bold text-xs uppercase tracking-widest px-2.5 py-0.5 rounded-md bg-blue-50 border border-blue-200">Mina</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1 font-medium tracking-wide">
+          <p className="text-xs text-slate-500 mt-1 font-medium tracking-wide">
             Sistema Integral de Acreditación, Control de Accesos y RRHH
           </p>
         </div>
 
         {/* Tarjeta de Autenticación Principal */}
-        <div className="bg-slate-900/90 border border-slate-800/90 rounded-3xl p-6 sm:p-9 shadow-2xl backdrop-blur-2xl">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-9 shadow-xl">
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-white tracking-tight">Iniciar Sesión</h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Iniciar Sesión</h2>
+            <p className="text-xs text-slate-500 mt-1">
               Ingrese con sus credenciales corporativas autorizadas.
             </p>
           </div>
 
           {/* ALERTA DE BLOQUEO DEFINITIVO TRAS 3 INTENTOS */}
           {isLockedDefinitive && (
-            <div className="mb-5 bg-rose-950/90 border-2 border-rose-500/80 rounded-2xl p-4 text-center space-y-3 shadow-xl shadow-rose-950/50 animate-in zoom-in-95">
-              <div className="w-11 h-11 rounded-full bg-rose-600/30 border border-rose-500/50 flex items-center justify-center mx-auto text-rose-400">
+            <div className="mb-5 bg-rose-50 border border-rose-200 rounded-2xl p-4 text-center space-y-3 shadow-sm animate-in zoom-in-95">
+              <div className="w-11 h-11 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center mx-auto text-rose-700">
                 <ShieldAlert className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wide text-white">Acceso Bloqueado por Seguridad</h3>
-                <p className="text-xs text-rose-200 mt-1 leading-relaxed">
+                <h3 className="text-sm font-black uppercase tracking-wide text-rose-900">Acceso Bloqueado por Seguridad</h3>
+                <p className="text-xs text-rose-700 mt-1 leading-relaxed">
                   Has alcanzado el límite de <strong>3 intentos fallidos</strong>. Por protocolos de seguridad minera, tu cuenta ha sido suspendida.
                 </p>
               </div>
-              <div className="bg-slate-950/90 rounded-xl p-3 text-xs border border-rose-900/50 text-slate-300">
-                <p className="font-bold text-rose-300 mb-1">Para reactivar su acceso:</p>
-                <p className="text-slate-400 text-[11px] mb-1.5">Contacte a la Superintendencia de Sistemas / RRHH:</p>
+              <div className="bg-white rounded-xl p-3 text-xs border border-rose-200 text-slate-700">
+                <p className="font-bold text-rose-800 mb-1">Para reactivar su acceso:</p>
+                <p className="text-slate-500 text-[11px] mb-1.5">Contacte a la Superintendencia de Sistemas / RRHH:</p>
                 <a 
                   href="mailto:admin@valetec.com" 
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-900/40 hover:bg-rose-900/60 border border-rose-700/60 text-rose-200 font-mono text-xs font-bold transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 font-mono text-xs font-bold transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5" />
                   admin@valetec.com
@@ -172,43 +166,43 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
 
           {/* TEMPORIZADOR REGRESIVO DE 30 SEGUNDOS */}
           {countdown > 0 && !isLockedDefinitive && (
-            <div className="mb-5 bg-amber-950/50 border border-amber-500/50 rounded-2xl p-4 space-y-2.5 shadow-lg shadow-amber-950/30 animate-in fade-in">
+            <div className="mb-5 bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2.5 shadow-sm animate-in fade-in">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-amber-300 text-xs font-bold">
-                  <Clock className="w-4 h-4 animate-spin text-amber-400" style={{ animationDuration: '3s' }} />
+                <div className="flex items-center gap-2 text-amber-800 text-xs font-bold">
+                  <Clock className="w-4 h-4 animate-spin text-amber-600" style={{ animationDuration: '3s' }} />
                   <span>Pausa Preventiva de Seguridad</span>
                 </div>
-                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-white text-amber-800 border border-amber-200">
                   {countdown}s restantes
                 </span>
               </div>
-              <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-amber-900/50">
+              <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                 <div 
-                  className="bg-gradient-to-r from-amber-500 to-rose-500 h-full transition-all duration-1000 ease-linear"
+                  className="bg-amber-500 h-full transition-all duration-1000 ease-linear"
                   style={{ width: `${(countdown / 30) * 100}%` }}
                 />
               </div>
-              <p className="text-[11px] text-amber-200/90 flex justify-between items-center">
+              <p className="text-[11px] text-amber-800 flex justify-between items-center">
                 <span>Intento erróneo {intentosActuales} de 3</span>
-                <span className="text-slate-400">Reintentos restantes: {Math.max(0, 3 - intentosActuales)}</span>
+                <span className="text-slate-500">Reintentos restantes: {Math.max(0, 3 - intentosActuales)}</span>
               </p>
             </div>
           )}
 
           {errorMsg && !isLockedDefinitive && countdown === 0 && (
-            <div className="mb-5 bg-rose-950/60 border border-rose-600/50 rounded-xl p-3 text-xs text-rose-300 flex items-center gap-2.5 animate-in fade-in">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <div className="mb-5 bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-800 flex items-center gap-2.5 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                 Correo Electrónico
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
                   type="email"
                   required
@@ -217,19 +211,19 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="usuario@empresa.com"
                   autoComplete="email"
-                  className="w-full bg-slate-950 border border-slate-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="w-full bg-slate-50 border border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
                   Contraseña
                 </label>
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   required
@@ -238,7 +232,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   autoComplete="current-password"
-                  className="w-full bg-slate-950 border border-slate-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="w-full bg-slate-50 border border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
                 />
               </div>
             </div>
@@ -246,24 +240,24 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             <button
               type="submit"
               disabled={loading || countdown > 0 || isLockedDefinitive}
-              className={`w-full mt-2 font-bold py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg ${
+              className={`w-full mt-2 font-bold py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${
                 isLockedDefinitive
-                  ? 'bg-rose-950/80 border border-rose-700/60 text-rose-300 cursor-not-allowed'
+                  ? 'bg-rose-50 border border-rose-200 text-rose-700 cursor-not-allowed'
                   : countdown > 0
-                  ? 'bg-amber-950/80 border border-amber-600/50 text-amber-300 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white shadow-blue-600/20 active:scale-[0.99]'
+                  ? 'bg-amber-50 border border-amber-200 text-amber-800 cursor-not-allowed'
+                  : 'bg-blue-700 hover:bg-blue-800 disabled:bg-slate-200 text-white active:scale-[0.99]'
               }`}
             >
               {loading ? (
                 <span>Validando credenciales...</span>
               ) : isLockedDefinitive ? (
                 <>
-                  <ShieldAlert className="w-4 h-4 text-rose-400" />
+                  <ShieldAlert className="w-4 h-4 text-rose-600" />
                   <span>Acceso Bloqueado (3 Fallos)</span>
                 </>
               ) : countdown > 0 ? (
                 <>
-                  <Clock className="w-4 h-4 text-amber-300 animate-spin" style={{ animationDuration: '3s' }} />
+                  <Clock className="w-4 h-4 text-amber-600 animate-spin" style={{ animationDuration: '3s' }} />
                   <span>Reintentar en {countdown}s...</span>
                 </>
               ) : (
@@ -276,29 +270,29 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           </form>
 
           {/* Badges de Seguridad Institucional */}
-          <div className="mt-7 pt-5 border-t border-slate-800/80 space-y-2">
-            <div className="flex items-center justify-center gap-4 text-[11px] text-slate-400">
+          <div className="mt-7 pt-5 border-t border-slate-100 space-y-2">
+            <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500">
               <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 D.S. 024-2016-EM
               </span>
               <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                 Control RBAC
               </span>
               <span className="flex items-center gap-1">
-                <KeyRound className="w-3.5 h-3.5 text-purple-400" />
+                <KeyRound className="w-3.5 h-3.5 text-purple-600" />
                 JWT Seguro
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 text-center">
+            <p className="text-[10px] text-slate-400 text-center">
               Acceso restringido. Las actividades en esta plataforma son registradas y auditadas conforme a ley.
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-slate-600 mt-6">
+        <p className="text-center text-xs text-slate-500 mt-6">
           © {new Date().getFullYear()} VALETEC • Todos los derechos reservados
         </p>
       </div>

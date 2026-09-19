@@ -61,53 +61,53 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 px-4 py-3 sm:p-6 flex justify-between items-center gap-3 sticky top-0 z-20 backdrop-blur-md bg-slate-900/90">
+    <header className="bg-white/95 border-b border-slate-200 px-4 py-3 sm:p-5 flex justify-between items-center gap-3 sticky top-0 z-20 backdrop-blur-md shadow-sm">
       <div className="flex items-center gap-3 min-w-0">
         {onOpenMobileMenu && (
           <button
             onClick={onOpenMobileMenu}
-            className="md:hidden p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-colors shrink-0"
+            className="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition-colors shrink-0"
             title="Abrir Menú de Navegación"
           >
             <Menu className="w-5 h-5" />
           </button>
         )}
         <div className="min-w-0">
-          <h2 className="text-base sm:text-xl font-bold text-white tracking-tight flex items-center gap-2 truncate">
-            {currentView === 'admin' && <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 shrink-0" />}
+          <h2 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2 truncate">
+            {currentView === 'admin' && <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />}
             <span className="truncate">{title}</span>
             {userRole === 'MEDICO_OCUPACIONAL' && (
-              <span className="bg-emerald-950/80 border border-emerald-600/50 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
+              <span className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
                 🔒 SECRETO MÉDICO
               </span>
             )}
             {userRole === 'INSTRUCTOR_SSOMA' && (
-              <span className="bg-amber-950/80 border border-amber-600/50 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
+              <span className="bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
                 🦺 D.S. 024-2016-EM
               </span>
             )}
             {userRole === 'CONTROL_ACCESOS' && (
-              <span className="bg-blue-950/80 border border-blue-600/50 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
+              <span className="bg-blue-50 border border-blue-200 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
                 ● EN LÍNEA GARITA
               </span>
             )}
             {userRole === 'SEGURIDAD_PATRIMONIAL' && (
-              <span className="bg-indigo-950/80 border border-indigo-600/50 text-indigo-300 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
+              <span className="bg-indigo-50 border border-indigo-200 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-md hidden lg:inline-flex items-center gap-1 shrink-0">
                 🛡️ CONTROL PATRIMONIAL
               </span>
             )}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5 truncate hidden sm:block">{subtitle}</p>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 truncate hidden sm:block">{subtitle}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0 relative">
         {/* Identificación de Usuario y Rol Activo */}
-        <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 rounded-xl px-2.5 sm:px-3.5 py-1.5 text-xs">
-          <Shield className="w-4 h-4 text-blue-400 shrink-0" />
+        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2.5 sm:px-3.5 py-1.5 text-xs shadow-sm">
+          <Shield className="w-4 h-4 text-blue-700 shrink-0" />
           <div className="text-left hidden sm:block">
-            <span className="text-white font-bold block leading-tight truncate max-w-[120px] md:max-w-none">{userName}</span>
-            <span className="text-[10px] text-blue-400 block font-mono font-semibold uppercase">{userRole}</span>
+            <span className="text-slate-900 font-bold block leading-tight truncate max-w-[120px] md:max-w-none">{userName}</span>
+            <span className="text-[10px] text-blue-700 block font-mono font-semibold uppercase">{userRole}</span>
           </div>
         </div>
 
@@ -115,34 +115,34 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative">
           <button
             onClick={() => setShowNotifPopover(!showNotifPopover)}
-            className="relative w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-600 transition-colors"
+            className="relative w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
             title="Centro de Alertas y Notificaciones"
           >
             <Bell className="w-4 h-4" />
             {noLeidas.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center animate-pulse">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-black flex items-center justify-center animate-pulse">
                 {noLeidas.length}
               </span>
             )}
           </button>
 
           {showNotifPopover && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 p-4 animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+            <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-blue-400" />
-                  <h4 className="font-bold text-sm text-white">Alertas</h4>
+                  <Bell className="w-4 h-4 text-blue-700" />
+                  <h4 className="font-bold text-sm text-slate-900">Alertas</h4>
                 </div>
                 <div className="flex items-center gap-2">
                   {leidas.length > 0 && onLimpiarLeidas && (
-                    <button onClick={onLimpiarLeidas} className="text-[10px] text-slate-400 hover:text-rose-400 transition-colors">Limpiar leídas</button>
+                    <button onClick={onLimpiarLeidas} className="text-[10px] text-slate-500 hover:text-rose-600 transition-colors">Limpiar leídas</button>
                   )}
-                  <span className="text-[11px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
                     {noLeidas.length} pendientes
                   </span>
                   <button 
                     onClick={() => setShowNotifPopover(false)}
-                    className="text-slate-400 hover:text-white"
+                    className="text-slate-400 hover:text-slate-700 p-1 rounded-md"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -158,28 +158,28 @@ export const Header: React.FC<HeaderProps> = ({
                       key={notif.id}
                       className={`p-3 rounded-xl border text-xs transition-colors ${
                         notif.leido
-                          ? 'bg-slate-800/40 border-slate-800 text-slate-400'
-                          : 'bg-slate-800 border-slate-700 text-slate-200'
+                          ? 'bg-slate-50/80 border-slate-100 text-slate-500'
+                          : 'bg-blue-50/50 border-blue-100 text-slate-800 shadow-sm'
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
                         {getNotifIcon(notif.tipo)}
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start">
-                            <p className="font-bold text-slate-100">{notif.titulo}</p>
+                            <p className="font-bold text-slate-900">{notif.titulo}</p>
                             {onEliminarNotificacion && (
-                              <button onClick={() => onEliminarNotificacion(notif.id)} className="text-slate-500 hover:text-rose-400"><Trash2 className="w-3.5 h-3.5"/></button>
+                              <button onClick={() => onEliminarNotificacion(notif.id)} className="text-slate-400 hover:text-rose-600"><Trash2 className="w-3.5 h-3.5"/></button>
                             )}
                           </div>
-                          <p className="text-slate-400 mt-1 line-clamp-2 leading-relaxed">{notif.mensaje}</p>
-                          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-700/50">
-                            <span className="text-[10px] text-slate-500">
+                          <p className="text-slate-600 mt-1 line-clamp-2 leading-relaxed">{notif.mensaje}</p>
+                          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100">
+                            <span className="text-[10px] text-slate-400">
                               {new Date(notif.creado_en).toLocaleDateString('es-PE', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {!notif.leido && onMarcarLeida && (
                               <button
                                 onClick={() => onMarcarLeida(notif.id)}
-                                className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold"
+                                className="text-[11px] text-blue-700 hover:text-blue-800 font-semibold"
                               >
                                 Marcar leída
                               </button>
@@ -196,17 +196,17 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Avatar / Status */}
-        <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold text-xs shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 font-bold text-xs shrink-0 shadow-sm">
           <UserCheck className="w-4 h-4" />
         </div>
 
-        {/* Botón Cerrar Sesión en Header (esencial para roles sin sidebar) */}
+        {/* Botón Cerrar Sesión en Header */}
         <button
           onClick={onLogout}
           title="Cerrar Sesión"
-          className="flex items-center gap-1.5 bg-slate-800 hover:bg-rose-950/70 border border-slate-700 hover:border-rose-600/40 text-slate-300 hover:text-rose-200 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors shrink-0"
+          className="flex items-center gap-1.5 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-700 hover:text-rose-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors shrink-0 shadow-sm"
         >
-          <LogOut className="w-4 h-4 text-rose-400" />
+          <LogOut className="w-4 h-4 text-rose-600" />
           <span className="hidden md:inline">Salir</span>
         </button>
       </div>

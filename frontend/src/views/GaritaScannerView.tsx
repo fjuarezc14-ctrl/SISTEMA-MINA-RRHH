@@ -410,17 +410,17 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
     <div className="space-y-6">
       {/* Banner de Notificación / Feedback de Sincronización */}
       {mensajeNotificacion && (
-        <div className={`p-4 rounded-2xl border text-xs sm:text-sm font-medium flex items-center justify-between shadow-lg animate-in fade-in duration-200 ${
+        <div className={`p-4 rounded-xl border text-xs sm:text-sm font-medium flex items-center justify-between shadow-sm animate-in fade-in duration-200 ${
           mensajeNotificacion.tipo === 'success' 
-            ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
             : mensajeNotificacion.tipo === 'warn'
-            ? 'bg-amber-950/80 border-amber-500/50 text-amber-200'
-            : 'bg-rose-950/80 border-rose-500/50 text-rose-200'
+            ? 'bg-amber-50 border-amber-200 text-amber-800'
+            : 'bg-rose-50 border-rose-200 text-rose-800'
         }`}>
           <span>{mensajeNotificacion.texto}</span>
           <button 
             onClick={() => setMensajeNotificacion(null)}
-            className="text-white/60 hover:text-white ml-3 text-xs font-bold"
+            className="text-slate-400 hover:text-slate-700 ml-3 text-xs font-bold"
           >
             ✕
           </button>
@@ -428,14 +428,14 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       )}
 
       {/* TABS DE GARITA */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-750 pb-3">
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
         <button
           type="button"
           onClick={() => setTabActiva('escaner')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
             tabActiva === 'escaner'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
-              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+              ? 'bg-blue-700 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200'
           }`}
         >
           <QrCode className="w-4 h-4" />
@@ -445,10 +445,10 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
         <button
           type="button"
           onClick={() => setTabActiva('fotochecks')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
             tabActiva === 'fotochecks'
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+              ? 'bg-blue-700 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200'
           }`}
         >
           <CreditCard className="w-4 h-4" />
@@ -458,10 +458,10 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
         <button
           type="button"
           onClick={() => setTabActiva('bajas')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
             tabActiva === 'bajas'
-              ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30'
-              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700'
+              ? 'bg-rose-700 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200'
           }`}
         >
           <Ambulance className="w-4 h-4" />
@@ -478,40 +478,40 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       )}
 
       {tabActiva === 'bajas' && (
-        <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-700">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
             <div>
-              <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
-                <Ambulance className="w-5 h-5" /> Bajas Anticipadas por Emergencia Médica / Familiar
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Ambulance className="w-5 h-5 text-rose-600" /> Bajas Anticipadas por Emergencia Médica / Familiar
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Salidas justificada fuera de régimen 14x7 sin penalidad ni cómputo de abandono de guardia
               </p>
             </div>
             <button
               onClick={() => setModalEmergenciaOpen(true)}
-              className="flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-rose-950 transition-colors"
+              className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white font-bold px-4 py-2 rounded-lg text-xs shadow-sm transition-colors"
             >
               <Ambulance className="w-4 h-4" /> Autorizar Nueva Salida de Emergencia
             </button>
           </div>
 
           {emergenciasActivas.length === 0 ? (
-            <div className="p-8 text-center bg-slate-900/50 rounded-xl text-slate-400 text-sm">
+            <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-lg text-slate-500 text-sm">
               No hay solicitudes de bajada anticipada pendientes de salida en Garita.
             </div>
           ) : (
             <div className="space-y-3">
               {emergenciasActivas.map((baja) => (
-                <div key={baja.id} className="p-4 bg-slate-900 border border-rose-500/30 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div key={baja.id} className="p-4 bg-white border border-rose-200 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xs">
                   <div>
-                    <h4 className="font-bold text-white text-base">{baja.nombres} {baja.apellidos}</h4>
-                    <p className="text-xs text-slate-400">DNI: {baja.numero_documento} • {baja.empresa_nombre}</p>
-                    <p className="text-xs text-rose-300 font-mono mt-1">Causal: {baja.tipo_emergencia} - {baja.motivo_detalle}</p>
+                    <h4 className="font-bold text-slate-900 text-sm">{baja.nombres} {baja.apellidos}</h4>
+                    <p className="text-xs text-slate-500">DNI: {baja.numero_documento} • {baja.empresa_nombre}</p>
+                    <p className="text-xs text-rose-700 font-mono mt-1">Causal: {baja.tipo_emergencia} - {baja.motivo_detalle}</p>
                   </div>
                   <button
                     onClick={() => handleEjecutarSalidaEmergencia(baja.id, baja.numero_documento)}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                    className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-sm"
                   >
                     <LogOut className="w-4 h-4" /> Registrar Salida Justificada
                   </button>
@@ -525,31 +525,31 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       {tabActiva === 'escaner' && (
         <>
         {/* Barra de estado de garita y herramientas operativas mineras */}
-        <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
               <QrCode className="w-7 h-7" />
             </div>
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h3 className="text-lg font-bold text-white">Lector y Scanner de Garita</h3>
+                <h3 className="text-lg font-bold text-slate-900">Lector y Scanner de Garita</h3>
               
               {/* Indicador de Red en Vivo */}
               {isOnline ? (
-                <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-medium">
-                  <Wifi className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
+                  <Wifi className="w-3.5 h-3.5 text-emerald-600" />
                   Servidor Central Conectado
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 text-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-semibold animate-pulse">
-                  <WifiOff className="w-3.5 h-3.5 text-amber-400" />
+                <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full font-semibold animate-pulse">
+                  <WifiOff className="w-3.5 h-3.5 text-amber-600" />
                   Modo Offline (Caché Local Activa)
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-              <Building2 className="w-3.5 h-3.5 text-slate-500" />
-              Puesto de Control: <strong className="text-slate-300">{garitaActual}</strong>
+            <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+              <Building2 className="w-3.5 h-3.5 text-slate-400" />
+              Puesto de Control: <strong className="text-slate-700">{garitaActual}</strong>
               {padronLocal && (
                 <span className="text-slate-500 ml-2 hidden sm:inline">
                   • Padrón en Caché: {padronLocal.totalTrabajadores || padronLocal.trabajadores?.length || 0} personas
@@ -566,9 +566,9 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
             onClick={handleDescargarPadron}
             disabled={loading}
             title="Guarda la lista de personas y vehículos autorizados para validar sin señal de internet"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors shadow-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-colors shadow-xs"
           >
-            <DownloadCloud className="w-4 h-4 text-sky-400" />
+            <DownloadCloud className="w-4 h-4 text-blue-700" />
             Descargar Padrón Local
           </button>
 
@@ -577,7 +577,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
             <button
               onClick={handleSincronizarOffline}
               disabled={sincronizando}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md animate-bounce"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold transition-all shadow-sm animate-bounce"
             >
               <RefreshCw className={`w-4 h-4 ${sincronizando ? 'animate-spin' : ''}`} />
               Sincronizar {colaOffline.length} Offline
@@ -589,18 +589,18 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
             type="button"
             onClick={() => setModalEmergenciaOpen(true)}
             title="Autorizar o registrar salida anticipada de campamento por emergencia médica o familiar (14x7)"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-rose-700/80 hover:bg-rose-600 text-white border border-rose-500/50 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-colors shadow-xs"
           >
-            <Ambulance className="w-4 h-4" />
+            <Ambulance className="w-4 h-4 text-rose-600" />
             Emergencia / Bajada 14x7
           </button>
 
           <button
             onClick={() => setCamaraActiva(!camaraActiva)}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
               camaraActiva 
-                ? 'bg-rose-600 hover:bg-rose-500 text-white' 
-                : 'bg-blue-600 hover:bg-blue-500 text-white'
+                ? 'bg-rose-700 hover:bg-rose-800 text-white' 
+                : 'bg-blue-700 hover:bg-blue-800 text-white'
             }`}
           >
             <Camera className="w-4 h-4" />
@@ -610,16 +610,16 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       </div>
 
       {/* Barra Operativa de Alcotest (DS 024-2016-EM Tolerancia Cero) */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+          <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
             <Activity className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-xs font-bold text-slate-200 block">
+            <span className="text-xs font-bold text-slate-900 block">
               Prueba de Alcoholemia en Garita (DS 024-2016-EM Art. 40)
             </span>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-[11px] text-slate-500">
               Tolerancia Cero en Unidad Minera: Todo ingreso de personal requiere 0.00 g/L.
             </span>
           </div>
@@ -629,10 +629,10 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
           <button
             type="button"
             onClick={() => setAlcotestEstado('APTO')}
-            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
               alcotestEstado === 'APTO'
-                ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
-                : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
             }`}
           >
             ✓ 0.00 g/L (Apto)
@@ -640,10 +640,10 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
           <button
             type="button"
             onClick={() => setAlcotestEstado('POSITIVO')}
-            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
               alcotestEstado === 'POSITIVO'
-                ? 'bg-rose-600 text-white border-rose-400 shadow-md animate-pulse'
-                : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-rose-300'
+                ? 'bg-rose-700 text-white border-rose-700 shadow-sm animate-pulse'
+                : 'bg-white text-slate-600 border-slate-300 hover:bg-rose-50 hover:text-rose-700'
             }`}
           >
             ⚠ Positivo (&gt; 0.00 g/L)
@@ -653,8 +653,8 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
 
       {/* Panel de Cámara Virtual / Live Stream si está activo */}
       {camaraActiva && (
-        <div className="bg-slate-950 border-2 border-dashed border-blue-500/50 rounded-2xl p-6 text-center animate-in fade-in zoom-in-95 duration-200">
-          <div className="max-w-md mx-auto relative bg-slate-900 rounded-2xl overflow-hidden aspect-video flex flex-col items-center justify-center border border-slate-800">
+        <div className="bg-slate-950 border-2 border-dashed border-blue-300 rounded-xl p-6 text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="max-w-md mx-auto relative bg-slate-900 rounded-xl overflow-hidden aspect-video flex flex-col items-center justify-center border border-slate-800">
             <div className="w-44 h-44 border-2 border-emerald-400 rounded-xl relative flex items-center justify-center animate-pulse">
               <span className="text-[10px] text-emerald-400 font-mono tracking-widest uppercase">
                 Enfocar QR
@@ -672,8 +672,8 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       )}
 
       {/* Input de Lectura Rápida / Pistola Óptica / Simulación */}
-      <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
           Ingreso de Código QR / DNI
         </label>
         <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
@@ -685,30 +685,30 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
               onChange={(e) => setCodigoInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleValidarCodigo(codigoInput)}
               placeholder="Escanee con lector o ingrese DNI (ej. 46998877)..."
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition-colors font-mono"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-11 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 transition-colors font-mono"
             />
           </div>
           <button
             onClick={() => handleValidarCodigo(codigoInput)}
             disabled={loading || !codigoInput.trim()}
-            className="w-full sm:w-auto justify-center bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white font-bold px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-lg"
+            className="w-full sm:w-auto justify-center bg-blue-700 hover:bg-blue-800 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold px-6 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-sm"
           >
             {loading ? 'Validando...' : 'Verificar'}
           </button>
         </div>
 
         {/* Botones de Prueba Rápida para Simulación */}
-        <div className="mt-4 pt-4 border-t border-slate-700/60">
-          <p className="text-xs text-slate-400 mb-2 font-medium">Pruebas rápidas de simulación en garita:</p>
+        <div className="mt-4 pt-4 border-t border-slate-100">
+          <p className="text-xs text-slate-500 mb-2 font-medium">Pruebas rápidas de simulación en garita:</p>
           <div className="flex flex-wrap gap-2 text-xs">
             <button
               onClick={() => {
                 setCodigoInput('46998877');
                 handleValidarCodigo('46998877');
               }}
-              className="bg-emerald-950/60 border border-emerald-600/40 text-emerald-300 hover:bg-emerald-900/60 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5"
+              className="bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5"
             >
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               Ana Mendoza (Pase Permanente - Apto)
             </button>
 
@@ -717,9 +717,9 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
                 setCodigoInput('43112233');
                 handleValidarCodigo('43112233');
               }}
-              className="bg-rose-950/60 border border-rose-600/40 text-rose-300 hover:bg-rose-900/60 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5"
+              className="bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5"
             >
-              <XCircle className="w-3.5 h-3.5 text-rose-400" />
+              <XCircle className="w-3.5 h-3.5 text-rose-600" />
               Luis García (SCTR Vencido)
             </button>
 
@@ -728,9 +728,9 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
                 setCodigoInput('45891234');
                 handleValidarCodigo('45891234');
               }}
-              className="bg-amber-950/60 border border-amber-600/40 text-amber-300 hover:bg-amber-900/60 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5"
+              className="bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5"
             >
-              <AlertOctagon className="w-3.5 h-3.5 text-amber-400" />
+              <AlertOctagon className="w-3.5 h-3.5 text-amber-600" />
               Roberto Díaz (En Fase 1)
             </button>
           </div>
@@ -740,20 +740,20 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       {/* PANTALLA DE RESULTADO DEL ESCANEO (VEREDICTO VERDE / ROJO) */}
       {ultimoResultado && (
         <div
-          className={`rounded-3xl border-2 p-6 sm:p-8 shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-200 ${
+          className={`rounded-2xl border-2 p-6 sm:p-8 shadow-md transition-all animate-in fade-in zoom-in-95 duration-200 ${
             ultimoResultado.autorizado
-              ? 'bg-emerald-950/80 border-emerald-500 text-white'
-              : 'bg-rose-950/80 border-rose-500 text-white'
+              ? 'bg-emerald-50 border-emerald-400 text-slate-900'
+              : 'bg-rose-50 border-rose-400 text-slate-900'
           }`}
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-white/10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-200/60">
             <div className="flex items-center gap-4">
               {ultimoResultado.autorizado ? (
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center text-slate-950 shadow-lg">
+                <div className="w-16 h-16 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm">
                   <ShieldCheck className="w-10 h-10 stroke-[2.5]" />
                 </div>
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-rose-500 flex items-center justify-center text-white shadow-lg animate-pulse">
+                <div className="w-16 h-16 rounded-xl bg-rose-600 flex items-center justify-center text-white shadow-sm animate-pulse">
                   <ShieldAlert className="w-10 h-10 stroke-[2.5]" />
                 </div>
               )}
@@ -761,17 +761,17 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    className={`text-xs font-black tracking-widest uppercase px-3 py-1 rounded-full ${
+                    className={`text-xs font-bold uppercase px-3 py-1 rounded-full border ${
                       ultimoResultado.autorizado
-                        ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-400/40'
-                        : 'bg-rose-500/30 text-rose-300 border border-rose-400/40'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-rose-100 text-rose-800 border-rose-300'
                     }`}
                   >
                     {ultimoResultado.autorizado ? 'Acceso Autorizado' : 'Acceso Denegado'}
                   </span>
 
                   {/* Badge de Alcotest en Resultado */}
-                  <span className="text-xs bg-slate-900/60 border border-white/20 px-2.5 py-0.5 rounded-full font-mono">
+                  <span className="text-xs bg-white border border-slate-300 px-2.5 py-0.5 rounded-full font-mono text-slate-700 shadow-2xs">
                     Alcotest: {alcotestEstado === 'APTO' ? '0.00 g/L (Aprobado)' : 'Positivo (>0.00 g/L)'}
                   </span>
 
@@ -779,26 +779,30 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
                   {ultimoResultado.trabajador?.tipoPase && (
                     <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase border ${
                       ultimoResultado.trabajador.tipoPase === 'VISITA_TECNICA'
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
+                        ? 'bg-amber-100 text-amber-800 border-amber-300'
                         : ultimoResultado.trabajador.tipoPase === 'PROVEEDOR_LOGISTICO'
-                        ? 'bg-purple-500/20 text-purple-300 border-purple-400/30'
-                        : 'bg-blue-500/20 text-blue-300 border-blue-400/30'
+                        ? 'bg-purple-100 text-purple-800 border-purple-300'
+                        : 'bg-blue-100 text-blue-800 border-blue-300'
                     }`}>
                       {ultimoResultado.trabajador.tipoPase.replace('_', ' ')}
                     </span>
                   )}
                 </div>
 
-                <h2 className="text-2xl sm:text-3xl font-black mt-2 tracking-tight">
+                <h2 className={`text-2xl sm:text-3xl font-black mt-2 tracking-tight ${
+                  ultimoResultado.autorizado ? 'text-emerald-900' : 'text-rose-900'
+                }`}>
                   {ultimoResultado.autorizado ? 'AUTORIZADO PARA INGRESAR' : 'PROHIBIDO EL INGRESO'}
                 </h2>
-                <p className="text-sm opacity-90 mt-1">{ultimoResultado.motivo}</p>
+                <p className={`text-sm mt-1 font-medium ${
+                  ultimoResultado.autorizado ? 'text-emerald-800' : 'text-rose-800'
+                }`}>{ultimoResultado.motivo}</p>
               </div>
             </div>
 
             <div className="text-right">
-              <span className="text-xs text-white/60 block">Hora del Evento</span>
-              <span className="text-lg font-mono font-bold text-white">
+              <span className="text-xs text-slate-500 block">Hora del Evento</span>
+              <span className="text-lg font-mono font-bold text-slate-800">
                 {new Date().toLocaleTimeString('es-PE')}
               </span>
             </div>
@@ -807,40 +811,40 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
           {/* Detalles del Trabajador Autorizado / Denegado */}
           {ultimoResultado.trabajador && (
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                <span className="text-[11px] text-white/60 uppercase font-medium">Trabajador</span>
-                <p className="text-base font-black text-white mt-1">
+              <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-2xs">
+                <span className="text-[11px] text-slate-500 uppercase font-semibold">Trabajador</span>
+                <p className="text-base font-bold text-slate-900 mt-1">
                   {ultimoResultado.trabajador.nombreCompleto}
                 </p>
-                <p className="text-xs text-white/70 font-mono mt-0.5">
+                <p className="text-xs text-slate-500 font-mono mt-0.5">
                   DNI: {ultimoResultado.trabajador.dni}
                 </p>
               </div>
 
-              <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                <span className="text-[11px] text-white/60 uppercase font-medium">Empresa Contratista</span>
-                <p className="text-base font-bold text-white mt-1">
+              <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-2xs">
+                <span className="text-[11px] text-slate-500 uppercase font-semibold">Empresa Contratista</span>
+                <p className="text-base font-bold text-slate-900 mt-1">
                   {ultimoResultado.trabajador.empresa}
                 </p>
-                <p className="text-xs text-white/70 mt-0.5">{ultimoResultado.trabajador.cargo}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{ultimoResultado.trabajador.cargo}</p>
               </div>
 
-              <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                <span className="text-[11px] text-white/60 uppercase font-medium">Zona y Tipo Pase</span>
-                <p className="text-base font-bold text-white mt-1">
+              <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-2xs">
+                <span className="text-[11px] text-slate-500 uppercase font-semibold">Zona y Tipo Pase</span>
+                <p className="text-base font-bold text-slate-900 mt-1">
                   {ultimoResultado.trabajador.zonaAutorizada || 'Planta y Mina'}
                 </p>
-                <p className="text-xs text-white/70 mt-0.5">
-                  Tipo: <strong>{ultimoResultado.trabajador.tipoPase || 'PERMANENTE'}</strong>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Tipo: <strong className="text-slate-800">{ultimoResultado.trabajador.tipoPase || 'PERMANENTE'}</strong>
                 </p>
               </div>
 
-              <div className="bg-black/20 rounded-xl p-4 border border-white/10">
-                <span className="text-[11px] text-white/60 uppercase font-medium">Póliza SCTR</span>
-                <p className="text-base font-bold text-white mt-1">
+              <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-2xs">
+                <span className="text-[11px] text-slate-500 uppercase font-semibold">Póliza SCTR</span>
+                <p className="text-base font-bold text-slate-900 mt-1">
                   {ultimoResultado.trabajador.sctrVencimiento || 'Vigente'}
                 </p>
-                <p className="text-xs text-white/70 mt-0.5">Estado: {ultimoResultado.trabajador.estado}</p>
+                <p className="text-xs text-slate-500 mt-0.5">Estado: <span className="font-semibold text-slate-800">{ultimoResultado.trabajador.estado}</span></p>
               </div>
             </div>
           )}
@@ -848,19 +852,19 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
       )}
 
       {/* Bitácora de Accesos de Garita */}
-      <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-xl">
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-          <h4 className="font-bold text-base text-white flex items-center gap-2">
-            <Clock className="w-5 h-5 text-blue-400" />
+          <h4 className="font-bold text-base text-slate-900 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-blue-700" />
             Bitácora de Accesos Registrados en Turno
           </h4>
           <div className="flex items-center gap-2">
             {colaOffline.length > 0 && (
-              <span className="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-bold">
+              <span className="text-xs bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-lg font-bold">
                 {colaOffline.length} guardados offline
               </span>
             )}
-            <span className="text-xs text-slate-400 bg-slate-900 border border-slate-700 px-3 py-1 rounded-lg">
+            <span className="text-xs text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg">
               Total Registros: {historial.length}
             </span>
           </div>
@@ -869,7 +873,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-700 bg-slate-900/50 text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase tracking-wider">
                 <th className="p-3">Hora / Fecha</th>
                 <th className="p-3">Tipo / Pase</th>
                 <th className="p-3">Identificación</th>
@@ -879,72 +883,72 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
                 <th className="p-3">Garita / Guardia</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700/60">
+            <tbody className="divide-y divide-slate-100">
               {historial.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-6 text-center text-slate-500">
+                  <td colSpan={7} className="p-6 text-center text-slate-400">
                     No hay eventos de acceso registrados en el turno.
                   </td>
                 </tr>
               ) : (
                 historial.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-700/30 transition-colors">
-                    <td className="p-3 text-slate-300 font-mono">
+                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="p-3 text-slate-600 font-mono">
                       {new Date(item.creado_en).toLocaleDateString('es-PE', {
                         hour: '2-digit',
                         minute: '2-digit',
                         second: '2-digit',
                       })}
                       {item.sincronizado_offline === false && (
-                        <span className="block text-[10px] text-amber-400 font-bold">
+                        <span className="block text-[10px] text-amber-700 font-bold">
                           [MODO OFFLINE]
                         </span>
                       )}
                     </td>
                     <td className="p-3">
-                      <span className="flex items-center gap-1 text-blue-400 font-medium">
+                      <span className="flex items-center gap-1 text-blue-700 font-medium">
                         <UserCheck className="w-3.5 h-3.5" /> Trabajador
                       </span>
                       {item.postulante_tipo_pase && (
-                        <span className="text-[10px] text-slate-400 font-medium block">
+                        <span className="text-[10px] text-slate-500 font-medium block">
                           {item.postulante_tipo_pase}
                         </span>
                       )}
                     </td>
                     <td className="p-3">
-                      <strong className="text-white">
+                      <strong className="text-slate-900">
                         {item.postulante_nombres} {item.postulante_apellidos}
                       </strong>
-                      <span className="text-slate-400 block text-[11px] font-mono">
+                      <span className="text-slate-500 block text-[11px] font-mono">
                         DNI: {item.postulante_dni}
                       </span>
                     </td>
                     <td className="p-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
                         item.alcotest_resultado?.includes('Positivo') || item.alcotest_resultado?.includes('FALTA')
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                          : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
+                          ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       }`}>
                         {item.alcotest_resultado || '0.00 g/L'}
                       </span>
                     </td>
                     <td className="p-3">
                       {item.resultado === 'AUTORIZADO' ? (
-                        <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-bold text-[11px]">
                           <CheckCircle2 className="w-3 h-3" /> AUTORIZADO
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full font-bold text-[11px]">
+                        <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full font-bold text-[11px]">
                           <XCircle className="w-3 h-3" /> DENEGADO
                         </span>
                       )}
                     </td>
-                    <td className="p-3 text-slate-300 max-w-xs truncate">
+                    <td className="p-3 text-slate-700 max-w-xs truncate">
                       {item.motivo_denegacion || 'Acceso concedido sin observaciones'}
                     </td>
-                    <td className="p-3 text-slate-400 text-[11px]">
+                    <td className="p-3 text-slate-500 text-[11px]">
                       {item.garita}
-                      <span className="block text-slate-500">{item.guardia_nombre}</span>
+                      <span className="block text-slate-400">{item.guardia_nombre}</span>
                     </td>
                   </tr>
                 ))
@@ -958,21 +962,21 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
 
       {/* MODAL AUTORIZAR BAJADA ANTICIPADA POR EMERGENCIA (Punto 6) */}
       {modalEmergenciaOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
-            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800 bg-slate-950">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white border border-slate-200 rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 bg-slate-50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400">
+                <div className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700">
                   <Ambulance className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-white">Autorizar Bajada Anticipada de Campamento</h4>
-                  <p className="text-[11px] text-slate-400">Régimen Minero 14x7 • Desmovilización Justificada por Emergencia</p>
+                  <h4 className="font-bold text-sm text-slate-900">Autorizar Bajada Anticipada de Campamento</h4>
+                  <p className="text-[11px] text-slate-500">Régimen Minero 14x7 • Desmovilización Justificada por Emergencia</p>
                 </div>
               </div>
               <button
                 onClick={() => setModalEmergenciaOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 ✕
               </button>
@@ -981,13 +985,13 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
             <form onSubmit={handleAutorizarEmergenciaSubmit} className="p-6 space-y-4">
               {/* Seleccionar Trabajador */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Seleccionar Trabajador de Turno:
                 </label>
                 <select
                   value={formEmergencia.postulanteId}
                   onChange={(e) => setFormEmergencia({ ...formEmergencia, postulanteId: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 font-medium"
+                  className="w-full bg-white border border-slate-300 rounded-lg p-3 text-xs text-slate-900 focus:outline-none focus:border-rose-500 font-medium cursor-pointer"
                 >
                   <option value="">-- Seleccionar personal habilitado --</option>
                   {postulantes.map((p) => (
@@ -1000,13 +1004,13 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
 
               {/* Tipo de Emergencia */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Tipo de Emergencia / Motivo:
                 </label>
                 <select
                   value={formEmergencia.tipoEmergencia}
                   onChange={(e) => setFormEmergencia({ ...formEmergencia, tipoEmergencia: e.target.value as any })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 font-medium"
+                  className="w-full bg-white border border-slate-300 rounded-lg p-3 text-xs text-slate-900 focus:outline-none focus:border-rose-500 font-medium cursor-pointer"
                 >
                   <option value="MEDICA_TRABAJADOR">Emergencia Médica del Trabajador (Evacuación Clínica)</option>
                   <option value="FAMILIAR_GRAVE">Emergencia Familiar Grave (Fallecimiento o Salud Crítica)</option>
@@ -1016,7 +1020,7 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
 
               {/* Detalle y Sustento */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Diagnóstico / Justificación Detallada (Médico de Mina / RRHH):
                 </label>
                 <textarea
@@ -1024,28 +1028,28 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
                   value={formEmergencia.motivoDetalle}
                   onChange={(e) => setFormEmergencia({ ...formEmergencia, motivoDetalle: e.target.value })}
                   placeholder="Detallar el motivo clínico o sustento familiar comprobado para justificar la salida sin computar abandono..."
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500"
+                  className="w-full bg-white border border-slate-300 rounded-lg p-3 text-xs text-slate-900 focus:outline-none focus:border-rose-500"
                 />
               </div>
 
               {/* Lista de Emergencias Activas */}
               {emergenciasActivas.length > 0 && (
-                <div className="pt-3 border-t border-slate-800 space-y-2">
-                  <span className="text-[11px] font-bold text-amber-400 block uppercase">
+                <div className="pt-3 border-t border-slate-200 space-y-2">
+                  <span className="text-[11px] font-bold text-amber-700 block uppercase">
                     Salidas por Emergencia Autorizadas Pendientes de Ejecución en Garita:
                   </span>
                   <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                     {emergenciasActivas.map((em) => (
-                      <div key={em.id} className="p-2.5 bg-slate-800/80 border border-rose-500/30 rounded-xl flex justify-between items-center text-xs">
+                      <div key={em.id} className="p-2.5 bg-rose-50/50 border border-rose-200 rounded-lg flex justify-between items-center text-xs">
                         <div>
-                          <span className="font-bold text-white">{em.apellidos}, {em.nombres}</span>
-                          <span className="text-slate-400 font-mono ml-2">DNI: {em.numero_documento}</span>
-                          <p className="text-[10px] text-rose-300 mt-0.5 italic">"{em.motivo_detalle}"</p>
+                          <span className="font-bold text-slate-900">{em.apellidos}, {em.nombres}</span>
+                          <span className="text-slate-500 font-mono ml-2">DNI: {em.numero_documento}</span>
+                          <p className="text-[10px] text-rose-700 mt-0.5 italic">"{em.motivo_detalle}"</p>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleEjecutarSalidaEmergencia(em.id, em.numero_documento)}
-                          className="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 shadow"
+                          className="bg-rose-700 hover:bg-rose-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 shadow-sm"
                         >
                           <LogOut className="w-3.5 h-3.5" /> Validar Salida
                         </button>
@@ -1055,17 +1059,17 @@ export const GaritaScannerView: React.FC<GaritaScannerViewProps> = ({
                 </div>
               )}
 
-              <div className="pt-4 border-t border-slate-800 flex justify-end gap-2">
+              <div className="pt-4 border-t border-slate-200 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setModalEmergenciaOpen(false)}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
+                  className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold px-4 py-2.5 rounded-lg transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-rose-600/30 transition-all flex items-center gap-1.5"
+                  className="bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold px-5 py-2.5 rounded-lg shadow-sm transition-all flex items-center gap-1.5"
                 >
                   <Ambulance className="w-4 h-4" />
                   Autorizar Bajada
