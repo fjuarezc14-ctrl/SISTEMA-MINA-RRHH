@@ -12,6 +12,7 @@ import { FotocheckView } from './views/FotocheckView';
 import { GaritaScannerView } from './views/GaritaScannerView';
 import { SlaMetricsView } from './views/SlaMetricsView';
 import { LoginView } from './views/LoginView';
+import { UserWayAccessibility } from './components/common/UserWayAccessibility';
 import { 
   Postulante, 
   Fotocheck, 
@@ -608,7 +609,12 @@ export const App: React.FC = () => {
   };
 
   if (!currentUser) {
-    return <LoginView onLoginSuccess={handleLoginSuccess} />;
+    return (
+      <>
+        <LoginView onLoginSuccess={handleLoginSuccess} />
+        <UserWayAccessibility />
+      </>
+    );
   }
 
   return (
@@ -645,7 +651,7 @@ export const App: React.FC = () => {
 
         {/* TOAST FLOTANTE AL LOGIN: VENCIMIENTO PREVENTIVO 15/30 DÍAS */}
         {toastVencimiento && (
-          <div className="fixed bottom-5 right-5 z-50 max-w-md bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl shadow-xl flex items-start justify-between gap-3 animate-slide-up">
+          <div className="fixed bottom-22 right-5 z-40 max-w-md bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl shadow-xl flex items-start justify-between gap-3 animate-slide-up">
             <div className="text-xs font-medium leading-relaxed">
               {toastVencimiento}
             </div>
@@ -738,6 +744,7 @@ export const App: React.FC = () => {
           )}
         </div>
       </main>
+      <UserWayAccessibility />
     </div>
   );
 };
